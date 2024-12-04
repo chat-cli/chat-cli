@@ -119,6 +119,9 @@ To switch LLMs, use the `--model-id` flag. You can supply a valid model id from 
 | Cohere    | cohere.command-text-v14                 | command     | yes               |            |
 | Amazon    | amazon.titan-text-lite-v1               | titan       | not yet           | yes        |
 | Amazon    | amazon.titan-text-express-v1            | titan       | not yet           |            |
+| Amazon    | amazon.nova-micro-v1:0                  | nova-micro  | yes               | yes        |
+| Amazon    | amazon.nova-lite-v1:0                   | nova-lite   | yes               | yes        |
+| Amazon    | amazon.nova-pro-v1:0                    | nova-pro    | yes               | yes        |
 | AI21 Labs | ai21.j2-mid-v1                          | jurassic    | no                | yes        |
 | AI21 Labs | ai21.j2-ultra-v1                        | jurassic    | no                |            |
 | Meta      | meta.llama2-13b-chat-v1                 | llama       | yes               | yes        |

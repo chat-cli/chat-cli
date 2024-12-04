@@ -127,6 +127,27 @@ var models = []Model{
 		SupportsStreaming: false,
 	},
 	{
+		ModelID:           "amazon.nova-micro-v1:0",
+		ModelFamily:       "nova-micro",
+		ModelType:         "text",
+		BaseModel:         true,
+		SupportsStreaming: true,
+	},
+	{
+		ModelID:           "amazon.nova-lite-v1:0",
+		ModelFamily:       "nova-lite",
+		ModelType:         "text",
+		BaseModel:         true,
+		SupportsStreaming: true,
+	},
+	{
+		ModelID:           "amazon.nova-pro-v1:0",
+		ModelFamily:       "nova-pro",
+		ModelType:         "text",
+		BaseModel:         true,
+		SupportsStreaming: true,
+	},
+	{
 		ModelID:           "stability.stable-diffusion-xl-v1",
 		ModelFamily:       "stability",
 		ModelType:         "image",
