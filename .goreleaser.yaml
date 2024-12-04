@@ -1,12 +1,4 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
-
-version: 1
+version: 2
 
 before:
   hooks:
@@ -44,3 +36,11 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+brews:
+  - name: chat-cli
+    repository:
+      owner: micahwalter
+      name: homebrew-chat-cli
+    description: "chat-cli is a command line tool for working with llms on Amazon Bedrock"
+    homepage: "https://github.com/chat-cli/chat-cli/"
