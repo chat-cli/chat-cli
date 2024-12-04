@@ -40,7 +40,7 @@ changelog:
 brews:
   - name: chat-cli
     repository:
-      owner: micahwalter
+      owner: chat-cli
       name: homebrew-chat-cli
     description: "chat-cli is a command line tool for working with llms on Amazon Bedrock"
     homepage: "https://github.com/chat-cli/chat-cli/"
