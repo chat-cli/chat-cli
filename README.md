@@ -27,15 +27,25 @@ Example output (this will change, as LLMs generate new responses with every requ
 
 At this time you can install chat-cli via pre-packaged binaries (thanks to [GoReleaser](https://goreleaser.com/)!) for your operating system/architecture combination of choice.
 
+### Pre-Built Binaries
+
 1. Head to https://github.com/go-micah/chat-cli/releases/latest to find the binary for your setup.
 2. Download and unzip to find a pre-compiled binary file that should work on your system.
+
+### Homebrew
+
+If you have Homebrew installed on your system you can do the following two commands:
+
+    $ brew tap chat-cli/chat-cli
+    $ brew install chat-cli
+
 
 Notes:
 
 - You won't need Go installed on your system to use the pre-packaged binaries.
 - These are currently unsigned binary files. For most systems, this will not be an issue, but on MacOS you will need to [follow these instructions](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac).
 
-## Build from source
+### Build from source
 
 You will need [Go](https://go.dev) v1.22.1 installed on your system. You can type `go version` to ensure you have the correct version installed.
 
