@@ -11,11 +11,12 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
-	"github.com/chat-cli/chat-cli/models"
 	"github.com/go-micah/go-bedrock/providers"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
@@ -57,20 +58,34 @@ var imageCmd = &cobra.Command{
 		var bodyString []byte
 		var err error
 
+		// set up connection to AWS
+		region, err := cmd.Parent().PersistentFlags().GetString("region")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+		if err != nil {
+			log.Fatalf("unable to load AWS config: %v", err)
+		}
+
 		modelId, err := cmd.PersistentFlags().GetString("model-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		// validate model is supported
-		m, err := models.GetModel(modelId)
+		bedrockSvc := bedrock.NewFromConfig(cfg)
+
+		model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+			ModelIdentifier: &modelId,
+		})
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 
 		// validate model supports image generation
-		if m.ModelType != "image" {
-			log.Fatalf("model %s does not support image generation. please use a different model", m.ModelID)
+		if !slices.Contains(model.ModelDetails.OutputModalities, "IMAGE") {
+			log.Fatalf("model %s does not support image generation. please use a different model", *model.ModelDetails.ModelId)
 		}
 
 		// get options
@@ -95,8 +110,8 @@ var imageCmd = &cobra.Command{
 		}
 
 		// serialize body
-		switch m.ModelFamily {
-		case "stability":
+		switch *model.ModelDetails.ProviderName {
+		case "Stability AI":
 			body := providers.StabilityAIStableDiffusionInvokeModelInput{
 				Prompt: []providers.StabilityAIStableDiffusionTextPrompt{
 					{
@@ -112,7 +127,7 @@ var imageCmd = &cobra.Command{
 			if err != nil {
 				log.Fatalf("unable to marshal body: %v", err)
 			}
-		case "titan-image":
+		case "Amazon":
 			body := providers.AmazonTitanImageInvokeModelInput{
 				TaskType: "TEXT_IMAGE",
 				TextToImageParams: providers.AmazonTitanImageInvokeModelInputTextToImageParams{
@@ -130,25 +145,14 @@ var imageCmd = &cobra.Command{
 				log.Fatalf("unable to marshal body: %v", err)
 			}
 		default:
-			log.Fatalf("invalid model: %s", m.ModelID)
-		}
-
-		// set up connection to AWS
-		region, err := cmd.Parent().PersistentFlags().GetString("region")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-		if err != nil {
-			log.Fatalf("unable to load AWS config: %v", err)
+			log.Fatalf("invalid model: %s", *model.ModelDetails.ModelId)
 		}
 
 		svc := bedrockruntime.NewFromConfig(cfg)
 
 		resp, err := svc.InvokeModel(context.TODO(), &bedrockruntime.InvokeModelInput{
 			Accept:      &accept,
-			ModelId:     &m.ModelID,
+			ModelId:     model.ModelDetails.ModelId,
 			ContentType: &contentType,
 			Body:        bodyString,
 		})
@@ -157,8 +161,8 @@ var imageCmd = &cobra.Command{
 		}
 
 		// save images to disk
-		switch m.ModelFamily {
-		case "stability":
+		switch *model.ModelDetails.ProviderName {
+		case "Stability AI":
 			var out providers.StabilityAIStableDiffusionInvokeModelOutput
 
 			err = json.Unmarshal(resp.Body, &out)
@@ -171,7 +175,7 @@ var imageCmd = &cobra.Command{
 				log.Fatalf("unable to decode image: %v", err)
 			}
 
-			outputFile := fmt.Sprintf("%s-%d.jpg", m.ModelFamily, time.Now().Unix())
+			outputFile := fmt.Sprintf("%d.jpg", time.Now().Unix())
 
 			// if we have a filename set, us it instead
 			if filename != "" {
@@ -184,7 +188,7 @@ var imageCmd = &cobra.Command{
 			}
 
 			log.Println("image written to file", outputFile)
-		case "titan-image":
+		case "Amazon":
 			var out providers.AmazonTitanImageInvokeModelOutput
 
 			err = json.Unmarshal(resp.Body, &out)
@@ -197,7 +201,7 @@ var imageCmd = &cobra.Command{
 				log.Fatalf("unable to decode image: %v", err)
 			}
 
-			outputFile := fmt.Sprintf("%s-%d.jpg", m.ModelFamily, time.Now().Unix())
+			outputFile := fmt.Sprintf("%d.jpg", time.Now().Unix())
 
 			// if we have a filename set, us it instead
 			if filename != "" {
@@ -228,7 +232,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// imageCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	imageCmd.PersistentFlags().StringP("model-id", "m", "stability.stable-diffusion-xl-v1", "set the model id")
+	imageCmd.PersistentFlags().StringP("model-id", "m", "amazon.nova-canvas-v1:0", "set the model id")
 	imageCmd.PersistentFlags().StringP("filename", "f", "", "provide an output filename")
 
 }
