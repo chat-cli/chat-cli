@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
-	"github.com/go-micah/chat-cli/models"
+	"github.com/chat-cli/chat-cli/models"
 	"github.com/spf13/cobra"
 )
 
