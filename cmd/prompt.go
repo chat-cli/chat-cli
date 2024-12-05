@@ -68,18 +68,54 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		bedrockSvc := bedrock.NewFromConfig(cfg)
-
-		model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
-			ModelIdentifier: &modelId,
-		})
+		// get feature floag for image attachment
+		image, err := cmd.PersistentFlags().GetString("image")
 		if err != nil {
-			log.Fatalf("error: %v", err)
+			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		// check if this is a text model
-		if !slices.Contains(model.ModelDetails.OutputModalities, "TEXT") {
-			log.Fatalf("model %s is not a text model, so it can't be used with the chat function", *model.ModelDetails.ModelId)
+		// check if --no-stream is set
+		noStream, err := cmd.PersistentFlags().GetBool("no-stream")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		customArn, err := cmd.PersistentFlags().GetString("custom-arn")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		var modelIdString string
+
+		bedrockSvc := bedrock.NewFromConfig(cfg)
+
+		if customArn == "" {
+			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+				ModelIdentifier: &modelId,
+			})
+			if err != nil {
+				log.Fatalf("error: %v", err)
+			}
+
+			// check if this is a text model
+			if !slices.Contains(model.ModelDetails.OutputModalities, "TEXT") {
+				log.Fatalf("model %s is not a text model, so it can't be used with the chat function", *model.ModelDetails.ModelId)
+			}
+
+			// check if model supports image/vision capabilities
+			if (image != "") && (!slices.Contains(model.ModelDetails.InputModalities, "IMAGE")) {
+				log.Fatalf("model %s does not support images as input. please use a different model", *model.ModelDetails.ModelId)
+			}
+
+			// check if model supports streaming and --no-stream is not set
+			if (!noStream) && (!*model.ModelDetails.ResponseStreamingSupported) {
+				log.Fatalf("model %s does not support streaming. please use the --no-stream flag", *model.ModelDetails.ModelId)
+			}
+
+			modelIdString = *model.ModelDetails.ModelId
+
+		} else {
+			modelIdString = customArn
 		}
 
 		// get options
@@ -98,29 +134,7 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		// get feature floag for image attachment
-		image, err := cmd.PersistentFlags().GetString("image")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		// check if model supports image/vision capabilities
-		if (image != "") && (!slices.Contains(model.ModelDetails.InputModalities, "IMAGE")) {
-			log.Fatalf("model %s does not support images as input. please use a different model", *model.ModelDetails.ModelId)
-		}
-
 		svc := bedrockruntime.NewFromConfig(cfg)
-
-		// check if --no-stream is set
-		noStream, err := cmd.PersistentFlags().GetBool("no-stream")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		// check if model supports streaming and --no-stream is not set
-		if (!noStream) && (!*model.ModelDetails.ResponseStreamingSupported) {
-			log.Fatalf("model %s does not support streaming. please use the --no-stream flag", *model.ModelDetails.ModelId)
-		}
 
 		// craft prompt
 		userMsg := types.Message{
@@ -159,7 +173,7 @@ var promptCmd = &cobra.Command{
 		if noStream {
 			// set up ConverseInput with model and prompt
 			converseInput := &bedrockruntime.ConverseInput{
-				ModelId:         model.ModelDetails.ModelId,
+				ModelId:         &modelIdString,
 				InferenceConfig: &conf,
 			}
 			converseInput.Messages = append(converseInput.Messages, userMsg)
@@ -178,7 +192,7 @@ var promptCmd = &cobra.Command{
 
 		} else {
 			converseStreamInput := &bedrockruntime.ConverseStreamInput{
-				ModelId:         model.ModelDetails.ModelId,
+				ModelId:         &modelIdString,
 				InferenceConfig: &conf,
 			}
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
@@ -294,6 +308,7 @@ func readImage(filename string) ([]byte, string, error) {
 func init() {
 	rootCmd.AddCommand(promptCmd)
 	promptCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
+	promptCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 
 	promptCmd.PersistentFlags().StringP("image", "i", "", "path to image")
 	promptCmd.PersistentFlags().Bool("no-stream", false, "return the full response once it has completed")

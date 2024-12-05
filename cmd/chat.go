@@ -47,23 +47,38 @@ To quit the chat, just type "quit"
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		customArn, err := cmd.PersistentFlags().GetString("custom-arn")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
 		bedrockSvc := bedrock.NewFromConfig(cfg)
 
-		model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
-			ModelIdentifier: &modelId,
-		})
-		if err != nil {
-			log.Fatalf("error: %v", err)
-		}
+		var modelIdString string
 
-		// check if this is a text model
-		if !slices.Contains(model.ModelDetails.OutputModalities, "TEXT") {
-			log.Fatalf("model %s is not a text model, so it can't be used with the chat function", *model.ModelDetails.ModelId)
-		}
+		if customArn == "" {
 
-		// check if model supports streaming
-		if !*model.ModelDetails.ResponseStreamingSupported {
-			log.Fatalf("model %s does not support streaming so it can't be used with the chat function", *model.ModelDetails.ModelId)
+			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+				ModelIdentifier: &modelId,
+			})
+			if err != nil {
+				log.Fatalf("error: %v", err)
+			}
+
+			// check if this is a text model
+			if !slices.Contains(model.ModelDetails.OutputModalities, "TEXT") {
+				log.Fatalf("model %s is not a text model, so it can't be used with the chat function", *model.ModelDetails.ModelId)
+			}
+
+			// check if model supports streaming
+			if !*model.ModelDetails.ResponseStreamingSupported {
+				log.Fatalf("model %s does not support streaming so it can't be used with the chat function", *model.ModelDetails.ModelId)
+			}
+
+			modelIdString = *model.ModelDetails.ModelId
+
+		} else {
+			modelIdString = customArn
 		}
 
 		// get options
@@ -91,7 +106,7 @@ To quit the chat, just type "quit"
 		}
 
 		converseStreamInput := &bedrockruntime.ConverseStreamInput{
-			ModelId:         aws.String(*model.ModelDetails.ModelId),
+			ModelId:         aws.String(modelIdString),
 			InferenceConfig: &conf,
 		}
 
@@ -150,6 +165,7 @@ To quit the chat, just type "quit"
 func init() {
 	rootCmd.AddCommand(chatCmd)
 	chatCmd.PersistentFlags().StringP("model-id", "m", "amazon.nova-micro-v1:0", "set the model id")
+	chatCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 
 	chatCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
 	chatCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
