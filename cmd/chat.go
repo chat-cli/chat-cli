@@ -9,12 +9,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
-	"github.com/chat-cli/chat-cli/models"
 	"github.com/spf13/cobra"
 )
 
@@ -30,20 +31,39 @@ To quit the chat, just type "quit"
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 
+		// set up connection to AWS
+		region, err := cmd.Parent().PersistentFlags().GetString("region")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+		if err != nil {
+			log.Fatalf("unable to load AWS config: %v", err)
+		}
+
 		modelId, err := cmd.PersistentFlags().GetString("model-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		// validate model is supported
-		m, err := models.GetModel(modelId)
+		bedrockSvc := bedrock.NewFromConfig(cfg)
+
+		model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+			ModelIdentifier: &modelId,
+		})
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
 
+		// check if this is a text model
+		if !slices.Contains(model.ModelDetails.OutputModalities, "TEXT") {
+			log.Fatalf("model %s is not a text model, so it can't be used with the chat function", *model.ModelDetails.ModelId)
+		}
+
 		// check if model supports streaming
-		if !m.SupportsStreaming {
-			log.Fatalf("model %s does not support streaming so it can't be used with the chat function", m.ModelID)
+		if !*model.ModelDetails.ResponseStreamingSupported {
+			log.Fatalf("model %s does not support streaming so it can't be used with the chat function", *model.ModelDetails.ModelId)
 		}
 
 		// get options
@@ -62,17 +82,6 @@ To quit the chat, just type "quit"
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		// set up connection to AWS
-		region, err := cmd.Parent().PersistentFlags().GetString("region")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-		if err != nil {
-			log.Fatalf("unable to load AWS config: %v", err)
-		}
-
 		svc := bedrockruntime.NewFromConfig(cfg)
 
 		conf := types.InferenceConfiguration{
@@ -82,7 +91,7 @@ To quit the chat, just type "quit"
 		}
 
 		converseStreamInput := &bedrockruntime.ConverseStreamInput{
-			ModelId:         aws.String(m.ModelID),
+			ModelId:         aws.String(*model.ModelDetails.ModelId),
 			InferenceConfig: &conf,
 		}
 
@@ -140,7 +149,7 @@ To quit the chat, just type "quit"
 
 func init() {
 	rootCmd.AddCommand(chatCmd)
-	chatCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-haiku-20240307-v1:0", "set the model id")
+	chatCmd.PersistentFlags().StringP("model-id", "m", "amazon.nova-micro-v1:0", "set the model id")
 
 	chatCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
 	chatCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
