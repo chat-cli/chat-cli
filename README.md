@@ -99,33 +99,21 @@ You can start an interactive chat session like this:
 
 - Type `quit` to quit the interactive chat session.
 
+## List Models
+
+You can get a list of all supported models in your current region like this:
+
+    $ ./bin/chat-cli models list
+
+Please notes, this is the full list of all possible models. You will need to enable access for any models you'd like to use.
+
 ## LLMs
 
 Currently all text based LLMs available through Amazon Bedrock are supported. The LLMs you wish to use must be enabled within Amazon Bedrock.
 
 The default LLM is Anthropic Claude Instant v1.
 
-To switch LLMs, use the `--model-id` flag. You can supply a valid model id from the following list of currently supported models:
-
-| Provider  | Model ID                                | Family Name | Streaming Capable | Base Model |
-| --------- | --------------------------------------- | ----------- | ----------------- | ---------- |
-| Anthropic | anthropic.claude-3-haiku-20240307-v1:0  | claude3     | yes               | yes        |
-| Anthropic | anthropic.claude-3-sonnet-20240229-v1:0 | claude3     | yes               | no         |
-| Anthropic | anthropic.claude-3-5-sonnet-20240620-v1:0 | claude3   | yes               | no         |
-| Anthropic | anthropic.claude-v2:1                   | claude      | yes               |            |
-| Anthropic | anthropic.claude-v2                     | claude      | yes               |            |
-| Anthropic | anthropic.claude-instant-v1             | claude      | yes               | yes        |
-| Cohere    | cohere.command-light-text-v14           | command     | yes               | yes        |
-| Cohere    | cohere.command-text-v14                 | command     | yes               |            |
-| Amazon    | amazon.titan-text-lite-v1               | titan       | not yet           | yes        |
-| Amazon    | amazon.titan-text-express-v1            | titan       | not yet           |            |
-| Amazon    | amazon.nova-micro-v1:0                  | nova-micro  | yes               | yes        |
-| Amazon    | amazon.nova-lite-v1:0                   | nova-lite   | yes               | yes        |
-| Amazon    | amazon.nova-pro-v1:0                    | nova-pro    | yes               | yes        |
-| AI21 Labs | ai21.j2-mid-v1                          | jurassic    | no                | yes        |
-| AI21 Labs | ai21.j2-ultra-v1                        | jurassic    | no                |            |
-| Meta      | meta.llama2-13b-chat-v1                 | llama       | yes               | yes        |
-| Meta      | meta.llama2-70b-chat-v1                 | llama       | yes               |            |
+To switch LLMs, use the `--model-id` flag. 
 
 You can supply the exact model id from the list above like so:
 
@@ -153,13 +141,13 @@ There are several flags you can use to override the default config settings. Not
     --temperature defaults to 1.0
     --topP defaults to 0.999
 
-## Anthropic Claude 3 Vision
+## Image Attachments
 
-With the latest models from Anthropic, Claude 3 can now support uploading an image. Images can be either png or jpg and must be less than 5MB. To upload an image do the following:
+Some LLMs support uploading an image. Images can be either png or jpg and must be less than 5MB. To upload an image do the following:
 
     $ ./bin/chat-cli prompt "Explain this image" --image IMG_1234.JPG
 
-Please note this only works with models from Anthropic Claude 3.
+Please note this only works with supported models.
 
 ## Image
 
@@ -170,10 +158,3 @@ With the `image` command you can generate images with any supported Foundation M
 You can specify the model with the `--model-id` flag set to model's full model id or family name.
 You can also specify an output filename with the `--filename` flag.
 
-## Image Models
-
-| Provider     | Model ID                         | Family Name | Base Model |
-| ------------ | -------------------------------- | ----------- | ---------- |
-| Stability AI | stability.stable-diffusion-xl-v1 | stability   | yes        |
-| Stability AI | stability.stable-diffusion-xl-v0 | stability   |            |
-| Amazon       | amazon.titan-image-generator-v1  | titan-image | yes        |

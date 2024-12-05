@@ -10,13 +10,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
-	"github.com/chat-cli/chat-cli/models"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
@@ -52,16 +52,34 @@ var promptCmd = &cobra.Command{
 			prompt = document + prompt
 		}
 
-		// get model id
+		// set up connection to AWS
+		region, err := cmd.Parent().PersistentFlags().GetString("region")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+		if err != nil {
+			log.Fatalf("unable to load AWS config: %v", err)
+		}
+
 		modelId, err := cmd.PersistentFlags().GetString("model-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		// validate model is supported
-		m, err := models.GetModel(modelId)
+		bedrockSvc := bedrock.NewFromConfig(cfg)
+
+		model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+			ModelIdentifier: &modelId,
+		})
 		if err != nil {
 			log.Fatalf("error: %v", err)
+		}
+
+		// check if this is a text model
+		if !slices.Contains(model.ModelDetails.OutputModalities, "TEXT") {
+			log.Fatalf("model %s is not a text model, so it can't be used with the chat function", *model.ModelDetails.ModelId)
 		}
 
 		// get options
@@ -87,20 +105,8 @@ var promptCmd = &cobra.Command{
 		}
 
 		// check if model supports image/vision capabilities
-		// currently only claude3 models support vision capabilities
-		if (image != "") && (m.ModelFamily != "claude3") {
-			log.Fatalf("model %s does not support vision. please use a different model", m.ModelID)
-		}
-
-		// set up connection to AWS
-		region, err := cmd.Parent().PersistentFlags().GetString("region")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-		if err != nil {
-			log.Fatalf("unable to load AWS config: %v", err)
+		if (image != "") && (!slices.Contains(model.ModelDetails.InputModalities, "IMAGE")) {
+			log.Fatalf("model %s does not support images as input. please use a different model", *model.ModelDetails.ModelId)
 		}
 
 		svc := bedrockruntime.NewFromConfig(cfg)
@@ -112,8 +118,8 @@ var promptCmd = &cobra.Command{
 		}
 
 		// check if model supports streaming and --no-stream is not set
-		if (!noStream) && (!m.SupportsStreaming) {
-			log.Fatalf("model %s does not support streaming. please use the --no-stream flag", m.ModelID)
+		if (!noStream) && (!*model.ModelDetails.ResponseStreamingSupported) {
+			log.Fatalf("model %s does not support streaming. please use the --no-stream flag", *model.ModelDetails.ModelId)
 		}
 
 		// craft prompt
@@ -153,7 +159,7 @@ var promptCmd = &cobra.Command{
 		if noStream {
 			// set up ConverseInput with model and prompt
 			converseInput := &bedrockruntime.ConverseInput{
-				ModelId:         aws.String(m.ModelID),
+				ModelId:         model.ModelDetails.ModelId,
 				InferenceConfig: &conf,
 			}
 			converseInput.Messages = append(converseInput.Messages, userMsg)
@@ -172,7 +178,7 @@ var promptCmd = &cobra.Command{
 
 		} else {
 			converseStreamInput := &bedrockruntime.ConverseStreamInput{
-				ModelId:         aws.String(m.ModelID),
+				ModelId:         model.ModelDetails.ModelId,
 				InferenceConfig: &conf,
 			}
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
@@ -287,7 +293,7 @@ func readImage(filename string) ([]byte, string, error) {
 
 func init() {
 	rootCmd.AddCommand(promptCmd)
-	promptCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-haiku-20240307-v1:0", "set the model id")
+	promptCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
 
 	promptCmd.PersistentFlags().StringP("image", "i", "", "path to image")
 	promptCmd.PersistentFlags().Bool("no-stream", false, "return the full response once it has completed")
