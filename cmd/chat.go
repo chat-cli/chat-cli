@@ -4,7 +4,6 @@ Copyright © 2024 Micah Walter
 package cmd
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log"
@@ -16,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
+	"github.com/chat-cli/chat-cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -29,17 +29,11 @@ To quit the chat, just type "quit"
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		var err error
 
-		// set up connection to AWS
+		// get options
 		region, err := cmd.Parent().PersistentFlags().GetString("region")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-		if err != nil {
-			log.Fatalf("unable to load AWS config: %v", err)
 		}
 
 		modelId, err := cmd.PersistentFlags().GetString("model-id")
@@ -52,12 +46,34 @@ To quit the chat, just type "quit"
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		bedrockSvc := bedrock.NewFromConfig(cfg)
+		temperature, err := cmd.PersistentFlags().GetFloat32("temperature")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		topP, err := cmd.PersistentFlags().GetFloat32("topP")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		maxTokens, err := cmd.PersistentFlags().GetInt32("max-tokens")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		// set up connection to AWS
+		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+		if err != nil {
+			log.Fatalf("unable to load AWS config: %v", err)
+		}
 
 		var modelIdString string
 
 		if customArn == "" {
 
+			bedrockSvc := bedrock.NewFromConfig(cfg)
+
+			// get foundation model details
 			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
 				ModelIdentifier: &modelId,
 			})
@@ -81,22 +97,6 @@ To quit the chat, just type "quit"
 			modelIdString = customArn
 		}
 
-		// get options
-		temperature, err := cmd.PersistentFlags().GetFloat32("temperature")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		topP, err := cmd.PersistentFlags().GetFloat32("topP")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
-		maxTokens, err := cmd.PersistentFlags().GetInt32("max-tokens")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
 		svc := bedrockruntime.NewFromConfig(cfg)
 
 		conf := types.InferenceConfiguration{
@@ -117,7 +117,7 @@ To quit the chat, just type "quit"
 		for {
 
 			// gets user input
-			prompt := stringPrompt(">")
+			prompt := utils.StringPrompt(">")
 
 			// check for special words
 
@@ -145,7 +145,7 @@ To quit the chat, just type "quit"
 
 			fmt.Print("[Assistant]: ")
 
-			assistantMsg, err := processStreamingOutput(output, func(ctx context.Context, part string) error {
+			assistantMsg, err := utils.ProcessStreamingOutput(output, func(ctx context.Context, part string) error {
 				fmt.Print(part)
 				return nil
 			})
@@ -170,22 +170,4 @@ func init() {
 	chatCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
 	chatCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
 	chatCmd.PersistentFlags().Int32("max-tokens", 500, "max tokens")
-}
-
-func stringPrompt(label string) string {
-
-	var s string
-	bufferSize := 8192
-
-	r := bufio.NewReaderSize(os.Stdin, bufferSize)
-
-	for {
-		fmt.Fprint(os.Stderr, label+" ")
-		s, _ = r.ReadString('\n')
-		if s != "" {
-			break
-		}
-	}
-
-	return s
 }

@@ -5,10 +5,8 @@ package cmd
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"slices"
@@ -17,8 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	"github.com/chat-cli/chat-cli/utils"
 	"github.com/go-micah/go-bedrock/providers"
-	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
 
@@ -33,30 +31,13 @@ var imageCmd = &cobra.Command{
 
 		prompt := args[0]
 
-		// read a document from stdin
-		var document string
-
-		if isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd()) {
-			// do nothing
-		} else {
-			stdin, err := io.ReadAll(os.Stdin)
-
-			if err != nil {
-				panic(err)
-			}
-			document = string(stdin)
-		}
-
-		if document != "" {
-			document = "<document>\n\n" + document + "\n\n</document>\n\n"
-			prompt = document + prompt
-		}
+		document, err := utils.LoadDocument()
+		prompt = prompt + document
 
 		accept := "*/*"
 		contentType := "application/json"
 
 		var bodyString []byte
-		var err error
 
 		// set up connection to AWS
 		region, err := cmd.Parent().PersistentFlags().GetString("region")
@@ -170,7 +151,7 @@ var imageCmd = &cobra.Command{
 				log.Fatalf("unable to unmarshal response from Bedrock: %v", err)
 			}
 
-			decoded, err := decodeImage(out.Artifacts[0].Base64)
+			decoded, err := utils.DecodeImage(out.Artifacts[0].Base64)
 			if err != nil {
 				log.Fatalf("unable to decode image: %v", err)
 			}
@@ -196,7 +177,7 @@ var imageCmd = &cobra.Command{
 				log.Fatalf("unable to unmarshal response from Bedrock: %v", err)
 			}
 
-			decoded, err := decodeImage(out.Images[0])
+			decoded, err := utils.DecodeImage(out.Images[0])
 			if err != nil {
 				log.Fatalf("unable to decode image: %v", err)
 			}
@@ -235,12 +216,4 @@ func init() {
 	imageCmd.PersistentFlags().StringP("model-id", "m", "amazon.nova-canvas-v1:0", "set the model id")
 	imageCmd.PersistentFlags().StringP("filename", "f", "", "provide an output filename")
 
-}
-
-func decodeImage(base64Image string) ([]byte, error) {
-	decoded, err := base64.StdEncoding.DecodeString(base64Image)
-	if err != nil {
-		return nil, err
-	}
-	return decoded, nil
 }
