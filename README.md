@@ -22,8 +22,8 @@ At this time you can install chat-cli via pre-packaged binaries (thanks to [GoRe
 If you have Homebrew installed on your system you can do the following two commands:
 
 ```shell
-    $ brew tap chat-cli/chat-cli
-    $ brew install chat-cli
+    brew tap chat-cli/chat-cli
+    brew install chat-cli
 ```
 
 Notes:
@@ -37,19 +37,24 @@ You will need [Go](https://go.dev) v1.22.1 installed on your system. You can typ
 
 To build the project from source, clone this repository to your local machine and use [Make](https://www.gnu.org/software/make/manual/make.html) to build the binary.
 
-    $ git clone git@github.com:go-micah/chat-cli.git
-    $ cd chat-cli
-    $ make
+```shell
+    git clone git@github.com:go-micah/chat-cli.git
+    cd chat-cli
+    make
 
 ## Run
 
 To run the program from within the same directory use the following command syntax. 
-
-    $ ./bin/chat-cli <command> <args> <flags>
+ 
+```shell
+    ./bin/chat-cli <command> <args> <flags>
+```
 
 If you downloaded a pre-packaged binary or used Homebrew to install your path will be different. You can add your binary to your path (Homebrew does this for you) and then you can just do the following:
 
-    $ chat-cli <command> <args> <flags>
+```shell
+    chat-cli <command> <args> <flags>
+```
 
 ## Help
 
@@ -67,15 +72,21 @@ There are currently three ways to interact with foundation models through this i
 
 You can send a one liner prompt like this:
 
-    $ chat-cli prompt "How are you today?"
+```shell
+    chat-cli prompt "How are you today?"
+```
 
 You can also read in a file from `stdin` as part of your prompt like this:
 
-    $ cat myfile.go | chat-cli prompt "explain this code"
+```shell
+    cat myfile.go | chat-cli prompt "explain this code"
+```
 
     or
 
-    $ chat-cli prompt "explain this code" < myfile.go
+```shell
+    chat-cli prompt "explain this code" < myfile.go
+```
 
 This will add `<document></document>` tags around your document ahead of your prompt. This syntax works especially well with [Anthropic Claude](https://www.anthropic.com/product). Other models may produce different results.
 
@@ -85,7 +96,9 @@ You can start an interactive chat sessions which will remember your conversation
 
 You can start an interactive chat session like this:
 
-    $ chat-cli chat
+```shell
+    chat-cli chat
+```
 
 - Type `quit` to quit the interactive chat session.
 
@@ -93,7 +106,9 @@ You can start an interactive chat session like this:
 
 You can get a list of all supported models in your current region like this:
 
-    $ chat-cli models list
+```shell
+    chat-cli models list
+```
 
 Please notes, this is the full list of all possible models. You will need to enable access for any models you'd like to use.
 
@@ -105,7 +120,9 @@ To switch LLMs, use the `--model-id` flag.
 
 You can supply the exact model id from the list above like so:
 
-    $ chat-cli prompt "How are you today?" --model-id cohere.command-text-v14
+```shell
+    chat-cli prompt "How are you today?" --model-id cohere.command-text-v14
+```
 
 ## Streaming Response
 
@@ -113,7 +130,9 @@ By default, responses will stream to the command line as they are generated. Thi
 
 You can disable streaming like this:
 
-    $ chat-cli prompt "What is event driven architecture?" --no-stream
+```shell
+    chat-cli prompt "What is event driven architecture?" --no-stream
+```
 
 Only streaming response capable models can be used with the `chat` command.
 
@@ -129,7 +148,9 @@ There are several flags you can use to override the default config settings. Not
 
 Some LLMs support uploading an image. Images can be either png or jpg and must be less than 5MB. To upload an image do the following:
 
-    $ chat-cli prompt "Explain this image" --image IMG_1234.JPG
+```shell
+    chat-cli prompt "Explain this image" --image IMG_1234.JPG
+```
 
 Please note this only works with supported models.
 
@@ -137,7 +158,9 @@ Please note this only works with supported models.
 
 With the `image` command you can generate images with any supported Foundation Model. Simply follow the syntax below:
 
-    $ chat-cli image "Generate an image of a cat eating cereal"
+```shell
+    chat-cli image "Generate an image of a cat eating cereal"
+```
 
 You can specify the model with the `--model-id` flag set to model's full model id or family name. You can also specify an output filename with the `--filename` flag.
 
