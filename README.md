@@ -21,8 +21,10 @@ At this time you can install chat-cli via pre-packaged binaries (thanks to [GoRe
 
 If you have Homebrew installed on your system you can do the following two commands:
 
+```shell
     $ brew tap chat-cli/chat-cli
     $ brew install chat-cli
+```
 
 Notes:
 
