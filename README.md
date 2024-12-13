@@ -41,6 +41,7 @@ To build the project from source, clone this repository to your local machine an
     git clone git@github.com:go-micah/chat-cli.git
     cd chat-cli
     make
+```
 
 ## Run
 
