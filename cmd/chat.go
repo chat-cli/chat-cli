@@ -15,7 +15,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
+	"github.com/chat-cli/chat-cli/db"
+	"github.com/chat-cli/chat-cli/factory"
+	"github.com/chat-cli/chat-cli/repository"
 	"github.com/chat-cli/chat-cli/utils"
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -105,13 +109,40 @@ To quit the chat, just type "quit"
 			Temperature: &temperature,
 		}
 
+		// Create metadata as a map
+		chatSessionId := uuid.NewV4()
+
+		metadata := map[string]string{
+			"chat-session-id": chatSessionId.String(),
+		}
+
 		converseStreamInput := &bedrockruntime.ConverseStreamInput{
 			ModelId:         aws.String(modelIdString),
 			InferenceConfig: &conf,
+			RequestMetadata: metadata,
 		}
 
 		// initial prompt
 		fmt.Printf("Hi there. You can ask me stuff!\n")
+
+		config := db.Config{
+			Driver: "sqlite3",
+			Name:   "chat-cli.db",
+		}
+
+		database, err := factory.CreateDatabase(config)
+		if err != nil {
+			log.Fatalf("Failed to create database: %v", err)
+		}
+		defer database.Close()
+
+		// Run migrations to ensure tables exist
+		if err := database.Migrate(); err != nil {
+			log.Fatalf("Failed to migrate database: %v", err)
+		}
+
+		// Create repositories
+		chatRepo := repository.NewChatRepository(database)
 
 		// tty-loop
 		for {
@@ -143,10 +174,24 @@ To quit the chat, just type "quit"
 				log.Fatal(err)
 			}
 
+			// Use the repository without knowing the underlying database type
+			chat := &repository.Chat{
+				ChatId:  chatSessionId.String(),
+				Persona: "User",
+				Message: prompt,
+			}
+
+			if err := chatRepo.Create(chat); err != nil {
+				log.Printf("Failed to create chat: %v", err)
+			}
+
 			fmt.Print("[Assistant]: ")
+
+			var out string
 
 			assistantMsg, err := utils.ProcessStreamingOutput(output, func(ctx context.Context, part string) error {
 				fmt.Print(part)
+				out += part
 				return nil
 			})
 
@@ -155,6 +200,16 @@ To quit the chat, just type "quit"
 			}
 
 			converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
+
+			chat = &repository.Chat{
+				ChatId:  chatSessionId.String(),
+				Persona: "Assistant",
+				Message: out,
+			}
+
+			if err := chatRepo.Create(chat); err != nil {
+				log.Printf("Failed to create chat: %v", err)
+			}
 
 			fmt.Println()
 

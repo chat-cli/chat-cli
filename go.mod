@@ -9,6 +9,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.23.0
 	github.com/go-micah/go-bedrock v0.2.0
 	github.com/mattn/go-isatty v0.0.20
+	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.8.1
 )
 
