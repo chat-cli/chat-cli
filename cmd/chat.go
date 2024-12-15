@@ -21,6 +21,8 @@ import (
 	"github.com/chat-cli/chat-cli/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
+
+	conf "github.com/chat-cli/chat-cli/config"
 )
 
 // chatCmd represents the chat command
@@ -33,6 +35,18 @@ To quit the chat, just type "quit"
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
+
+		fm, err := conf.NewFileManager("chat-cli")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := fm.InitializeViper(); err != nil {
+			log.Fatal(err)
+		}
+
+		// Get SQLite database path
+		dbPath := fm.GetDBPath()
 
 		// get options
 		region, err := cmd.Parent().PersistentFlags().GetString("region")
@@ -127,7 +141,7 @@ To quit the chat, just type "quit"
 
 		config := db.Config{
 			Driver: "sqlite3",
-			Name:   "chat-cli.db",
+			Name:   dbPath,
 		}
 
 		database, err := factory.CreateDatabase(config)

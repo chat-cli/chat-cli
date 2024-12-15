@@ -15,8 +15,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
+// modelsListCmd represents the list command
+var modelsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all available models",
 
@@ -26,7 +26,7 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
-	modelsCmd.AddCommand(listCmd)
+	modelsCmd.AddCommand(modelsListCmd)
 }
 
 func listModels() {

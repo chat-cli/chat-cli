@@ -37,3 +37,66 @@ func (r *ChatRepository) Create(chat *Chat) error {
 	}
 	return nil
 }
+
+// Function to list 10 most recent chats
+func (r *ChatRepository) List() ([]Chat, error) {
+	query := `
+        SELECT id, chat_id, persona, message
+        FROM chats
+		GROUP BY chat_id
+        ORDER BY id DESC
+        LIMIT 10`
+
+	rows, err := r.db.GetDB().Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error listing chats: %v", err)
+	}
+	defer rows.Close()
+
+	var chats []Chat
+	for rows.Next() {
+		var chat Chat
+		err := rows.Scan(&chat.ID, &chat.ChatId, &chat.Persona, &chat.Message)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning chat: %v", err)
+		}
+		chats = append(chats, chat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over chats: %v", err)
+	}
+
+	return chats, nil
+}
+
+// function to retrieve all messages for a given chat_id
+func (r *ChatRepository) GetMessages(chatId string) ([]Chat, error) {
+	query := `
+        SELECT id, chat_id, persona, message
+        FROM chats
+        WHERE chat_id = $1
+        ORDER BY id ASC`
+
+	rows, err := r.db.GetDB().Query(query, chatId)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving messages: %v", err)
+	}
+	defer rows.Close()
+
+	var chats []Chat
+	for rows.Next() {
+		var chat Chat
+		err := rows.Scan(&chat.ID, &chat.ChatId, &chat.Persona, &chat.Message)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning chat: %v", err)
+		}
+		chats = append(chats, chat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over chats: %v", err)
+	}
+
+	return chats, nil
+}
