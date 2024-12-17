@@ -48,7 +48,7 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		// get feature floag for image attachment
+		// get feature flag for image attachment
 		image, err := cmd.PersistentFlags().GetString("image")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)

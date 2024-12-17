@@ -15,8 +15,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
+	"github.com/chat-cli/chat-cli/db"
+	"github.com/chat-cli/chat-cli/factory"
+	"github.com/chat-cli/chat-cli/repository"
 	"github.com/chat-cli/chat-cli/utils"
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cobra"
+
+	conf "github.com/chat-cli/chat-cli/config"
 )
 
 // chatCmd represents the chat command
@@ -30,6 +36,21 @@ To quit the chat, just type "quit"
 
 	Run: func(cmd *cobra.Command, args []string) {
 
+		fm, err := conf.NewFileManager("chat-cli")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := fm.InitializeViper(); err != nil {
+			log.Fatal(err)
+		}
+
+		// Get SQLite database path
+		dbPath := fm.GetDBPath()
+
+		// Get DBDriver from config
+		driver := fm.GetDBDriver()
+
 		// get options
 		region, err := cmd.Parent().PersistentFlags().GetString("region")
 		if err != nil {
@@ -42,6 +63,11 @@ To quit the chat, just type "quit"
 		}
 
 		customArn, err := cmd.PersistentFlags().GetString("custom-arn")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		chatId, err := cmd.PersistentFlags().GetString("chat-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -105,13 +131,75 @@ To quit the chat, just type "quit"
 			Temperature: &temperature,
 		}
 
+		if chatId == "" {
+			chatSessionId := uuid.NewV4()
+			chatId = chatSessionId.String()
+		}
+
+		metadata := map[string]string{
+			"chat-session-id": chatId,
+		}
+
 		converseStreamInput := &bedrockruntime.ConverseStreamInput{
 			ModelId:         aws.String(modelIdString),
 			InferenceConfig: &conf,
+			RequestMetadata: metadata,
 		}
 
 		// initial prompt
 		fmt.Printf("Hi there. You can ask me stuff!\n")
+
+		config := db.Config{
+			Driver: driver,
+			Name:   dbPath,
+		}
+
+		database, err := factory.CreateDatabase(config)
+		if err != nil {
+			log.Fatalf("Failed to create database: %v", err)
+		}
+		defer database.Close()
+
+		// Run migrations to ensure tables exist
+		if err := database.Migrate(); err != nil {
+			log.Fatalf("Failed to migrate database: %v", err)
+		}
+
+		// Create repositories
+		chatRepo := repository.NewChatRepository(database)
+
+		// load saved conversation
+		if chatId != "" {
+			if chats, err := chatRepo.GetMessages(chatId); err != nil {
+				log.Printf("Failed to load messages: %v", err)
+			} else {
+				for _, chat := range chats {
+					if chat.Persona == "User" {
+						fmt.Printf("[User]: %s\n", chat.Message)
+						userMsg := types.Message{
+							Role: types.ConversationRoleUser,
+							Content: []types.ContentBlock{
+								&types.ContentBlockMemberText{
+									Value: chat.Message,
+								},
+							},
+						}
+						converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
+					} else {
+						fmt.Printf("[Assistant]: %s\n", chat.Message)
+						assistantMsg := types.Message{
+							Role: types.ConversationRoleAssistant,
+							Content: []types.ContentBlock{
+								&types.ContentBlockMemberText{
+									Value: chat.Message,
+								},
+							},
+						}
+						converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
+					}
+				}
+			}
+		}
 
 		// tty-loop
 		for {
@@ -143,10 +231,24 @@ To quit the chat, just type "quit"
 				log.Fatal(err)
 			}
 
+			// Use the repository without knowing the underlying database type
+			chat := &repository.Chat{
+				ChatId:  chatId,
+				Persona: "User",
+				Message: prompt,
+			}
+
+			if err := chatRepo.Create(chat); err != nil {
+				log.Printf("Failed to create chat: %v", err)
+			}
+
 			fmt.Print("[Assistant]: ")
+
+			var out string
 
 			assistantMsg, err := utils.ProcessStreamingOutput(output, func(ctx context.Context, part string) error {
 				fmt.Print(part)
+				out += part
 				return nil
 			})
 
@@ -155,6 +257,16 @@ To quit the chat, just type "quit"
 			}
 
 			converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
+
+			chat = &repository.Chat{
+				ChatId:  chatId,
+				Persona: "Assistant",
+				Message: out,
+			}
+
+			if err := chatRepo.Create(chat); err != nil {
+				log.Printf("Failed to create chat: %v", err)
+			}
 
 			fmt.Println()
 
@@ -166,6 +278,7 @@ func init() {
 	rootCmd.AddCommand(chatCmd)
 	chatCmd.PersistentFlags().StringP("model-id", "m", "amazon.nova-micro-v1:0", "set the model id")
 	chatCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
+	chatCmd.PersistentFlags().String("chat-id", "", "pass a valid chat-id to load a previous conversation")
 
 	chatCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
 	chatCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
