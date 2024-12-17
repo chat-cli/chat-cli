@@ -48,6 +48,9 @@ To quit the chat, just type "quit"
 		// Get SQLite database path
 		dbPath := fm.GetDBPath()
 
+		// Get DBDriver from config
+		driver := fm.GetDBDriver()
+
 		// get options
 		region, err := cmd.Parent().PersistentFlags().GetString("region")
 		if err != nil {
@@ -147,7 +150,7 @@ To quit the chat, just type "quit"
 		fmt.Printf("Hi there. You can ask me stuff!\n")
 
 		config := db.Config{
-			Driver: "sqlite3",
+			Driver: driver,
 			Name:   dbPath,
 		}
 

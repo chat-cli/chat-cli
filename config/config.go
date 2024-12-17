@@ -97,6 +97,7 @@ func (fm *FileManager) InitializeViper() error {
 	// Set some default configurations
 	viper.SetDefault("environment", fm.Environment)
 	viper.SetDefault("db_path", fm.GetDBPath())
+	viper.SetDefault("db_driver", "sqlite3")
 
 	// Create config file if it doesn't exist
 	if err := fm.createDefaultConfig(); err != nil {
@@ -109,6 +110,11 @@ func (fm *FileManager) InitializeViper() error {
 // GetDBPath returns the full path to the SQLite database file
 func (fm *FileManager) GetDBPath() string {
 	return filepath.Join(fm.DataPath, fm.DBFile)
+}
+
+// GetDBDriver returns the database type from the config
+func (fm *FileManager) GetDBDriver() string {
+	return viper.GetString("db_driver")
 }
 
 // createDefaultConfig creates a default config file if it doesn't exist

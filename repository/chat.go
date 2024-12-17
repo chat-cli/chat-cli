@@ -12,6 +12,7 @@ type Chat struct {
 	ChatId  string
 	Persona string
 	Message string
+	Created string
 }
 
 // ChatRepository implements Repository interface for Chat
@@ -41,7 +42,7 @@ func (r *ChatRepository) Create(chat *Chat) error {
 // Function to list 10 most recent chats
 func (r *ChatRepository) List() ([]Chat, error) {
 	query := `
-        SELECT id, chat_id, persona, message
+        SELECT id, chat_id, persona, message, created_at
         FROM chats
 		GROUP BY chat_id
         ORDER BY id DESC
@@ -56,7 +57,7 @@ func (r *ChatRepository) List() ([]Chat, error) {
 	var chats []Chat
 	for rows.Next() {
 		var chat Chat
-		err := rows.Scan(&chat.ID, &chat.ChatId, &chat.Persona, &chat.Message)
+		err := rows.Scan(&chat.ID, &chat.ChatId, &chat.Persona, &chat.Message, &chat.Created)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning chat: %v", err)
 		}

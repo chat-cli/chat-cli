@@ -33,8 +33,11 @@ var chatListCmd = &cobra.Command{
 		// Get SQLite database path
 		dbPath := fm.GetDBPath()
 
+		// Get the database driver from the configuration
+		driver := fm.GetDBDriver()
+
 		config := db.Config{
-			Driver: "sqlite3",
+			Driver: driver,
 			Name:   dbPath,
 		}
 
@@ -56,7 +59,7 @@ var chatListCmd = &cobra.Command{
 			log.Printf("Failed to create chat: %v", err)
 		} else {
 			for _, chat := range chats {
-				fmt.Printf("%s | %s\n", chat.ChatId, truncate(chat.Message, 40))
+				fmt.Printf("%s | %s | %s\n", chat.Created, chat.ChatId, truncate(chat.Message, 40))
 			}
 		}
 	},
