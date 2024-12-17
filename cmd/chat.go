@@ -128,9 +128,7 @@ To quit the chat, just type "quit"
 			Temperature: &temperature,
 		}
 
-		if chatId != "" {
-			chatId = chatId
-		} else {
+		if chatId == "" {
 			chatSessionId := uuid.NewV4()
 			chatId = chatSessionId.String()
 		}
