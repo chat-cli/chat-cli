@@ -64,6 +64,11 @@ To quit the chat, just type "quit"
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		chatId, err := cmd.PersistentFlags().GetString("chat-id")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
 		temperature, err := cmd.PersistentFlags().GetFloat32("temperature")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
@@ -123,11 +128,15 @@ To quit the chat, just type "quit"
 			Temperature: &temperature,
 		}
 
-		// Create metadata as a map
-		chatSessionId := uuid.NewV4()
+		if chatId != "" {
+			chatId = chatId
+		} else {
+			chatSessionId := uuid.NewV4()
+			chatId = chatSessionId.String()
+		}
 
 		metadata := map[string]string{
-			"chat-session-id": chatSessionId.String(),
+			"chat-session-id": chatId,
 		}
 
 		converseStreamInput := &bedrockruntime.ConverseStreamInput{
@@ -157,6 +166,39 @@ To quit the chat, just type "quit"
 
 		// Create repositories
 		chatRepo := repository.NewChatRepository(database)
+
+		// load saved conversation
+		if chatId != "" {
+			if chats, err := chatRepo.GetMessages(chatId); err != nil {
+				log.Printf("Failed to load messages: %v", err)
+			} else {
+				for _, chat := range chats {
+					if chat.Persona == "User" {
+						fmt.Printf("[User]: %s\n", chat.Message)
+						userMsg := types.Message{
+							Role: types.ConversationRoleUser,
+							Content: []types.ContentBlock{
+								&types.ContentBlockMemberText{
+									Value: chat.Message,
+								},
+							},
+						}
+						converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
+					} else {
+						fmt.Printf("[Assistant]: %s\n", chat.Message)
+						assistantMsg := types.Message{
+							Role: types.ConversationRoleAssistant,
+							Content: []types.ContentBlock{
+								&types.ContentBlockMemberText{
+									Value: chat.Message,
+								},
+							},
+						}
+						converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
+					}
+				}
+			}
+		}
 
 		// tty-loop
 		for {
@@ -190,7 +232,7 @@ To quit the chat, just type "quit"
 
 			// Use the repository without knowing the underlying database type
 			chat := &repository.Chat{
-				ChatId:  chatSessionId.String(),
+				ChatId:  chatId,
 				Persona: "User",
 				Message: prompt,
 			}
@@ -216,7 +258,7 @@ To quit the chat, just type "quit"
 			converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
 
 			chat = &repository.Chat{
-				ChatId:  chatSessionId.String(),
+				ChatId:  chatId,
 				Persona: "Assistant",
 				Message: out,
 			}
@@ -235,6 +277,7 @@ func init() {
 	rootCmd.AddCommand(chatCmd)
 	chatCmd.PersistentFlags().StringP("model-id", "m", "amazon.nova-micro-v1:0", "set the model id")
 	chatCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
+	chatCmd.PersistentFlags().String("chat-id", "", "pass a valid chat-id to load a previous conversation")
 
 	chatCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
 	chatCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
