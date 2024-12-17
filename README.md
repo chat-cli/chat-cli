@@ -103,6 +103,44 @@ You can start an interactive chat session like this:
 
 - Type `quit` to quit the interactive chat session.
 
+### Saving and Restoring Chat Sessions
+
+Starting a chat session with the `chat-cli chat` command will automatically save your chats to a local sqlite database. If you would like to restore a prior chat session you can do so in the following way:
+
+Start by using the `chat list` command to list 10 most recent chat sessions.
+
+```shell
+    chat-cli chat list
+```
+This will print a list that looks something like the following:
+
+```
+❯ go run main.go chat list
+2024-12-17T04:29:59Z | 9be2adda-5966-45c9-8a07-f7a7d486ca36 | How do I get started with AWS?
+
+2024-12-17T04:25:53Z | 07927821-f443-4e92-84c6-86d6fa30ebf2 | What't the best way to decide which car 
+2024-12-17T04:23:57Z | 6ecdece8-9547-4b8b-9f36-2b92df2f84d6 | What is the best way to decide on which 
+2024-12-16T04:29:09Z | 879c2dd7-ba3d-4f59-a576-a1ce556ceb4e | What do you know about optics?
+
+2024-12-16T04:28:52Z | 3a51ea83-93df-4af4-a1b3-d1ce89d845d9 | What can you tell me about electronics?
+
+2024-12-16T04:25:14Z | e16d52a8-83a9-4dc6-8e74-e41610689a9e | What is a Go package for printing markdo
+2024-12-16T04:24:35Z | 7c4764e1-029d-4ebe-a7d6-43ef230e5117 | Can you help me write a poem about dogs?
+2024-12-15T05:25:14Z | 5b2c9fb0-9ed4-4616-90be-b482bc640f8c | Can you summarize what you know about Gi
+2024-12-15T05:24:04Z | 042ce5bc-a693-4e8b-9db6-eb4834b5dbac | What do you know about the Go programmin
+2024-12-15T04:28:47Z | 56614689-356c-4d54-bb2c-10bd5af56b93 | How are you today?
+```
+
+Find the `chat-id` that corresponds to the chat session you would like to load and copy it to your clipboard. Once copied you can load that chat session like this:
+
+```shell
+    chat-cli chat --chat-id 9be2adda-5966-45c9-8a07-f7a7d486ca36
+```
+
+This will print out the saved chat and leave you at a prompt where you can pick up where you left off. Future chats will continue to save with the same `chat-id` as you go.
+
+Please note: Eventually your chat session will result in a very large prompt context. Depending on the LLM you are using, you may get an error. Consider starting a new session when your chat session gets really lengthy!
+
 ## List Models
 
 You can get a list of all supported models in your current region like this:
