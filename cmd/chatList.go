@@ -6,6 +6,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
+	"text/tabwriter"
 
 	conf "github.com/chat-cli/chat-cli/config"
 	"github.com/chat-cli/chat-cli/db"
@@ -58,8 +60,18 @@ var chatListCmd = &cobra.Command{
 		if chats, err := chatRepo.List(); err != nil {
 			log.Printf("Failed to create chat: %v", err)
 		} else {
+			fmt.Println("")
+
+			// Create a new tabwriter
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+
+			// Print the header
+			fmt.Fprintln(w, "Created Date\t Chat ID\t Title")
+
+			fmt.Fprintln(w, "\t\t")
+
 			for _, chat := range chats {
-				fmt.Printf("%s | %s | %s\n", chat.Created, chat.ChatId, truncate(chat.Message, 40))
+				fmt.Fprintf(w, "%s\t %s\t %s\n", chat.Created, chat.ChatId, truncate(chat.Message, 40))
 			}
 		}
 	},
@@ -73,5 +85,5 @@ func truncate(s string, length int) string {
 	if len(s) <= length {
 		return s
 	}
-	return s[:length]
+	return s[:length] + "\n"
 }
