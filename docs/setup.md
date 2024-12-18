@@ -14,3 +14,17 @@ If you don't already have an AWS Account, you will need to create one. Simply go
 ### Configuring IAM user access to Amazon Bedrock
 
 ### Configuring Amaozn Bedrock Model Access
+
+### Configuring AWS credentials on your local machine
+
+```shell
+    aws configure
+```
+
+## Installing Chat-CLI
+
+### Install using Homebrew
+
+### Install using pre-pachaged binaries
+
+### Install from source
