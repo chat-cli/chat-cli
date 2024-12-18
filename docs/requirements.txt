@@ -8,9 +8,14 @@ furo==2024.8.6
 idna==3.10
 imagesize==1.4.1
 Jinja2==3.1.4
+markdown-it-py==3.0.0
 MarkupSafe==3.0.2
+mdit-py-plugins==0.4.2
+mdurl==0.1.2
+myst-parser==4.0.0
 packaging==24.2
 Pygments==2.18.0
+PyYAML==6.0.2
 requests==2.32.3
 snowballstemmer==2.2.0
 soupsieve==2.6
