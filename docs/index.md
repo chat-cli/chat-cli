@@ -2,6 +2,8 @@
 
 Chat-CLI is a little terminal based program that lets you interact with [LLM](#models)s available via [Amazon Bedrock](https://aws.amazon.com/bedrock).
 
+![Chat-CLI in action!](images/index-01.png)
+
 ## Quick start
 
 Using [Homebrew](https://brew.sh/) do this:
