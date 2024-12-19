@@ -2,6 +2,8 @@
 
 A little terminal based program that lets you interact with LLMs available via [Amazon Bedrock](https://aws.amazon.com/bedrock).
 
+![Chat Chat Chat](docs/images/index-01.png)
+
 ## Prerequisites
 
 1. You will need an [AWS account](https://aws.amazon.com)
