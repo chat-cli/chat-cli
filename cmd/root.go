@@ -13,8 +13,16 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "chat-cli",
 	Short: "Chat with LLMs from Amazon Bedrock!",
-	Long:  `This is a command line tool that allows you to chat with LLMs from Amazon Bedrock!`,
+	Long: `Chat-CLI is a command line tool that allows you to chat with LLMs from Amazon Bedrock!
 
+ ██████╗██╗  ██╗ █████╗ ████████╗      ██████╗██╗     ██╗
+██╔════╝██║  ██║██╔══██╗╚══██╔══╝     ██╔════╝██║     ██║
+██║     ███████║███████║   ██║        ██║     ██║     ██║
+██║     ██╔══██║██╔══██║   ██║        ██║     ██║     ██║
+╚██████╗██║  ██║██║  ██║   ██║███████╗╚██████╗███████╗██║
+ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝╚══════╝ ╚═════╝╚══════╝╚═╝	
+	
+	`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
