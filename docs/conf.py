@@ -9,7 +9,7 @@
 project = 'Chat-CLI'
 copyright = '2024, Micah Walter'
 author = 'Micah Walter'
-release = 'v0.4.4'
+release = 'v0.4.5'
 version = 'v0.4'
 
 # -- General configuration ---------------------------------------------------

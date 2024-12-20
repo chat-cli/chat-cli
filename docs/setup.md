@@ -28,3 +28,11 @@ If you don't already have an AWS Account, you will need to create one. Simply go
 ### Install using pre-pachaged binaries
 
 ### Install from source
+
+## Confirm your installation
+
+Once you have succesfully installed Chat-CLI, you should be able to verify your installation with the following command.
+
+```shell
+    chat-cli version
+```
