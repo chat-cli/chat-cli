@@ -65,11 +65,28 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		var modelIdString string
+		inferenceProfile, err := cmd.PersistentFlags().GetString("inference-profile")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
 
+		skipValidation, err := cmd.PersistentFlags().GetBool("skip-validation")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		var modelIdString string
 		bedrockSvc := bedrock.NewFromConfig(cfg)
 
-		if customArn == "" {
+		// Determine which identifier to use
+		if customArn != "" {
+			modelIdString = customArn
+		} else if inferenceProfile != "" {
+			modelIdString = inferenceProfile
+		} else if skipValidation {
+			modelIdString = modelId
+		} else {
+			// Only validate if we're using a regular model ID
 			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
 				ModelIdentifier: &modelId,
 			})
@@ -93,9 +110,6 @@ var promptCmd = &cobra.Command{
 			}
 
 			modelIdString = *model.ModelDetails.ModelId
-
-		} else {
-			modelIdString = customArn
 		}
 
 		// get options
@@ -200,6 +214,8 @@ func init() {
 	rootCmd.AddCommand(promptCmd)
 	promptCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
 	promptCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
+	promptCmd.PersistentFlags().StringP("inference-profile", "p", "us.anthropic.claude-3-7-sonnet-20250219-v1:0", "specify a cross-region inference profile ID")
+	promptCmd.PersistentFlags().Bool("skip-validation", false, "skip model validation")
 
 	promptCmd.PersistentFlags().StringP("image", "i", "", "path to image")
 	promptCmd.PersistentFlags().Bool("no-stream", false, "return the full response once it has completed")

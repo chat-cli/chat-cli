@@ -57,9 +57,21 @@ func listModels() {
 
 	fmt.Fprintln(w, "\t\t")
 
-	// Print the models
+	// Filter and print the models that support ON_DEMAND inference
 	for _, model := range result.ModelSummaries {
-		fmt.Fprintf(w, "%s\t %s\t %s\n", aws.ToString(model.ProviderName), aws.ToString(model.ModelName), aws.ToString(model.ModelId))
+		// Check if ON_DEMAND is in the inferenceTypesSupported list
+		hasOnDemand := false
+		for _, inferenceType := range model.InferenceTypesSupported {
+			if inferenceType == "ON_DEMAND" {
+				hasOnDemand = true
+				break
+			}
+		}
+		
+		// Only print models that support ON_DEMAND
+		if hasOnDemand {
+			fmt.Fprintf(w, "%s\t %s\t %s\n", aws.ToString(model.ProviderName), aws.ToString(model.ModelName), aws.ToString(model.ModelId))
+		}
 	}
 
 	// Flush the writer
