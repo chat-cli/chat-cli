@@ -201,6 +201,71 @@ To quit the chat, just type "quit"
 			}
 		}
 
+		// Load document from stdin if provided
+		document, err := utils.LoadDocument()
+		if err != nil {
+			log.Fatalf("Failed to load document: %v", err)
+		}
+
+		// If a document was provided, add it to conversation
+		if document != "" {
+			fmt.Println("Document loaded from stdin.")
+			userMsg := types.Message{
+				Role: types.ConversationRoleUser,
+				Content: []types.ContentBlock{
+					&types.ContentBlockMemberText{
+						Value: document,
+					},
+				},
+			}
+			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
+			
+			// Save the document message to chat history
+			if err := chatRepo.Create(&repository.Chat{
+				ChatID:   chatId,
+				Message:  document,
+				Persona:  "User",
+				Metadata: "",
+			}); err != nil {
+				log.Printf("Failed to save message: %v", err)
+			}
+			
+			// Get AI response for the document
+			resp, err := svc.ConverseStream(context.TODO(), converseStreamInput)
+			if err != nil {
+				log.Fatalf("error: %v", err)
+			}
+
+			assistantResponse, err := utils.ProcessStreamingOutput(&resp, func(ctx context.Context, part string) error {
+				fmt.Print(part)
+				return nil
+			})
+			if err != nil {
+				log.Fatalf("error processing streaming output: %v", err)
+			}
+			fmt.Println()
+
+			// Save AI response to chat history
+			assistantMsg := ""
+			for _, content := range assistantResponse.Content {
+				if text, ok := content.(*types.ContentBlockMemberText); ok {
+					assistantMsg += text.Value
+				}
+			}
+			
+			if err := chatRepo.Create(&repository.Chat{
+				ChatID:   chatId,
+				Message:  assistantMsg,
+				Persona:  "Assistant",
+				Metadata: "",
+			}); err != nil {
+				log.Printf("Failed to save message: %v", err)
+			}
+
+			// Add AI response to conversation history
+			converseStreamInput.Messages = append(converseStreamInput.Messages, assistantResponse)
+		}
+
 		// tty-loop
 		for {
 
