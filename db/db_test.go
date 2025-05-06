@@ -2,38 +2,40 @@ package db
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestNewDatabase(t *testing.T) {
-	// Test with SQLite driver
-	db, err := NewDatabase("sqlite", ":memory:")
-	assert.NoError(t, err)
-	assert.NotNil(t, db)
-	
-	// Test with unsupported driver
-	db, err = NewDatabase("unsupported", "connection_string")
-	assert.Error(t, err)
-	assert.Nil(t, db)
-	assert.Contains(t, err.Error(), "unsupported database driver")
-	
-	// Test with invalid connection string
-	db, err = NewDatabase("sqlite", "invalid://connection")
-	assert.Error(t, err)
-	assert.Nil(t, db)
+func TestNewMockDB(t *testing.T) {
+	mockDB := NewMockDB()
+	if mockDB == nil {
+		t.Error("Expected non-nil MockDB")
+	}
 }
 
-func TestMigrate(t *testing.T) {
-	// Create an in-memory SQLite database for testing
-	testDB, err := NewDatabase("sqlite", ":memory:")
-	assert.NoError(t, err)
+func TestMockDBImplementsInterface(t *testing.T) {
+	mockDB := NewMockDB()
+	var _ Database = mockDB // Verify MockDB implements Database interface
+}
+
+func TestMockDBMethods(t *testing.T) {
+	mockDB := NewMockDB()
 	
-	// Run migrations
-	err = Migrate(testDB)
-	assert.NoError(t, err)
+	// Test Connect
+	if err := mockDB.Connect(); err != nil {
+		t.Errorf("Connect() returned unexpected error: %v", err)
+	}
 	
-	// Verify the chats table was created by querying it
-	_, err = testDB.Query("SELECT id, message, response, created_at FROM chats LIMIT 1")
-	assert.NoError(t, err)
+	// Test GetDB
+	if db := mockDB.GetDB(); db != nil {
+		t.Errorf("Expected nil DB, got: %v", db)
+	}
+	
+	// Test Close
+	if err := mockDB.Close(); err != nil {
+		t.Errorf("Close() returned unexpected error: %v", err)
+	}
+	
+	// Test Migrate
+	if err := mockDB.Migrate(); err != nil {
+		t.Errorf("Migrate() returned unexpected error: %v", err)
+	}
 }

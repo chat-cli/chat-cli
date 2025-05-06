@@ -1,45 +1,35 @@
 package db
 
 import (
-	"fmt"
+	"database/sql"
 )
 
-// MockDatabase is a mock implementation of the Database interface for testing
-type MockDatabase struct {
-	MockExec            func(query string, args ...interface{}) error
-	MockQuery           func(query string, args ...interface{}) ([]map[string]interface{}, error)
-	MockQueryRow        func(query string, args ...interface{}) (map[string]interface{}, error)
-	MockPrepareNamedExec func(query string, arg interface{}) error
+// MockDB implements the Database interface for testing
+type MockDB struct {
+	DB *sql.DB
 }
 
-// Exec mocks the Exec method of the Database interface
-func (m *MockDatabase) Exec(query string, args ...interface{}) error {
-	if m.MockExec != nil {
-		return m.MockExec(query, args...)
-	}
+// NewMockDB creates a new mock database
+func NewMockDB() *MockDB {
+	return &MockDB{}
+}
+
+// GetDB returns the mock sql.DB
+func (m *MockDB) GetDB() *sql.DB {
+	return m.DB
+}
+
+// Connect mocks connecting to a database
+func (m *MockDB) Connect() error {
 	return nil
 }
 
-// Query mocks the Query method of the Database interface
-func (m *MockDatabase) Query(query string, args ...interface{}) ([]map[string]interface{}, error) {
-	if m.MockQuery != nil {
-		return m.MockQuery(query, args...)
-	}
-	return []map[string]interface{}{}, nil
+// Close mocks closing a database connection
+func (m *MockDB) Close() error {
+	return nil
 }
 
-// QueryRow mocks the QueryRow method of the Database interface
-func (m *MockDatabase) QueryRow(query string, args ...interface{}) (map[string]interface{}, error) {
-	if m.MockQueryRow != nil {
-		return m.MockQueryRow(query, args...)
-	}
-	return map[string]interface{}{}, nil
-}
-
-// PrepareNamedExec mocks the PrepareNamedExec method of the Database interface
-func (m *MockDatabase) PrepareNamedExec(query string, arg interface{}) error {
-	if m.MockPrepareNamedExec != nil {
-		return m.MockPrepareNamedExec(query, arg)
-	}
+// Migrate mocks migrating database schema
+func (m *MockDB) Migrate() error {
 	return nil
 }
