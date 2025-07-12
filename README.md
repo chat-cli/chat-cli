@@ -65,11 +65,12 @@ You can get help at anytime with the `--help` flag. Typing `--help` after any co
 
 ## Commands
 
-There are currently three ways to interact with foundation models through this interface.
+There are currently four ways to interact with foundation models through this interface.
 
 1. Send a single prompt to an LLM from the command line using the `prompt` command
 2. Start an interactive chat with an LLM using the `chat` command
 3. Generate an image with the `image` command
+4. **NEW:** Use autonomous agents to perform file operations with the `agentic` command
 
 ## Configuration
 
@@ -248,4 +249,95 @@ With the `image` command you can generate images with any supported Foundation M
 ```
 
 You can specify the model with the `--model-id` flag set to model's full model id or family name. You can also specify an output filename with the `--filename` flag.
+
+## 🤖 Agentic Capabilities (NEW!)
+
+Chat-CLI now includes autonomous agents that can perform complex file operations using AI. These agents can understand natural language instructions and autonomously plan and execute multi-step tasks.
+
+**Note:** Agentic commands use the `anthropic.claude-3-sonnet-20240229-v1:0` model by default (an older Claude version) to avoid throttle issues that can occur with newer models during intensive agent operations.
+
+### Quick Start with Agentic Commands
+
+The `agentic` command provides a simple way to perform file operations using natural language:
+
+```shell
+# Read file contents
+chat-cli agentic "read the README.md file"
+
+# Create new files
+chat-cli agentic "create a hello.txt file with 'Hello World'"
+
+# List files with filtering
+chat-cli agentic "list all .go files in the current directory"
+
+# Edit existing files
+chat-cli agentic "add a comment to main.go explaining what it does"
+```
+
+### Advanced Agent Management
+
+For more control, use the `agent` command to manage and interact with specific agents:
+
+```shell
+# List all available agents
+chat-cli agent list
+
+# Get detailed information about an agent
+chat-cli agent info file_edit_agent
+
+# Run a specific agent with a task
+chat-cli agent run file_edit_agent "organize all documentation files"
+```
+
+### Available Agents
+
+#### File Edit Agent
+- **Name**: `file_edit_agent`
+- **Capabilities**: Read, write, create, modify, and list files
+- **Security**: Operations restricted to current working directory
+- **Tools**: 
+  - `read_file` - Read file contents
+  - `write_file` - Write content to files
+  - `list_files` - List directory contents
+
+### How It Works
+
+1. **Natural Language Processing**: Agents understand your task description in plain English
+2. **Autonomous Planning**: The AI agent creates a plan to accomplish your task
+3. **Tool Execution**: Agents use specialized tools to interact with your file system
+4. **Safety First**: All file operations are restricted to the current working directory
+5. **Result Reporting**: Get detailed feedback on what was accomplished
+
+### Examples
+
+```shell
+# Complex file organization
+chat-cli agentic "organize all .md files into a docs/ directory"
+
+# Code analysis and documentation
+chat-cli agentic "read main.go and create a summary of its functionality"
+
+# Batch file operations
+chat-cli agentic "create test files for all .go files in the project"
+
+# Configuration management
+chat-cli agentic "update config.yaml to add a new database section"
+```
+
+### Security Features
+
+- **Directory Restrictions**: All file operations are limited to the current working directory and subdirectories
+- **Safe Defaults**: Agents cannot access files outside your project directory
+- **Transparent Operations**: All tool executions are logged and reported
+- **Error Handling**: Robust error handling prevents unsafe operations
+
+### Extending the Agent System
+
+The agent framework is designed to be extensible. You can add new agents and tools by:
+
+1. Implementing the `Agent` interface for new agent types
+2. Creating new `Tool` implementations for additional capabilities
+3. Registering agents with the agent registry
+
+See the [Agents Documentation](docs/agents.md) for detailed development information.
 
