@@ -71,6 +71,50 @@ There are currently three ways to interact with foundation models through this i
 2. Start an interactive chat with an LLM using the `chat` command
 3. Generate an image with the `image` command
 
+## Configuration
+
+You can manage persistent configuration settings using the `config` command. This allows you to set default values for model-id and custom-arn that will be used automatically by the chat and prompt commands.
+
+### Setting Configuration Values
+
+```shell
+# Set a default model ID
+chat-cli config set model-id "anthropic.claude-3-5-sonnet-20240620-v1:0"
+
+# Set a custom ARN for marketplace or cross-region models
+chat-cli config set custom-arn "arn:aws:bedrock:us-west-2::foundation-model/custom-model"
+```
+
+### Viewing Configuration
+
+```shell
+# List all current configuration values
+chat-cli config list
+```
+
+### Removing Configuration Values
+
+```shell
+# Remove a specific configuration value
+chat-cli config unset model-id
+chat-cli config unset custom-arn
+```
+
+### Configuration Precedence
+
+The configuration system follows a clear precedence order:
+
+1. **Command line flags** (highest priority) - Values specified with `--model-id` or `--custom-arn`
+2. **Configuration file** - Values set with `chat-cli config set`
+3. **Built-in defaults** (lowest priority) - `anthropic.claude-3-5-sonnet-20240620-v1:0` for model-id
+
+**Important:** When both `model-id` and `custom-arn` are set, `custom-arn` takes precedence over `model-id`. This allows you to override the default model with a custom marketplace or cross-region model.
+
+### Supported Configuration Keys
+
+- `model-id`: The default model identifier to use for chat and prompt commands
+- `custom-arn`: A custom ARN from Bedrock marketplace or for cross-region inference
+
 ## Prompt
 
 You can send a one liner prompt like this:
