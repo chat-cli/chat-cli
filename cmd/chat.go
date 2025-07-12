@@ -57,14 +57,27 @@ To quit the chat, just type "quit"
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		modelId, err := cmd.PersistentFlags().GetString("model-id")
+		modelIdFlag, err := cmd.PersistentFlags().GetString("model-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		customArn, err := cmd.PersistentFlags().GetString("custom-arn")
+		customArnFlag, err := cmd.PersistentFlags().GetString("custom-arn")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		// Get configuration values with precedence order (flag -> config -> default)
+		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
+		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
+
+		// Ensure custom-arn takes precedence over model-id when both are set
+		// If custom-arn is set (from any source), use it; otherwise use model-id
+		var finalModelId string
+		if customArn != "" {
+			finalModelId = customArn
+		} else {
+			finalModelId = modelId
 		}
 
 		chatId, err := cmd.PersistentFlags().GetString("chat-id")
@@ -96,12 +109,12 @@ To quit the chat, just type "quit"
 		var modelIdString string
 
 		if customArn == "" {
-
+			// Using model-id, need to validate with Bedrock
 			bedrockSvc := bedrock.NewFromConfig(cfg)
 
 			// get foundation model details
 			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
-				ModelIdentifier: &modelId,
+				ModelIdentifier: &finalModelId,
 			})
 			if err != nil {
 				log.Fatalf("error: %v", err)
@@ -118,9 +131,9 @@ To quit the chat, just type "quit"
 			}
 
 			modelIdString = *model.ModelDetails.ModelId
-
 		} else {
-			modelIdString = customArn
+			// Using custom-arn, skip validation and use directly
+			modelIdString = finalModelId
 		}
 
 		svc := bedrockruntime.NewFromConfig(cfg)
@@ -276,7 +289,7 @@ To quit the chat, just type "quit"
 
 func init() {
 	rootCmd.AddCommand(chatCmd)
-	chatCmd.PersistentFlags().StringP("model-id", "m", "amazon.nova-micro-v1:0", "set the model id")
+	chatCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
 	chatCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 	chatCmd.PersistentFlags().String("chat-id", "", "pass a valid chat-id to load a previous conversation")
 

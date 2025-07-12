@@ -15,6 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 	"github.com/chat-cli/chat-cli/utils"
 	"github.com/spf13/cobra"
+
+	conf "github.com/chat-cli/chat-cli/config"
 )
 
 // promptCmd represents the prompt command
@@ -32,6 +34,16 @@ var promptCmd = &cobra.Command{
 		document, err := utils.LoadDocument()
 		prompt = prompt + document
 
+		// Initialize configuration
+		fm, err := conf.NewFileManager("chat-cli")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := fm.InitializeViper(); err != nil {
+			log.Fatal(err)
+		}
+
 		// set up connection to AWS
 		region, err := cmd.Parent().PersistentFlags().GetString("region")
 		if err != nil {
@@ -43,7 +55,7 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to load AWS config: %v", err)
 		}
 
-		modelId, err := cmd.PersistentFlags().GetString("model-id")
+		modelIdFlag, err := cmd.PersistentFlags().GetString("model-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -60,9 +72,22 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		customArn, err := cmd.PersistentFlags().GetString("custom-arn")
+		customArnFlag, err := cmd.PersistentFlags().GetString("custom-arn")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		// Get configuration values with precedence order (flag -> config -> default)
+		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
+		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
+
+		// Ensure custom-arn takes precedence over model-id when both are set
+		// If custom-arn is set (from any source), use it; otherwise use model-id
+		var finalModelId string
+		if customArn != "" {
+			finalModelId = customArn
+		} else {
+			finalModelId = modelId
 		}
 
 		var modelIdString string
@@ -70,8 +95,9 @@ var promptCmd = &cobra.Command{
 		bedrockSvc := bedrock.NewFromConfig(cfg)
 
 		if customArn == "" {
+			// Using model-id, need to validate with Bedrock
 			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
-				ModelIdentifier: &modelId,
+				ModelIdentifier: &finalModelId,
 			})
 			if err != nil {
 				log.Fatalf("error: %v", err)
@@ -93,9 +119,9 @@ var promptCmd = &cobra.Command{
 			}
 
 			modelIdString = *model.ModelDetails.ModelId
-
 		} else {
-			modelIdString = customArn
+			// Using custom-arn, skip validation and use directly
+			modelIdString = finalModelId
 		}
 
 		// get options

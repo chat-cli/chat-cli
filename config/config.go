@@ -125,3 +125,33 @@ func (fm *FileManager) createDefaultConfig() error {
 	}
 	return nil
 }
+
+// GetConfigValue returns a configuration value with precedence order:
+// 1. Feature flag (command line argument)
+// 2. Configuration file
+// 3. Default value
+func (fm *FileManager) GetConfigValue(key string, flagValue interface{}, defaultValue interface{}) interface{} {
+	// Check if flag value is provided and not empty/zero value
+	switch v := flagValue.(type) {
+	case string:
+		if v != "" && v != defaultValue {
+			return v
+		}
+	case int32:
+		if v != 0 && v != defaultValue {
+			return v
+		}
+	case float32:
+		if v != 0.0 && v != defaultValue {
+			return v
+		}
+	}
+	
+	// Check configuration file
+	if viper.IsSet(key) {
+		return viper.Get(key)
+	}
+	
+	// Return default value
+	return defaultValue
+}
