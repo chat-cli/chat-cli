@@ -38,17 +38,17 @@ var agentListCmd = &cobra.Command{
 	Short: "List all available agents",
 	Run: func(cmd *cobra.Command, args []string) {
 		agents := agentRegistry.ListAgents()
-		
+
 		if len(agents) == 0 {
 			fmt.Println("No agents registered")
 			return
 		}
-		
+
 		fmt.Printf("Available agents (%d):\n\n", len(agents))
 		for _, agent := range agents {
 			fmt.Printf("Name: %s\n", agent.Name())
 			fmt.Printf("Description: %s\n", agent.Description())
-			
+
 			tools := agent.Tools()
 			if len(tools) > 0 {
 				fmt.Printf("Tools: ")
@@ -132,15 +132,15 @@ the system will automatically select the best agent for the task.`,
 		// Display results
 		fmt.Printf("\nAgent Result:\n")
 		fmt.Printf("Success: %t\n", result.Success)
-		
+
 		if result.Message != "" {
 			fmt.Printf("Message: %s\n", result.Message)
 		}
-		
+
 		if result.Error != "" {
 			fmt.Printf("Error: %s\n", result.Error)
 		}
-		
+
 		if len(result.ToolResults) > 0 {
 			fmt.Printf("\nTool Results:\n")
 			for _, toolResult := range result.ToolResults {
@@ -151,7 +151,7 @@ the system will automatically select the best agent for the task.`,
 				fmt.Printf("\n")
 			}
 		}
-		
+
 		if result.Data != nil {
 			fmt.Printf("\nData: %v\n", result.Data)
 		}
@@ -179,7 +179,7 @@ var agentInfoCmd = &cobra.Command{
 			for _, tool := range tools {
 				fmt.Printf("\nTool: %s\n", tool.Name())
 				fmt.Printf("Description: %s\n", tool.Description())
-				
+
 				schema := tool.Schema()
 				if schema != nil {
 					schemaJSON, _ := json.MarshalIndent(schema, "", "  ")
