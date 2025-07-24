@@ -28,11 +28,14 @@ import (
 // chatCmd represents the chat command
 var chatCmd = &cobra.Command{
 	Use:   "chat",
-	Short: "Start an interactive chat session",
-	Long: `Begin an interactive chat session with an LLM via Amazon Bedrock
-	
-To quit the chat, just type "quit"	
-`,
+	Short: "Chat session management",
+	Long: `Manage your chat sessions and history.
+
+Available subcommands:
+  - list: View your recent chat conversations
+
+To start a new interactive chat session, run 'chat-cli' (without the 'chat' subcommand).
+To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -51,18 +54,25 @@ To quit the chat, just type "quit"
 		// Get DBDriver from config
 		driver := fm.GetDBDriver()
 
-		// get options
-		region, err := cmd.Parent().PersistentFlags().GetString("region")
+		// get options - check if we have a parent (called as subcommand) or not (called from root)
+		var flagCmd *cobra.Command
+		if cmd.Parent() != nil {
+			flagCmd = cmd.Parent()
+		} else {
+			flagCmd = cmd
+		}
+
+		region, err := flagCmd.PersistentFlags().GetString("region")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		modelIdFlag, err := cmd.PersistentFlags().GetString("model-id")
+		modelIdFlag, err := flagCmd.PersistentFlags().GetString("model-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		customArnFlag, err := cmd.PersistentFlags().GetString("custom-arn")
+		customArnFlag, err := flagCmd.PersistentFlags().GetString("custom-arn")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -80,22 +90,22 @@ To quit the chat, just type "quit"
 			finalModelId = modelId
 		}
 
-		chatId, err := cmd.PersistentFlags().GetString("chat-id")
+		chatId, err := flagCmd.PersistentFlags().GetString("chat-id")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		temperature, err := cmd.PersistentFlags().GetFloat32("temperature")
+		temperature, err := flagCmd.PersistentFlags().GetFloat32("temperature")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		topP, err := cmd.PersistentFlags().GetFloat32("topP")
+		topP, err := flagCmd.PersistentFlags().GetFloat32("topP")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		maxTokens, err := cmd.PersistentFlags().GetInt32("max-tokens")
+		maxTokens, err := flagCmd.PersistentFlags().GetInt32("max-tokens")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -289,11 +299,4 @@ To quit the chat, just type "quit"
 
 func init() {
 	rootCmd.AddCommand(chatCmd)
-	chatCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
-	chatCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
-	chatCmd.PersistentFlags().String("chat-id", "", "pass a valid chat-id to load a previous conversation")
-
-	chatCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
-	chatCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
-	chatCmd.PersistentFlags().Int32("max-tokens", 500, "max tokens")
 }
