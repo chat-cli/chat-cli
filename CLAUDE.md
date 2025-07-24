@@ -32,8 +32,8 @@ This is a Go CLI application built with Cobra that provides an interface to Amaz
 ### Core Components
 
 **CLI Layer (`/cmd/`)**
-- `root.go` - Base Cobra command setup with ASCII art banner
-- `chat.go` - Interactive chat sessions with persistent storage
+- `root.go` - Base Cobra command that launches chat functionality directly when no subcommands are provided
+- `chat.go` - Interactive chat sessions with persistent storage (called from root or as subcommand for management)
 - `prompt.go` - One-shot prompt commands with stdin support
 - `config.go` - Configuration management (set/get/unset model-id and custom-arn)
 - `image.go` - Image generation commands
@@ -58,9 +58,10 @@ This is a Go CLI application built with Cobra that provides an interface to Amaz
 
 ### Key Data Flow
 
-1. **Commands** → Parse flags/config → **AWS SDK** → **Bedrock API**
-2. **Chat sessions** → **Repository** → **SQLite DB** for persistence
-3. **Configuration** precedence: CLI flags > config file > defaults
+1. **Root command** (no args) → **Chat functionality** → Parse flags/config → **AWS SDK** → **Bedrock API**
+2. **Subcommands** → Direct command execution (prompt, config, image, etc.)
+3. **Chat sessions** → **Repository** → **SQLite DB** for persistence
+4. **Configuration** precedence: CLI flags > config file > defaults
 
 ### Important Patterns
 
@@ -73,8 +74,9 @@ This is a Go CLI application built with Cobra that provides an interface to Amaz
 **Chat Session Management:**
 - Auto-saves all chat interactions to SQLite
 - `chat list` shows recent sessions with timestamps and previews
-- `--chat-id` flag resumes specific conversations
+- `--chat-id` flag resumes specific conversations (works with root command)
 - UUIDs track individual chat sessions
+- Chat flags are available at root level for direct access
 
 **Document Input:**
 - Stdin piping supported: `cat file.go | chat-cli prompt "explain"`

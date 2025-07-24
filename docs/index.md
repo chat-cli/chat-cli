@@ -31,11 +31,17 @@ Using the [prompt](#prompt) command, you can send one liner prompts with attachm
    chat-cli prompt "describe this image" --image myfile.png
 ```
 
-With the [chat](#chat) command, you can start an interactive chat session with any text to text LLM
+You can start an interactive chat session with any text to text LLM by running chat-cli directly
 
 ```shell
-   # start an interactive chat session using Amazon Nova Micro
-   chat-cli chat
+   # start an interactive chat session using the default model
+   chat-cli
+   
+   # start with a specific model
+   chat-cli --model-id "amazon.nova-micro-v1:0"
+   
+   # resume a previous conversation
+   chat-cli --chat-id "your-chat-id-here"
 ```
 
 With the [image](#image) command, you can generate images with any text to image LLM like Amazon Nova Canvas or Stability AI's Stable Diffusion 3
