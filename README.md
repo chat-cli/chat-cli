@@ -144,14 +144,15 @@ You can start an interactive chat sessions which will remember your conversation
 You can start an interactive chat session like this:
 
 ```shell
-    chat-cli chat
+    chat-cli
 ```
 
 - Type `quit` to quit the interactive chat session.
+- All chat flags (model-id, custom-arn, chat-id, etc.) work directly with the root command
 
 ### Saving and Restoring Chat Sessions
 
-Starting a chat session with the `chat-cli chat` command will automatically save your chats to a local sqlite database. If you would like to restore a prior chat session you can do so in the following way:
+Starting a chat session with the `chat-cli` command will automatically save your chats to a local sqlite database. If you would like to restore a prior chat session you can do so in the following way:
 
 Start by using the `chat list` command to list 10 most recent chat sessions.
 
@@ -180,7 +181,7 @@ This will print a list that looks something like the following:
 Find the `chat-id` that corresponds to the chat session you would like to load and copy it to your clipboard. Once copied you can load that chat session like this:
 
 ```shell
-    chat-cli chat --chat-id 9be2adda-5966-45c9-8a07-f7a7d486ca36
+    chat-cli --chat-id 9be2adda-5966-45c9-8a07-f7a7d486ca36
 ```
 
 This will print out the saved chat and leave you at a prompt where you can pick up where you left off. Future chats will continue to save with the same `chat-id` as you go.
