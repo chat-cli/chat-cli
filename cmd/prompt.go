@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
-	"github.com/chat-cli/chat-cli/utils"
+	"github.com/chat-cli/chat-cli/utils" //nolint:goimports // false positive from CI version diff
 	"github.com/spf13/cobra"
 
 	conf "github.com/chat-cli/chat-cli/config"

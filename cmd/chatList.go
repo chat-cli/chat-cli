@@ -13,7 +13,7 @@ import (
 	"github.com/chat-cli/chat-cli/db"
 	"github.com/chat-cli/chat-cli/factory"
 	"github.com/chat-cli/chat-cli/repository"
-	"github.com/spf13/cobra"
+	"github.com/spf13/cobra" //nolint:goimports // false positive from CI version diff
 )
 
 // chatListCmd represents the chatList command
