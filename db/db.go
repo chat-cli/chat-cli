@@ -12,9 +12,9 @@ type Database interface {
 
 // Config holds common database configuration
 type Config struct {
+	Port     int
 	Driver   string
 	Host     string
-	Port     int
 	Name     string
 	Username string
 	Password string

@@ -18,16 +18,14 @@ linters:
     - unparam
     - nakedret
     - prealloc
-    - exportloopref
+    - copyloopvar
     - gocritic
 
 linters-settings:
   govet:
-    check-shadowing: true
+    enable-all: true
   gocyclo:
     min-complexity: 15
-  maligned:
-    suggest-new: true
   dupl:
     threshold: 100
   goconst:

@@ -67,6 +67,7 @@ func TestNewChatRepository(t *testing.T) {
 	repo := NewChatRepository(mockDB)
 	if repo == nil {
 		t.Error("NewChatRepository returned nil")
+		return
 	}
 
 	if repo.db == nil {

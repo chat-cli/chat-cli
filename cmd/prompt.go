@@ -190,8 +190,8 @@ var promptCmd = &cobra.Command{
 				log.Fatalf("error from Bedrock, %v", err)
 			}
 
-			reponse, _ := output.Output.(*types.ConverseOutputMemberMessage)
-			responseContentBlock := reponse.Value.Content[0]
+			response, _ := output.Output.(*types.ConverseOutputMemberMessage)
+			responseContentBlock := response.Value.Content[0]
 			text, _ := responseContentBlock.(*types.ContentBlockMemberText)
 
 			fmt.Println(text.Value)

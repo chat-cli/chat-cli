@@ -32,7 +32,9 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 		case *types.ConverseStreamOutputMemberContentBlockDelta:
 
 			textResponse := v.Value.Delta.(*types.ContentBlockDeltaMemberText)
-			handler(context.Background(), textResponse.Value)
+			if err := handler(context.Background(), textResponse.Value); err != nil {
+				return msg, fmt.Errorf("handler error: %w", err)
+			}
 			combinedResult += textResponse.Value
 
 		case *types.UnknownUnionMember:
@@ -49,7 +51,7 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 	return msg, nil
 }
 
-func ReadImage(filename string) ([]byte, string, error) {
+func ReadImage(filename string) (data []byte, imageType string, err error) {
 
 	// Define a base directory for allowed images
 	baseDir, err := os.Getwd()
@@ -68,12 +70,12 @@ func ReadImage(filename string) ([]byte, string, error) {
 	}
 
 	// Check if the file exists
-	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+	if _, statErr := os.Stat(fullPath); os.IsNotExist(statErr) {
 		return nil, "", fmt.Errorf("file does not exist: %s", filename)
 	}
 
 	// Read the file
-	data, err := os.ReadFile(fullPath)
+	data, err = os.ReadFile(fullPath) // #nosec G304 - path is validated above
 	if err != nil {
 		return nil, "", fmt.Errorf("unable to read file: %w", err)
 	}
@@ -83,7 +85,7 @@ func ReadImage(filename string) ([]byte, string, error) {
 		ext = ext[1:] // Remove the leading dot
 	}
 
-	var imageType string
+	// imageType is already declared as named return parameter
 
 	switch ext {
 	case "jpg":

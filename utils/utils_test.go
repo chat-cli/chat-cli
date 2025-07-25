@@ -62,7 +62,11 @@ func TestReadImage(t *testing.T) {
 	if err := os.Chdir(tempDir); err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chdir(originalWd)
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("Failed to change back to original directory: %v", err)
+		}
+	}()
 
 	// Create test files
 	testFiles := map[string][]byte{
@@ -196,7 +200,7 @@ func TestProcessStreamingOutput(t *testing.T) {
 	// We'll create a simple test for the handler function pattern
 	t.Run("handler function receives parts", func(t *testing.T) {
 		var receivedParts []string
-		handler := func(ctx context.Context, part string) error {
+		handler := func(_ context.Context, part string) error {
 			receivedParts = append(receivedParts, part)
 			return nil
 		}

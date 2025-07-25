@@ -130,7 +130,7 @@ func (fm *FileManager) createDefaultConfig() error {
 // 1. Feature flag (command line argument)
 // 2. Configuration file
 // 3. Default value
-func (fm *FileManager) GetConfigValue(key string, flagValue interface{}, defaultValue interface{}) interface{} {
+func (fm *FileManager) GetConfigValue(key string, flagValue, defaultValue interface{}) interface{} {
 	// Check if flag value is provided and not empty/zero value
 	switch v := flagValue.(type) {
 	case string:

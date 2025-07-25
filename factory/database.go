@@ -8,7 +8,7 @@ import (
 )
 
 // CreateDatabase is a factory function that returns the appropriate database implementation
-func CreateDatabase(config db.Config) (db.Database, error) {
+func CreateDatabase(config *db.Config) (db.Database, error) {
 	switch config.Driver {
 	case "sqlite3":
 		database := sqlite.NewSQLiteDB(config)

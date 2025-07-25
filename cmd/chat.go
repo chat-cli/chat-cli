@@ -177,11 +177,15 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			Name:   dbPath,
 		}
 
-		database, err := factory.CreateDatabase(config)
+		database, err := factory.CreateDatabase(&config)
 		if err != nil {
 			log.Fatalf("Failed to create database: %v", err)
 		}
-		defer database.Close()
+		defer func() {
+			if err := database.Close(); err != nil {
+				log.Printf("Warning: failed to close database: %v", err)
+			}
+		}()
 
 		// Run migrations to ensure tables exist
 		if err := database.Migrate(); err != nil {

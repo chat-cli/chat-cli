@@ -52,7 +52,12 @@ func (r *ChatRepository) List() ([]Chat, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error listing chats: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			// Log error but don't return it as we're already processing the main query
+			fmt.Printf("Warning: failed to close rows: %v\n", err)
+		}
+	}()
 
 	var chats []Chat
 	for rows.Next() {
@@ -83,7 +88,12 @@ func (r *ChatRepository) GetMessages(chatId string) ([]Chat, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving messages: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			// Log error but don't return it as we're already processing the main query
+			fmt.Printf("Warning: failed to close rows: %v\n", err)
+		}
+	}()
 
 	var chats []Chat
 	for rows.Next() {

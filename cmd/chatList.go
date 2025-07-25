@@ -43,11 +43,15 @@ var chatListCmd = &cobra.Command{
 			Name:   dbPath,
 		}
 
-		database, err := factory.CreateDatabase(config)
+		database, err := factory.CreateDatabase(&config)
 		if err != nil {
 			log.Fatalf("Failed to create database: %v", err)
 		}
-		defer database.Close()
+		defer func() {
+			if err := database.Close(); err != nil {
+				log.Printf("Warning: failed to close database: %v", err)
+			}
+		}()
 
 		// Run migrations to ensure tables exist
 		if err := database.Migrate(); err != nil {
@@ -66,12 +70,18 @@ var chatListCmd = &cobra.Command{
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 			// Print the header
-			fmt.Fprintln(w, "Created Date\t Chat ID\t Title")
+			if _, err := fmt.Fprintln(w, "Created Date\t Chat ID\t Title"); err != nil {
+				log.Printf("Error writing header: %v", err)
+			}
 
-			fmt.Fprintln(w, "\t\t")
+			if _, err := fmt.Fprintln(w, "\t\t"); err != nil {
+				log.Printf("Error writing separator: %v", err)
+			}
 
 			for _, chat := range chats {
-				fmt.Fprintf(w, "%s\t %s\t %s\n", chat.Created, chat.ChatId, truncate(chat.Message, 40))
+				if _, err := fmt.Fprintf(w, "%s\t %s\t %s\n", chat.Created, chat.ChatId, truncate(chat.Message, 40)); err != nil {
+					log.Printf("Error writing chat data: %v", err)
+				}
 			}
 		}
 	},
