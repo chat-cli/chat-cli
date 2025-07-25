@@ -20,7 +20,44 @@ func TestCLIVersion(t *testing.T) {
 		if err := cmd.Run(); err != nil {
 			t.Fatalf("Failed to build CLI: %v", err)
 		}
+"os"
+	"os/exec"
+	"strings"
+	"testing"
+)
+
+// Integration tests require the CLI to be built first
+// Run with: go test -tags=integration
+
+func buildCLIIfNotExists() error {
+	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
+		cmd := exec.Command("make", "cli")
+		return cmd.Run()
 	}
+	return nil
+}
+
+func TestCLIVersion(t *testing.T) {
+	if err := buildCLIIfNotExists(); err != nil {
+		t.Fatalf("Failed to build CLI: %v", err)
+	}
+
+	// Test version command
+	cmd := exec.Command("./bin/chat-cli", "version")
+	output, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("Version command failed: %v", err)
+	}
+
+	outputStr := string(output)
+	if !strings.Contains(outputStr, "chat-cli version") {
+		t.Errorf("Expected version output to contain 'chat-cli version', got: %s", outputStr)
+	}
+}
+
+func TestCLIHelp(t *testing.T) {
+	if err := buildCLIIfNotExists(); err != nil {
+		t.Fatalf("Failed to build CLI: %v", err)
 
 	// Test version command
 	cmd := exec.Command("./bin/chat-cli", "version")
