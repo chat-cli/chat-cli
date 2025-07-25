@@ -230,8 +230,10 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		// tty-loop
 		for {
+			// Clear some space before input field
+			fmt.Println()
 
-			// gets user input
+			// gets user input with fancy bubble input
 			prompt := utils.StringPrompt(">")
 
 			// check for special words
