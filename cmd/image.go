@@ -32,7 +32,7 @@ var imageCmd = &cobra.Command{
 		prompt := args[0]
 
 		document, err := utils.LoadDocument()
-		prompt = prompt + document
+		prompt += document
 
 		accept := "*/*"
 		contentType := "application/json"
@@ -163,7 +163,7 @@ var imageCmd = &cobra.Command{
 				outputFile = filename
 			}
 
-			err = os.WriteFile(outputFile, decoded, 0644)
+			err = os.WriteFile(outputFile, decoded, 0600)
 			if err != nil {
 				log.Fatalf("error writing to file: %v", err)
 			}
@@ -189,7 +189,7 @@ var imageCmd = &cobra.Command{
 				outputFile = filename
 			}
 
-			err = os.WriteFile(outputFile, decoded, 0644)
+			err = os.WriteFile(outputFile, decoded, 0600)
 			if err != nil {
 				log.Fatalf("error writing to file: %v", err)
 			}

@@ -33,7 +33,7 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 
 			textResponse := v.Value.Delta.(*types.ContentBlockDeltaMemberText)
 			handler(context.Background(), textResponse.Value)
-			combinedResult = combinedResult + textResponse.Value
+			combinedResult += textResponse.Value
 
 		case *types.UnknownUnionMember:
 			fmt.Println("unknown tag:", v.Tag)

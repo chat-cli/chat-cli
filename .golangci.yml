@@ -11,17 +11,14 @@ linters:
     - staticcheck
     - unused
     - gosimple
-    - structcheck
-    - varcheck
     - ineffassign
-    - deadcode
     - typecheck
     - gosec
     - misspell
     - unparam
     - nakedret
     - prealloc
-    - scopelint
+    - exportloopref
     - gocritic
 
 linters-settings:

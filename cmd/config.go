@@ -128,7 +128,7 @@ var configUnsetCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if err := os.WriteFile(configPath, yamlData, 0644); err != nil {
+		if err := os.WriteFile(configPath, yamlData, 0600); err != nil {
 			fmt.Printf("Error writing config file: %v\n", err)
 			os.Exit(1)
 		}

@@ -38,15 +38,25 @@ func TestNewFileManager(t *testing.T) {
 	}
 
 	// Cleanup
-	os.RemoveAll(fm.ConfigPath)
-	os.RemoveAll(fm.DataPath)
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
 }
 
 func TestFileManagerWithEnvironment(t *testing.T) {
 	originalEnv := os.Getenv("APP_ENV")
-	defer os.Setenv("APP_ENV", originalEnv)
+	defer func() {
+		if err := os.Setenv("APP_ENV", originalEnv); err != nil {
+			t.Errorf("Failed to restore APP_ENV: %v", err)
+		}
+	}()
 
-	os.Setenv("APP_ENV", "testing")
+	if err := os.Setenv("APP_ENV", "testing"); err != nil {
+		t.Fatalf("Failed to set APP_ENV: %v", err)
+	}
 
 	fm, err := NewFileManager("test-app")
 	if err != nil {
@@ -58,15 +68,25 @@ func TestFileManagerWithEnvironment(t *testing.T) {
 	}
 
 	// Cleanup
-	os.RemoveAll(fm.ConfigPath)
-	os.RemoveAll(fm.DataPath)
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
 }
 
 func TestFileManagerDefaultEnvironment(t *testing.T) {
 	originalEnv := os.Getenv("APP_ENV")
-	defer os.Setenv("APP_ENV", originalEnv)
+	defer func() {
+		if err := os.Setenv("APP_ENV", originalEnv); err != nil {
+			t.Errorf("Failed to restore APP_ENV: %v", err)
+		}
+	}()
 
-	os.Unsetenv("APP_ENV")
+	if err := os.Unsetenv("APP_ENV"); err != nil {
+		t.Fatalf("Failed to unset APP_ENV: %v", err)
+	}
 
 	fm, err := NewFileManager("test-app")
 	if err != nil {
@@ -78,8 +98,12 @@ func TestFileManagerDefaultEnvironment(t *testing.T) {
 	}
 
 	// Cleanup
-	os.RemoveAll(fm.ConfigPath)
-	os.RemoveAll(fm.DataPath)
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
 }
 
 func TestInitializePaths(t *testing.T) {
@@ -121,8 +145,12 @@ func TestInitializePaths(t *testing.T) {
 	}
 
 	// Cleanup
-	os.RemoveAll(fm.ConfigPath)
-	os.RemoveAll(fm.DataPath)
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
 }
 
 func TestGetDBPath(t *testing.T) {
@@ -139,8 +167,12 @@ func TestGetDBPath(t *testing.T) {
 	}
 
 	// Cleanup
-	os.RemoveAll(fm.ConfigPath)
-	os.RemoveAll(fm.DataPath)
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
 }
 
 func TestGetDBDriver(t *testing.T) {
@@ -159,8 +191,12 @@ func TestGetDBDriver(t *testing.T) {
 	}
 
 	// Cleanup
-	os.RemoveAll(fm.ConfigPath)
-	os.RemoveAll(fm.DataPath)
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
 	viper.Reset()
 }
 
@@ -241,8 +277,12 @@ func TestGetConfigValue(t *testing.T) {
 	}
 
 	// Cleanup
-	os.RemoveAll(fm.ConfigPath)
-	os.RemoveAll(fm.DataPath)
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
 	viper.Reset()
 }
 

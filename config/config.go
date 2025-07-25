@@ -78,10 +78,10 @@ func (fm *FileManager) initializePaths() error {
 	fm.DataPath = filepath.Join(dataBase, fm.AppName)
 
 	// Create directories if they don't exist
-	if err := os.MkdirAll(fm.ConfigPath, 0755); err != nil {
+	if err := os.MkdirAll(fm.ConfigPath, 0750); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(fm.DataPath, 0755); err != nil {
+	if err := os.MkdirAll(fm.DataPath, 0750); err != nil {
 		return err
 	}
 

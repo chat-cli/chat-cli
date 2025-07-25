@@ -58,7 +58,11 @@ func setupTestDB(t *testing.T) *MockDatabase {
 
 func TestNewChatRepository(t *testing.T) {
 	mockDB := setupTestDB(t)
-	defer mockDB.Close()
+	defer func() {
+		if err := mockDB.Close(); err != nil {
+			t.Errorf("Failed to close mock database: %v", err)
+		}
+	}()
 
 	repo := NewChatRepository(mockDB)
 	if repo == nil {
@@ -72,7 +76,11 @@ func TestNewChatRepository(t *testing.T) {
 
 func TestChatRepository_Create(t *testing.T) {
 	mockDB := setupTestDB(t)
-	defer mockDB.Close()
+	defer func() {
+		if err := mockDB.Close(); err != nil {
+			t.Errorf("Failed to close mock database: %v", err)
+		}
+	}()
 
 	repo := NewChatRepository(mockDB)
 
@@ -104,7 +112,11 @@ func TestChatRepository_Create(t *testing.T) {
 
 func TestChatRepository_List(t *testing.T) {
 	mockDB := setupTestDB(t)
-	defer mockDB.Close()
+	defer func() {
+		if err := mockDB.Close(); err != nil {
+			t.Errorf("Failed to close mock database: %v", err)
+		}
+	}()
 
 	repo := NewChatRepository(mockDB)
 
@@ -140,7 +152,11 @@ func TestChatRepository_List(t *testing.T) {
 
 func TestChatRepository_GetMessages(t *testing.T) {
 	mockDB := setupTestDB(t)
-	defer mockDB.Close()
+	defer func() {
+		if err := mockDB.Close(); err != nil {
+			t.Errorf("Failed to close mock database: %v", err)
+		}
+	}()
 
 	repo := NewChatRepository(mockDB)
 
@@ -194,7 +210,11 @@ func TestChatRepository_GetMessages(t *testing.T) {
 
 func TestChatRepository_ListLimit(t *testing.T) {
 	mockDB := setupTestDB(t)
-	defer mockDB.Close()
+	defer func() {
+		if err := mockDB.Close(); err != nil {
+			t.Errorf("Failed to close mock database: %v", err)
+		}
+	}()
 
 	repo := NewChatRepository(mockDB)
 

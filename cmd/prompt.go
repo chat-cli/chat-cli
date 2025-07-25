@@ -32,7 +32,7 @@ var promptCmd = &cobra.Command{
 		prompt := args[0]
 
 		document, err := utils.LoadDocument()
-		prompt = prompt + document
+		prompt += document
 
 		// Initialize configuration
 		fm, err := conf.NewFileManager("chat-cli")

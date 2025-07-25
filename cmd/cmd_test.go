@@ -1,24 +1,12 @@
 package cmd
 
 import (
-	"bytes"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
 )
-
-// Helper function to execute a command and capture output
-func executeCommand(cmd *cobra.Command, args ...string) (string, error) {
-	buf := new(bytes.Buffer)
-	cmd.SetOut(buf)
-	cmd.SetErr(buf)
-	cmd.SetArgs(args)
-
-	err := cmd.Execute()
-	return buf.String(), err
-}
 
 func TestRootCommand(t *testing.T) {
 	// Test that root command exists and has expected properties
