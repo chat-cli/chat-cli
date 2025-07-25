@@ -111,8 +111,8 @@ var configUnsetCmd = &cobra.Command{
 		// Read current config
 		var configData map[string]interface{}
 		if configFile, readErr := os.ReadFile(configPath); readErr == nil { // nolint:gosec // configPath is from user config directory
-			if err := yaml.Unmarshal(configFile, &configData); err != nil {
-				log.Printf("Warning: failed to parse config file: %v", err)
+			if yamlErr := yaml.Unmarshal(configFile, &configData); yamlErr != nil {
+				log.Printf("Warning: failed to parse config file: %v", yamlErr)
 			}
 		}
 
