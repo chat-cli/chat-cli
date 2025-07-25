@@ -43,8 +43,8 @@ var promptCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		// set up connection to AWS
@@ -99,11 +99,11 @@ var promptCmd = &cobra.Command{
 
 		if customArn == "" {
 			// Using model-id, need to validate with Bedrock
-			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+			model, modelErr := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
 				ModelIdentifier: &finalModelId,
 			})
-			if err != nil {
-				log.Fatalf("error: %v", err)
+			if modelErr != nil {
+				log.Fatalf("error: %v", modelErr)
 			}
 
 			// check if this is a text model

@@ -36,8 +36,8 @@ var configSetCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		key := args[0]
@@ -81,8 +81,8 @@ var configUnsetCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		key := args[0]
@@ -110,7 +110,7 @@ var configUnsetCmd = &cobra.Command{
 
 		// Read current config
 		var configData map[string]interface{}
-		if configFile, err := os.ReadFile(configPath); err == nil { // nolint:gosec // configPath is from user config directory
+		if configFile, readErr := os.ReadFile(configPath); readErr == nil { // nolint:gosec // configPath is from user config directory
 			if err := yaml.Unmarshal(configFile, &configData); err != nil {
 				log.Printf("Warning: failed to parse config file: %v", err)
 			}
@@ -151,8 +151,8 @@ var configListCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		fmt.Println("Current configuration:")

@@ -154,9 +154,9 @@ var imageCmd = &cobra.Command{
 				log.Fatalf("unable to unmarshal response from Bedrock: %v", err)
 			}
 
-			decoded, err := utils.DecodeImage(out.Artifacts[0].Base64)
-			if err != nil {
-				log.Fatalf("unable to decode image: %v", err)
+			decoded, decodeErr := utils.DecodeImage(out.Artifacts[0].Base64)
+			if decodeErr != nil {
+				log.Fatalf("unable to decode image: %v", decodeErr)
 			}
 
 			outputFile := fmt.Sprintf("%d.jpg", time.Now().Unix())

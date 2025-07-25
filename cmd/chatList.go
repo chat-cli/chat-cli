@@ -28,8 +28,8 @@ var chatListCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		// Get SQLite database path

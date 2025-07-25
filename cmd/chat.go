@@ -44,8 +44,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		// Get SQLite database path
@@ -123,11 +123,11 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			bedrockSvc := bedrock.NewFromConfig(cfg)
 
 			// get foundation model details
-			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+			model, modelErr := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
 				ModelIdentifier: &finalModelId,
 			})
-			if err != nil {
-				log.Fatalf("error: %v", err)
+			if modelErr != nil {
+				log.Fatalf("error: %v", modelErr)
 			}
 
 			// check if this is a text model
@@ -265,8 +265,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 				Message: prompt,
 			}
 
-			if err := chatRepo.Create(chat); err != nil {
-				log.Printf("Failed to create chat: %v", err)
+			if createErr := chatRepo.Create(chat); createErr != nil {
+				log.Printf("Failed to create chat: %v", createErr)
 			}
 
 			fmt.Print("[Assistant]: ")
