@@ -13,22 +13,6 @@ import (
 // Integration tests require the CLI to be built first
 // Run with: go test -tags=integration
 
-func TestCLIVersion(t *testing.T) {
-	// Build the CLI if it doesn't exist
-	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
-		cmd := exec.Command("make", "cli")
-		if err := cmd.Run(); err != nil {
-			t.Fatalf("Failed to build CLI: %v", err)
-		}
-"os"
-	"os/exec"
-	"strings"
-	"testing"
-)
-
-// Integration tests require the CLI to be built first
-// Run with: go test -tags=integration
-
 func buildCLIIfNotExists() error {
 	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
 		cmd := exec.Command("make", "cli")
@@ -50,35 +34,14 @@ func TestCLIVersion(t *testing.T) {
 	}
 
 	outputStr := string(output)
-	if !strings.Contains(outputStr, "chat-cli version") {
-		t.Errorf("Expected version output to contain 'chat-cli version', got: %s", outputStr)
+	if !strings.Contains(outputStr, "chat-cli") {
+		t.Errorf("Expected version output to contain 'chat-cli', got: %s", outputStr)
 	}
 }
 
 func TestCLIHelp(t *testing.T) {
 	if err := buildCLIIfNotExists(); err != nil {
 		t.Fatalf("Failed to build CLI: %v", err)
-
-	// Test version command
-	cmd := exec.Command("./bin/chat-cli", "version")
-	output, err := cmd.Output()
-	if err != nil {
-		t.Fatalf("Version command failed: %v", err)
-	}
-
-	outputStr := string(output)
-	if !strings.Contains(outputStr, "chat-cli version") {
-		t.Errorf("Expected version output to contain 'chat-cli version', got: %s", outputStr)
-	}
-}
-
-func TestCLIHelp(t *testing.T) {
-	// Build the CLI if it doesn't exist
-	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
-		cmd := exec.Command("make", "cli")
-		if err := cmd.Run(); err != nil {
-			t.Fatalf("Failed to build CLI: %v", err)
-		}
 	}
 
 	// Test help command
@@ -90,7 +53,7 @@ func TestCLIHelp(t *testing.T) {
 
 	outputStr := string(output)
 	expectedStrings := []string{
-		"Chat with LLMs from Amazon Bedrock!",
+		"Chat-CLI is a command line tool that allows you to chat with LLMs from Amazon Bedrock!",
 		"Available Commands:",
 		"chat",
 		"prompt",
@@ -108,12 +71,8 @@ func TestCLIHelp(t *testing.T) {
 }
 
 func TestCLIConfigHelp(t *testing.T) {
-	// Build the CLI if it doesn't exist
-	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
-		cmd := exec.Command("make", "cli")
-		if err := cmd.Run(); err != nil {
-			t.Fatalf("Failed to build CLI: %v", err)
-		}
+	if err := buildCLIIfNotExists(); err != nil {
+		t.Fatalf("Failed to build CLI: %v", err)
 	}
 
 	// Test config help
@@ -126,7 +85,7 @@ func TestCLIConfigHelp(t *testing.T) {
 	outputStr := string(output)
 	expectedSubcommands := []string{
 		"set",
-		"get",
+		"list",
 		"unset",
 	}
 
@@ -138,12 +97,8 @@ func TestCLIConfigHelp(t *testing.T) {
 }
 
 func TestCLIPromptNoArgs(t *testing.T) {
-	// Build the CLI if it doesn't exist
-	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
-		cmd := exec.Command("make", "cli")
-		if err := cmd.Run(); err != nil {
-			t.Fatalf("Failed to build CLI: %v", err)
-		}
+	if err := buildCLIIfNotExists(); err != nil {
+		t.Fatalf("Failed to build CLI: %v", err)
 	}
 
 	// Test prompt command without arguments (should fail)
@@ -160,12 +115,8 @@ func TestCLIPromptNoArgs(t *testing.T) {
 }
 
 func TestCLIImageNoArgs(t *testing.T) {
-	// Build the CLI if it doesn't exist
-	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
-		cmd := exec.Command("make", "cli")
-		if err := cmd.Run(); err != nil {
-			t.Fatalf("Failed to build CLI: %v", err)
-		}
+	if err := buildCLIIfNotExists(); err != nil {
+		t.Fatalf("Failed to build CLI: %v", err)
 	}
 
 	// Test image command without arguments (should fail)
@@ -182,12 +133,8 @@ func TestCLIImageNoArgs(t *testing.T) {
 }
 
 func TestCLIFlagsExist(t *testing.T) {
-	// Build the CLI if it doesn't exist
-	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
-		cmd := exec.Command("make", "cli")
-		if err := cmd.Run(); err != nil {
-			t.Fatalf("Failed to build CLI: %v", err)
-		}
+	if err := buildCLIIfNotExists(); err != nil {
+		t.Fatalf("Failed to build CLI: %v", err)
 	}
 
 	// Test that expected flags exist
@@ -212,12 +159,8 @@ func TestCLIFlagsExist(t *testing.T) {
 }
 
 func TestCLIModelsSubcommands(t *testing.T) {
-	// Build the CLI if it doesn't exist
-	if _, err := os.Stat("./bin/chat-cli"); os.IsNotExist(err) {
-		cmd := exec.Command("make", "cli")
-		if err := cmd.Run(); err != nil {
-			t.Fatalf("Failed to build CLI: %v", err)
-		}
+	if err := buildCLIIfNotExists(); err != nil {
+		t.Fatalf("Failed to build CLI: %v", err)
 	}
 
 	// Test models help

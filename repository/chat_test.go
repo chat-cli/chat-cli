@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -23,14 +24,6 @@ func (m *MockDatabase) Connect() error {
 func (m *MockDatabase) Close() error {
 	if m.db != nil {
 		return m.db.Close()
-	}
-	return nil
-func (m *MockDatabase) Close() error {
-	if m.db != nil {
-		err := m.db.Close()
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
@@ -208,42 +201,13 @@ func TestChatRepository_ListLimit(t *testing.T) {
 	// Insert more than 10 chats to test the limit
 	for i := 1; i <= 15; i++ {
 		chat := &Chat{
-			ChatId:  "chat-" + string(rune(i)),
+			ChatId:  fmt.Sprintf("chat-%d", i),
 			Persona: "user",
-			Message: "Message " + string(rune(i)),
-repo := NewChatRepository(mockDB)
-
-	// Insert more than 10 chats to test the limit
-	for chatNumber := 1; chatNumber <= 15; chatNumber++ {
-		chat := &Chat{
-			ChatId:  fmt.Sprintf("chat-%d", chatNumber), // import "fmt"
-			Persona: "user",
-			Message: fmt.Sprintf("Message %d", chatNumber),
+			Message: fmt.Sprintf("Message %d", i),
 		}
-		err := repo.Create(chat)
-		if err != nil {
-			t.Fatalf("Failed to create test chat %d: %v", chatNumber, err)
-		}
-	}
 		err := repo.Create(chat)
 		if err != nil {
 			t.Fatalf("Failed to create test chat %d: %v", i, err)
-		}
-repo := NewChatRepository(mockDB)
-
-	// Insert more than 10 chats to test the limit
-	stmt, err := mockDB.db.Prepare("INSERT INTO chats (chat_id, persona, message) VALUES (?, ?, ?)")
-	if err != nil {
-		t.Fatalf("Failed to prepare statement: %v", err)
-	}
-	defer stmt.Close()
-
-	for i := 1; i <= 15; i++ {
-		chatID := fmt.Sprintf("chat-%d", i)
-		message := fmt.Sprintf("Message %d", i)
-		_, err := stmt.Exec(chatID, "user", message)
-		if err != nil {
-			t.Fatalf("Failed to insert test chat %d: %v", i, err)
 		}
 	}
 
