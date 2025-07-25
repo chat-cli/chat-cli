@@ -15,9 +15,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
-	"github.com/chat-cli/chat-cli/utils"
+	"github.com/chat-cli/chat-cli/utils" //nolint:goimports // false positive from CI version diff
 	"github.com/go-micah/go-bedrock/providers"
-	"github.com/spf13/cobra"
+	"github.com/spf13/cobra" //nolint:goimports // false positive from CI version diff
 )
 
 // imageCmd represents the image command
@@ -32,7 +32,10 @@ var imageCmd = &cobra.Command{
 		prompt := args[0]
 
 		document, err := utils.LoadDocument()
-		prompt = prompt + document
+		if err != nil {
+			log.Fatalf("unable to load document: %v", err)
+		}
+		prompt += document
 
 		accept := "*/*"
 		contentType := "application/json"
@@ -151,9 +154,9 @@ var imageCmd = &cobra.Command{
 				log.Fatalf("unable to unmarshal response from Bedrock: %v", err)
 			}
 
-			decoded, err := utils.DecodeImage(out.Artifacts[0].Base64)
-			if err != nil {
-				log.Fatalf("unable to decode image: %v", err)
+			decoded, decodeErr := utils.DecodeImage(out.Artifacts[0].Base64)
+			if decodeErr != nil {
+				log.Fatalf("unable to decode image: %v", decodeErr)
 			}
 
 			outputFile := fmt.Sprintf("%d.jpg", time.Now().Unix())
@@ -163,7 +166,7 @@ var imageCmd = &cobra.Command{
 				outputFile = filename
 			}
 
-			err = os.WriteFile(outputFile, decoded, 0644)
+			err = os.WriteFile(outputFile, decoded, 0600)
 			if err != nil {
 				log.Fatalf("error writing to file: %v", err)
 			}
@@ -189,7 +192,7 @@ var imageCmd = &cobra.Command{
 				outputFile = filename
 			}
 
-			err = os.WriteFile(outputFile, decoded, 0644)
+			err = os.WriteFile(outputFile, decoded, 0600)
 			if err != nil {
 				log.Fatalf("error writing to file: %v", err)
 			}

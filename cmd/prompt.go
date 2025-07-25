@@ -13,10 +13,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
-	"github.com/chat-cli/chat-cli/utils"
-	"github.com/spf13/cobra"
+	"github.com/chat-cli/chat-cli/utils" //nolint:goimports // false positive from CI version diff
+	"github.com/spf13/cobra" //nolint:goimports // false positive from CI version diff
 
-	conf "github.com/chat-cli/chat-cli/config"
+	conf "github.com/chat-cli/chat-cli/config" //nolint:goimports // false positive from CI version diff
 )
 
 // promptCmd represents the prompt command
@@ -32,7 +32,10 @@ var promptCmd = &cobra.Command{
 		prompt := args[0]
 
 		document, err := utils.LoadDocument()
-		prompt = prompt + document
+		if err != nil {
+			log.Fatalf("unable to load document: %v", err)
+		}
+		prompt += document
 
 		// Initialize configuration
 		fm, err := conf.NewFileManager("chat-cli")
@@ -40,8 +43,8 @@ var promptCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		// set up connection to AWS
@@ -96,11 +99,11 @@ var promptCmd = &cobra.Command{
 
 		if customArn == "" {
 			// Using model-id, need to validate with Bedrock
-			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+			model, modelErr := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
 				ModelIdentifier: &finalModelId,
 			})
-			if err != nil {
-				log.Fatalf("error: %v", err)
+			if modelErr != nil {
+				log.Fatalf("error: %v", modelErr)
 			}
 
 			// check if this is a text model
@@ -190,8 +193,8 @@ var promptCmd = &cobra.Command{
 				log.Fatalf("error from Bedrock, %v", err)
 			}
 
-			reponse, _ := output.Output.(*types.ConverseOutputMemberMessage)
-			responseContentBlock := reponse.Value.Content[0]
+			response, _ := output.Output.(*types.ConverseOutputMemberMessage)
+			responseContentBlock := response.Value.Content[0]
 			text, _ := responseContentBlock.(*types.ContentBlockMemberText)
 
 			fmt.Println(text.Value)

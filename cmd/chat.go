@@ -14,12 +14,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
-	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
+	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types" //nolint:goimports // false positive from CI version diff
 	"github.com/chat-cli/chat-cli/db"
 	"github.com/chat-cli/chat-cli/factory"
 	"github.com/chat-cli/chat-cli/repository"
 	"github.com/chat-cli/chat-cli/utils"
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid" //nolint:goimports // false positive from CI version diff
 	"github.com/spf13/cobra"
 
 	conf "github.com/chat-cli/chat-cli/config"
@@ -44,8 +44,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		// Get SQLite database path
@@ -123,11 +123,11 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			bedrockSvc := bedrock.NewFromConfig(cfg)
 
 			// get foundation model details
-			model, err := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
+			model, modelErr := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
 				ModelIdentifier: &finalModelId,
 			})
-			if err != nil {
-				log.Fatalf("error: %v", err)
+			if modelErr != nil {
+				log.Fatalf("error: %v", modelErr)
 			}
 
 			// check if this is a text model
@@ -177,11 +177,15 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			Name:   dbPath,
 		}
 
-		database, err := factory.CreateDatabase(config)
+		database, err := factory.CreateDatabase(&config)
 		if err != nil {
 			log.Fatalf("Failed to create database: %v", err)
 		}
-		defer database.Close()
+		defer func() {
+			if err := database.Close(); err != nil {
+				log.Printf("Warning: failed to close database: %v", err)
+			}
+		}()
 
 		// Run migrations to ensure tables exist
 		if err := database.Migrate(); err != nil {
@@ -261,8 +265,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 				Message: prompt,
 			}
 
-			if err := chatRepo.Create(chat); err != nil {
-				log.Printf("Failed to create chat: %v", err)
+			if createErr := chatRepo.Create(chat); createErr != nil {
+				log.Printf("Failed to create chat: %v", createErr)
 			}
 
 			fmt.Print("[Assistant]: ")

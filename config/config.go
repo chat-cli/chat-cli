@@ -78,10 +78,10 @@ func (fm *FileManager) initializePaths() error {
 	fm.DataPath = filepath.Join(dataBase, fm.AppName)
 
 	// Create directories if they don't exist
-	if err := os.MkdirAll(fm.ConfigPath, 0755); err != nil {
+	if err := os.MkdirAll(fm.ConfigPath, 0750); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(fm.DataPath, 0755); err != nil {
+	if err := os.MkdirAll(fm.DataPath, 0750); err != nil {
 		return err
 	}
 
@@ -130,7 +130,7 @@ func (fm *FileManager) createDefaultConfig() error {
 // 1. Feature flag (command line argument)
 // 2. Configuration file
 // 3. Default value
-func (fm *FileManager) GetConfigValue(key string, flagValue interface{}, defaultValue interface{}) interface{} {
+func (fm *FileManager) GetConfigValue(key string, flagValue, defaultValue interface{}) interface{} {
 	// Check if flag value is provided and not empty/zero value
 	switch v := flagValue.(type) {
 	case string:
@@ -146,12 +146,12 @@ func (fm *FileManager) GetConfigValue(key string, flagValue interface{}, default
 			return v
 		}
 	}
-	
+
 	// Check configuration file
 	if viper.IsSet(key) {
 		return viper.Get(key)
 	}
-	
+
 	// Return default value
 	return defaultValue
 }

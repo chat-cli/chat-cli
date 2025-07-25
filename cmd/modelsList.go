@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"text/tabwriter"
 
@@ -53,15 +54,24 @@ func listModels() {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 	// Print the header
-	fmt.Fprintln(w, "Provider\t Name\t Model ID")
+	if _, err := fmt.Fprintln(w, "Provider\t Name\t Model ID"); err != nil {
+		log.Printf("Error writing header: %v", err)
+	}
 
-	fmt.Fprintln(w, "\t\t")
+	if _, err := fmt.Fprintln(w, "\t\t"); err != nil {
+		log.Printf("Error writing separator: %v", err)
+	}
 
 	// Print the models
-	for _, model := range result.ModelSummaries {
-		fmt.Fprintf(w, "%s\t %s\t %s\n", aws.ToString(model.ProviderName), aws.ToString(model.ModelName), aws.ToString(model.ModelId))
+	for i := range result.ModelSummaries {
+		model := &result.ModelSummaries[i]
+		if _, err := fmt.Fprintf(w, "%s\t %s\t %s\n", aws.ToString(model.ProviderName), aws.ToString(model.ModelName), aws.ToString(model.ModelId)); err != nil {
+			log.Printf("Error writing model data: %v", err)
+		}
 	}
 
 	// Flush the writer
-	w.Flush()
+	if err := w.Flush(); err != nil {
+		log.Printf("Error flushing writer: %v", err)
+	}
 }

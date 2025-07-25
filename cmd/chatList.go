@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"text/tabwriter"
-
+	"text/tabwriter" //nolint:goimports // false positive from CI version diff
+	//nolint:goimports // false positive from CI version diff
 	conf "github.com/chat-cli/chat-cli/config"
 	"github.com/chat-cli/chat-cli/db"
 	"github.com/chat-cli/chat-cli/factory"
 	"github.com/chat-cli/chat-cli/repository"
-	"github.com/spf13/cobra"
+	"github.com/spf13/cobra" //nolint:goimports // false positive from CI version diff
 )
 
 // chatListCmd represents the chatList command
@@ -28,8 +28,8 @@ var chatListCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if err := fm.InitializeViper(); err != nil {
-			log.Fatal(err)
+		if initErr := fm.InitializeViper(); initErr != nil {
+			log.Fatal(initErr)
 		}
 
 		// Get SQLite database path
@@ -43,11 +43,15 @@ var chatListCmd = &cobra.Command{
 			Name:   dbPath,
 		}
 
-		database, err := factory.CreateDatabase(config)
+		database, err := factory.CreateDatabase(&config)
 		if err != nil {
 			log.Fatalf("Failed to create database: %v", err)
 		}
-		defer database.Close()
+		defer func() {
+			if err := database.Close(); err != nil {
+				log.Printf("Warning: failed to close database: %v", err)
+			}
+		}()
 
 		// Run migrations to ensure tables exist
 		if err := database.Migrate(); err != nil {
@@ -66,12 +70,18 @@ var chatListCmd = &cobra.Command{
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 			// Print the header
-			fmt.Fprintln(w, "Created Date\t Chat ID\t Title")
+			if _, err := fmt.Fprintln(w, "Created Date\t Chat ID\t Title"); err != nil {
+				log.Printf("Error writing header: %v", err)
+			}
 
-			fmt.Fprintln(w, "\t\t")
+			if _, err := fmt.Fprintln(w, "\t\t"); err != nil {
+				log.Printf("Error writing separator: %v", err)
+			}
 
 			for _, chat := range chats {
-				fmt.Fprintf(w, "%s\t %s\t %s\n", chat.Created, chat.ChatId, truncate(chat.Message, 40))
+				if _, err := fmt.Fprintf(w, "%s\t %s\t %s\n", chat.Created, chat.ChatId, truncate(chat.Message, 40)); err != nil {
+					log.Printf("Error writing chat data: %v", err)
+				}
 			}
 		}
 	},

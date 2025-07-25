@@ -20,8 +20,8 @@ func (s *SQLiteDB) Migrate() error {
 	return migration.MigrateUp()
 }
 
-func NewSQLiteDB(config db.Config) *SQLiteDB {
-	return &SQLiteDB{config: config}
+func NewSQLiteDB(config *db.Config) *SQLiteDB {
+	return &SQLiteDB{config: *config}
 }
 
 func (s *SQLiteDB) Connect() error {
