@@ -25,7 +25,7 @@ var rootCmd = &cobra.Command{
 Running 'chat-cli' without any commands starts an interactive chat session.
 Use 'chat-cli [command]' to access other features like prompts, image generation, and configuration.
 
-To quit a chat session, type "quit"
+To quit a chat session, type "quit" or "/quit"
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// When root command is called without subcommands, run the chat command

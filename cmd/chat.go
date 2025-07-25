@@ -237,7 +237,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			// check for special words
 
 			// quit the program
-			if prompt == "quit\n" {
+			if prompt == "quit\n" || prompt == "/quit\n" {
 				os.Exit(0)
 			}
 
