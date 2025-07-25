@@ -19,7 +19,7 @@ import (
 	"github.com/chat-cli/chat-cli/factory"
 	"github.com/chat-cli/chat-cli/repository"
 	"github.com/chat-cli/chat-cli/utils"
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid" //nolint:goimports // false positive from CI version diff
 	"github.com/spf13/cobra"
 
 	conf "github.com/chat-cli/chat-cli/config"

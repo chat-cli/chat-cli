@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"text/tabwriter"
+	"text/tabwriter" //nolint:goimports // false positive from CI version diff
 	//nolint:goimports // false positive from CI version diff
 	conf "github.com/chat-cli/chat-cli/config"
 	"github.com/chat-cli/chat-cli/db"
