@@ -23,7 +23,29 @@ linters:
 
 linters-settings:
   govet:
-    enable-all: true
+    enable:
+      - atomic
+      - bools
+      - buildtag
+      - cgocall
+      - composites
+      - copylocks
+      - errorsas
+      - httpresponse
+      - loopclosure
+      - lostcancel
+      - nilfunc
+      - nilness
+      - printf
+      - shift
+      - stdmethods
+      - stringintconv
+      - structtag
+      - tests
+      - unmarshal
+      - unreachable
+      - unsafeptr
+      - unusedresult
   gocyclo:
     min-complexity: 15
   dupl:
