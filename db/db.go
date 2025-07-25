@@ -11,7 +11,7 @@ type Database interface {
 }
 
 // Config holds common database configuration
-type Config struct {
+type Config struct { //nolint:govet // fieldalignment is a minor optimization
 	Port     int
 	Driver   string
 	Host     string

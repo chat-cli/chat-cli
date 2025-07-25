@@ -7,7 +7,7 @@ import (
 	"github.com/chat-cli/chat-cli/db"
 )
 
-type Chat struct {
+type Chat struct { //nolint:govet // fieldalignment is a minor optimization
 	ID      int
 	ChatId  string
 	Persona string

@@ -209,7 +209,7 @@ func TestGetConfigValue(t *testing.T) {
 	// Reset viper for clean test
 	viper.Reset()
 
-	tests := []struct {
+	tests := []struct { //nolint:govet // fieldalignment is a minor test optimization
 		name         string
 		key          string
 		flagValue    interface{}

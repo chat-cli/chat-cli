@@ -84,7 +84,7 @@ func TestReadImage(t *testing.T) {
 		}
 	}
 
-	tests := []struct {
+	tests := []struct { //nolint:govet // fieldalignment is a minor test optimization
 		name         string
 		filename     string
 		expectError  bool
