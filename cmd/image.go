@@ -32,6 +32,9 @@ var imageCmd = &cobra.Command{
 		prompt := args[0]
 
 		document, err := utils.LoadDocument()
+		if err != nil {
+			log.Fatalf("unable to load document: %v", err)
+		}
 		prompt += document
 
 		accept := "*/*"

@@ -12,7 +12,8 @@ func CreateDatabase(config *db.Config) (db.Database, error) {
 	switch config.Driver {
 	case "sqlite3":
 		database := sqlite.NewSQLiteDB(config)
-		return database, database.Connect()
+		err := database.Connect()
+		return database, err
 	// case "postgres":
 	// 	database := postgres.NewPostgresDB(config)
 	// 	return database, database.Connect()

@@ -200,7 +200,7 @@ func TestProcessStreamingOutput(t *testing.T) {
 	// We'll create a simple test for the handler function pattern
 	t.Run("handler function receives parts", func(t *testing.T) {
 		var receivedParts []string
-		handler := func(_ context.Context, part string) error {
+		handler := func(_ context.Context, part string) error { //nolint:unparam // test function always returns nil
 			receivedParts = append(receivedParts, part)
 			return nil
 		}

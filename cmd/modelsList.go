@@ -63,7 +63,8 @@ func listModels() {
 	}
 
 	// Print the models
-	for _, model := range result.ModelSummaries {
+	for i := range result.ModelSummaries {
+		model := &result.ModelSummaries[i]
 		if _, err := fmt.Fprintf(w, "%s\t %s\t %s\n", aws.ToString(model.ProviderName), aws.ToString(model.ModelName), aws.ToString(model.ModelId)); err != nil {
 			log.Printf("Error writing model data: %v", err)
 		}

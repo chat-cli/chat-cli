@@ -235,9 +235,15 @@ func TestEnvironmentVariables(t *testing.T) {
 	// This is a basic test since full testing would require AWS setup
 
 	originalEnv := os.Getenv("AWS_REGION")
-	defer os.Setenv("AWS_REGION", originalEnv)
+	defer func() {
+		if err := os.Setenv("AWS_REGION", originalEnv); err != nil {
+			t.Errorf("Failed to restore AWS_REGION: %v", err)
+		}
+	}()
 
-	os.Setenv("AWS_REGION", "eu-west-1")
+	if err := os.Setenv("AWS_REGION", "eu-west-1"); err != nil {
+		t.Fatalf("Failed to set AWS_REGION: %v", err)
+	}
 
 	// The actual environment variable handling is done by the AWS SDK
 	// We're just testing that we don't have any obvious environment variable conflicts
