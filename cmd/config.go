@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
-	
+
 	conf "github.com/chat-cli/chat-cli/config"
 )
 
@@ -107,27 +107,27 @@ var configUnsetCmd = &cobra.Command{
 
 		// Get config file path
 		configPath := filepath.Join(fm.ConfigPath, fm.ConfigFile)
-		
+
 		// Read current config
 		var configData map[string]interface{}
 		if configFile, err := os.ReadFile(configPath); err == nil {
 			yaml.Unmarshal(configFile, &configData)
 		}
-		
+
 		if configData == nil {
 			configData = make(map[string]interface{})
 		}
-		
+
 		// Remove the key
 		delete(configData, key)
-		
+
 		// Write back to file
 		yamlData, err := yaml.Marshal(configData)
 		if err != nil {
 			fmt.Printf("Error marshaling config: %v\n", err)
 			os.Exit(1)
 		}
-		
+
 		if err := os.WriteFile(configPath, yamlData, 0644); err != nil {
 			fmt.Printf("Error writing config file: %v\n", err)
 			os.Exit(1)
@@ -154,10 +154,10 @@ var configListCmd = &cobra.Command{
 		}
 
 		fmt.Println("Current configuration:")
-		
+
 		// Define the keys we care about
 		configKeys := []string{"custom-arn", "model-id"}
-		
+
 		hasConfig := false
 		for _, key := range configKeys {
 			if viper.IsSet(key) {
@@ -165,7 +165,7 @@ var configListCmd = &cobra.Command{
 				hasConfig = true
 			}
 		}
-		
+
 		if !hasConfig {
 			fmt.Println("  No configuration values set")
 		}

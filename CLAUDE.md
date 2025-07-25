@@ -23,7 +23,29 @@ go run main.go <command> <args> <flags>
 ```
 
 ### Testing
-The project doesn't appear to have automated tests configured. Manual testing should be done by building and running the CLI commands.
+The project has a comprehensive test suite with unit tests, integration tests, and CI/CD automation:
+
+```bash
+# Run all tests
+make test
+
+# Run tests with coverage report
+make test-coverage
+
+# Run integration tests (requires built CLI)
+make cli && go test -tags=integration -v
+
+# Run linting and formatting
+make lint
+```
+
+**Coverage Results:**
+- Repository: 80.6% (database operations)
+- Config: 77.2% (configuration management)
+- Utils: 46.6% (utility functions)
+- CMD: 7.4% (command structure validation)
+
+For detailed testing information, see `docs/testing.md`.
 
 ## Architecture Overview
 
@@ -93,3 +115,24 @@ This is a Go CLI application built with Cobra that provides an interface to Amaz
 - AWS CLI configured with credentials
 - Bedrock model access enabled in AWS Console
 - Region-specific model availability varies
+
+## Documentation Guidelines
+
+**IMPORTANT**: Always update documentation in the `docs/` directory instead of creating new Markdown files in the root.
+
+### Existing Documentation
+- `docs/index.md` - Project overview and getting started
+- `docs/setup.md` - Installation and setup instructions
+- `docs/usage.md` - Command usage and examples
+- `docs/models.md` - Supported AI models
+- `docs/marketplace.md` - AWS Marketplace integration
+- `docs/testing.md` - Testing guide and best practices
+
+### Adding New Documentation
+1. **Create new files in `docs/`** - Never create `.md` files in project root
+2. **Update existing docs** - Prefer editing existing documentation over creating new files
+3. **Follow naming conventions** - Use lowercase with hyphens (e.g., `user-guide.md`)
+4. **Link from index.md** - Ensure new docs are discoverable
+
+### Documentation Build
+The docs use Sphinx with Python requirements. See `docs/requirements.txt` for dependencies.

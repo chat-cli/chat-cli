@@ -146,12 +146,12 @@ func (fm *FileManager) GetConfigValue(key string, flagValue interface{}, default
 			return v
 		}
 	}
-	
+
 	// Check configuration file
 	if viper.IsSet(key) {
 		return viper.Get(key)
 	}
-	
+
 	// Return default value
 	return defaultValue
 }
