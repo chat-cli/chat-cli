@@ -211,7 +211,20 @@ func TestChatRepository_ListLimit(t *testing.T) {
 			ChatId:  "chat-" + string(rune(i)),
 			Persona: "user",
 			Message: "Message " + string(rune(i)),
+repo := NewChatRepository(mockDB)
+
+	// Insert more than 10 chats to test the limit
+	for chatNumber := 1; chatNumber <= 15; chatNumber++ {
+		chat := &Chat{
+			ChatId:  fmt.Sprintf("chat-%d", chatNumber), // import "fmt"
+			Persona: "user",
+			Message: fmt.Sprintf("Message %d", chatNumber),
 		}
+		err := repo.Create(chat)
+		if err != nil {
+			t.Fatalf("Failed to create test chat %d: %v", chatNumber, err)
+		}
+	}
 		err := repo.Create(chat)
 		if err != nil {
 			t.Fatalf("Failed to create test chat %d: %v", i, err)
