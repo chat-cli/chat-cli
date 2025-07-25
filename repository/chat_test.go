@@ -208,6 +208,22 @@ func TestChatRepository_ListLimit(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to create test chat %d: %v", i, err)
 		}
+repo := NewChatRepository(mockDB)
+
+	// Insert more than 10 chats to test the limit
+	stmt, err := mockDB.db.Prepare("INSERT INTO chats (chat_id, persona, message) VALUES (?, ?, ?)")
+	if err != nil {
+		t.Fatalf("Failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	for i := 1; i <= 15; i++ {
+		chatID := fmt.Sprintf("chat-%d", i)
+		message := fmt.Sprintf("Message %d", i)
+		_, err := stmt.Exec(chatID, "user", message)
+		if err != nil {
+			t.Fatalf("Failed to insert test chat %d: %v", i, err)
+		}
 	}
 
 	// Test that List returns only 10 chats
