@@ -47,6 +47,35 @@ make lint
 
 For detailed testing information, see `docs/testing.md`.
 
+### IMPORTANT: Always Update Tests When Adding Features
+
+**When adding new functionality or modifying existing code, you MUST:**
+
+1. **Add corresponding unit tests** in `*_test.go` files alongside your code
+2. **Update integration tests** in `integration_test.go` if adding new commands or flags
+3. **Run the full test suite** before committing: `make test && make test-coverage`
+4. **Maintain or improve coverage** - don't let test coverage decrease
+5. **Update test documentation** in `docs/testing.md` if adding new test patterns
+
+**Test-Driven Development Workflow:**
+```bash
+# Before implementing new features
+make test                    # Ensure existing tests pass
+go test ./... -v            # Run tests in verbose mode
+
+# After implementing features
+make test                    # Verify all tests still pass
+make test-coverage          # Check coverage hasn't decreased
+make lint                   # Ensure code quality standards
+make cli && go test -tags=integration -v  # Test CLI integration
+```
+
+**Coverage Goals:**
+- **New functions**: Aim for 80%+ test coverage
+- **Critical paths**: 90%+ coverage for core business logic
+- **Error handling**: Test both success and failure scenarios
+- **Edge cases**: Include boundary condition testing
+
 ## Architecture Overview
 
 This is a Go CLI application built with Cobra that provides an interface to Amazon Bedrock LLMs. The architecture follows a clean separation of concerns:
