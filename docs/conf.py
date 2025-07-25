@@ -9,8 +9,8 @@
 project = 'Chat-CLI'
 copyright = '2024, Micah Walter'
 author = 'Micah Walter'
-release = 'v0.4.5'
-version = 'v0.4'
+release = 'v0.5.0'
+version = 'v0.5'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
