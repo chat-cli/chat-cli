@@ -18,8 +18,8 @@ func TestNewInputField(t *testing.T) {
 		t.Errorf("Expected placeholder 'Type your message...', got '%s'", inputField.textarea.Placeholder)
 	}
 
-	if inputField.textarea.Prompt != "│ " {
-		t.Errorf("Expected prompt '│ ', got '%s'", inputField.textarea.Prompt)
+	if inputField.textarea.Prompt != "> " {
+		t.Errorf("Expected prompt '> ', got '%s'", inputField.textarea.Prompt)
 	}
 
 	if inputField.textarea.ShowLineNumbers {

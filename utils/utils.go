@@ -109,9 +109,9 @@ func ReadImage(filename string) (data []byte, imageType string, err error) {
 func StringPrompt(label string) string {
 	// Check if we're in a TTY - if so, use the fancy bubble input
 	if isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd()) {
-		// Print prompt before starting BubbleTea program
-		fmt.Fprint(os.Stderr, label+" ")
-		return BubbleInput()
+		// We don't print the prompt here anymore since it's inside the input box
+		input, _ := BubbleInput()
+		return input
 	}
 
 	// Fallback to simple input for non-interactive use

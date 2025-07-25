@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -170,7 +171,9 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		}
 
 		// initial prompt
+		fmt.Println()
 		fmt.Printf("Hi there. You can ask me stuff!\n")
+		fmt.Println()
 
 		config := db.Config{
 			Driver: driver,
@@ -230,11 +233,14 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		// tty-loop
 		for {
-			// Clear some space before input field
+			// Add a single newline for spacing
 			fmt.Println()
 
 			// gets user input with fancy bubble input
-			prompt := utils.StringPrompt(">")
+			prompt := utils.StringPrompt("")
+
+			// Print the user's input as plain text with gray color
+			fmt.Printf("\033[90m> %s\033[0m", strings.TrimSpace(prompt))
 
 			// check for special words
 
@@ -271,7 +277,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 				log.Printf("Failed to create chat: %v", createErr)
 			}
 
-			fmt.Print("[Assistant]: ")
+			// Add an extra line between user message and assistant response
+			fmt.Print("\n\n* ")
 
 			var out string
 
@@ -297,6 +304,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 				log.Printf("Failed to create chat: %v", err)
 			}
 
+			// Add extra lines after response for better conversation readability
+			fmt.Println()
 			fmt.Println()
 
 		}
