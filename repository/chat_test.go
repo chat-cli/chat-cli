@@ -25,6 +25,14 @@ func (m *MockDatabase) Close() error {
 		return m.db.Close()
 	}
 	return nil
+func (m *MockDatabase) Close() error {
+	if m.db != nil {
+		err := m.db.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (m *MockDatabase) Migrate() error {
