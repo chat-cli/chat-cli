@@ -18,6 +18,11 @@ func TestRootCommand(t *testing.T) {
 		t.Errorf("Expected correct short description, got '%s'", rootCmd.Short)
 	}
 
+	// Test that root command's help text mentions /quit command
+	if !strings.Contains(rootCmd.Long, "\"quit\" or \"/quit\"") {
+		t.Errorf("Expected help text to mention both quit and /quit commands")
+	}
+
 	// Test that root command has expected flags
 	flag := rootCmd.PersistentFlags().Lookup("region")
 	if flag == nil {
