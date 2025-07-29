@@ -10,7 +10,7 @@ import (
 // CreateDatabase is a factory function that returns the appropriate database implementation
 func CreateDatabase(config *db.Config) (db.Database, error) {
 	switch config.Driver {
-	case "sqlite3":
+	case "sqlite":
 		database := sqlite.NewSQLiteDB(config)
 		err := database.Connect()
 		return database, err

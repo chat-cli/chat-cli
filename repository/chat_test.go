@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // MockDatabase implements the db.Database interface for testing
@@ -33,7 +33,7 @@ func (m *MockDatabase) Migrate() error {
 }
 
 func setupTestDB(t *testing.T) *MockDatabase {
-	db, err := sql.Open("sqlite3", ":memory:")
+	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
 	}

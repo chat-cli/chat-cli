@@ -8,8 +8,9 @@ before:
     # - go generate ./...
 
 builds:
+  # Single build with CGO disabled for cross-compilation
   - env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     goos:
       - windows
       - linux

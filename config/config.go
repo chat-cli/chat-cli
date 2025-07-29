@@ -97,7 +97,7 @@ func (fm *FileManager) InitializeViper() error {
 	// Set some default configurations
 	viper.SetDefault("environment", fm.Environment)
 	viper.SetDefault("db_path", fm.GetDBPath())
-	viper.SetDefault("db_driver", "sqlite3")
+	viper.SetDefault("db_driver", "sqlite")
 
 	// Create config file if it doesn't exist
 	if err := fm.createDefaultConfig(); err != nil {

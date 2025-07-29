@@ -7,7 +7,7 @@ import (
 
 	"github.com/chat-cli/chat-cli/db"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 type SQLiteDB struct {
@@ -25,7 +25,7 @@ func NewSQLiteDB(config *db.Config) *SQLiteDB {
 }
 
 func (s *SQLiteDB) Connect() error {
-	db, err := sql.Open("sqlite3", s.config.Name)
+	db, err := sql.Open("sqlite", s.config.Name)
 	if err != nil {
 		return fmt.Errorf("sqlite connection error: %v", err)
 	}

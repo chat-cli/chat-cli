@@ -183,11 +183,11 @@ func TestGetDBDriver(t *testing.T) {
 
 	// Initialize viper with defaults
 	viper.Reset()
-	viper.SetDefault("db_driver", "sqlite3")
+	viper.SetDefault("db_driver", "sqlite")
 
 	driver := fm.GetDBDriver()
-	if driver != "sqlite3" {
-		t.Errorf("expected db_driver %q, got %q", "sqlite3", driver)
+	if driver != "sqlite" {
+		t.Errorf("expected db_driver %q, got %q", "sqlite", driver)
 	}
 
 	// Cleanup
@@ -317,8 +317,8 @@ func TestInitializeViper(t *testing.T) {
 		t.Errorf("expected db_path %q, got %q", expectedDBPath, viper.GetString("db_path"))
 	}
 
-	if viper.GetString("db_driver") != "sqlite3" {
-		t.Errorf("expected db_driver %q, got %q", "sqlite3", viper.GetString("db_driver"))
+	if viper.GetString("db_driver") != "sqlite" {
+		t.Errorf("expected db_driver %q, got %q", "sqlite", viper.GetString("db_driver"))
 	}
 
 	// Check that config file was created
