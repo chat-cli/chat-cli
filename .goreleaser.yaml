@@ -8,17 +8,11 @@ before:
     # - go generate ./...
 
 builds:
-  - id: cgo-disabled
-    env:
+  - env:
       - CGO_ENABLED=0
     goos:
       - windows
       - linux
-    
-  - id: cgo-enabled
-    env:
-      - CGO_ENABLED=1
-    goos:
       - darwin
 
 archives:
