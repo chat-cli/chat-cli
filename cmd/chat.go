@@ -173,6 +173,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		// initial prompt
 		fmt.Println()
 		fmt.Printf("Hi there. You can ask me stuff!\n")
+		fmt.Printf("💡 Tip: Type '/models' to switch models or '/quit' to exit.\n")
 		fmt.Println()
 
 		config := db.Config{
@@ -247,6 +248,30 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			// quit the program
 			if prompt == "quit\n" || prompt == "/quit\n" {
 				os.Exit(0)
+			}
+
+			// handle /models slash command
+			if prompt == "/models\n" {
+				fmt.Println("\n🔄 Opening model selector...")
+				if err := runInteractiveModelSelectorWithRegion(region); err != nil {
+					fmt.Printf("Error with models command: %v\n", err)
+					continue
+				}
+
+				// Reload configuration after model selection
+				modelId = fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
+				customArn = fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
+
+				// Update final model ID for this conversation
+				if customArn != "" {
+					finalModelId = customArn
+				} else {
+					finalModelId = modelId
+				}
+				modelIdString = finalModelId
+				converseStreamInput.ModelId = aws.String(modelIdString)
+				fmt.Printf("✓ Model updated for this conversation\n")
+				continue
 			}
 
 			userMsg := types.Message{

@@ -149,7 +149,12 @@ func (fm *FileManager) GetConfigValue(key string, flagValue, defaultValue interf
 
 	// Check configuration file
 	if viper.IsSet(key) {
-		return viper.Get(key)
+		configValue := viper.Get(key)
+		// For string values, check if they're empty and fall back to default
+		if str, ok := configValue.(string); ok && str == "" {
+			return defaultValue
+		}
+		return configValue
 	}
 
 	// Return default value

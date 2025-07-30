@@ -166,10 +166,55 @@ func TestModelsCommand(t *testing.T) {
 		t.Errorf("Expected Use 'models', got '%s'", modelsCmd.Use)
 	}
 
+	// Test that models command has a Run function (for listing enabled models)
+	if modelsCmd.Run == nil {
+		t.Error("Expected models command to have a Run function")
+	}
+
 	// Test that models command has subcommands
 	subcommands := modelsCmd.Commands()
 	if len(subcommands) == 0 {
 		t.Error("Expected models command to have subcommands")
+	}
+
+	// Look for the list subcommand
+	hasListSubcommand := false
+	for _, subcmd := range subcommands {
+		if subcmd.Use == "list" {
+			hasListSubcommand = true
+			// Test that list subcommand has expected properties
+			if subcmd.Short != "List all available models" {
+				t.Errorf("Expected list subcommand short description 'List all available models', got '%s'", subcmd.Short)
+			}
+			if subcmd.Run == nil {
+				t.Error("Expected list subcommand to have a Run function")
+			}
+			break
+		}
+	}
+
+	if !hasListSubcommand {
+		t.Error("Expected models command to have 'list' subcommand")
+	}
+
+	// Look for the cross-region subcommand
+	hasCrossRegionSubcommand := false
+	for _, subcmd := range subcommands {
+		if subcmd.Use == "cross-region" {
+			hasCrossRegionSubcommand = true
+			// Test that cross-region subcommand has expected properties
+			if subcmd.Short != "List models supporting cross-region inference" {
+				t.Errorf("Expected cross-region subcommand short description 'List models supporting cross-region inference', got '%s'", subcmd.Short)
+			}
+			if subcmd.Run == nil {
+				t.Error("Expected cross-region subcommand to have a Run function")
+			}
+			break
+		}
+	}
+
+	if !hasCrossRegionSubcommand {
+		t.Error("Expected models command to have 'cross-region' subcommand")
 	}
 }
 

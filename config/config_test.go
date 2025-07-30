@@ -257,6 +257,14 @@ func TestGetConfigValue(t *testing.T) {
 			configValue:  float32(2.71),
 			expected:     float32(3.14),
 		},
+		{
+			name:         "empty string config falls back to default",
+			key:          "test-empty-string",
+			flagValue:    "",
+			defaultValue: "default-value",
+			configValue:  "",
+			expected:     "default-value",
+		},
 	}
 
 	for _, tt := range tests {
