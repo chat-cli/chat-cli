@@ -20,6 +20,18 @@ import (
 var modelsCmd = &cobra.Command{
 	Use:   "models",
 	Short: "Configure and list available models",
+	Long:  `Interactive model selector. Navigate with arrow keys, filter by typing, and press Enter to select a model.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := runInteractiveModelSelector(); err != nil {
+			log.Fatalf("Error running interactive model selector: %v", err)
+		}
+	},
+}
+
+// modelsTableCmd represents the table view command
+var modelsTableCmd = &cobra.Command{
+	Use:   "table",
+	Short: "List available models in table format",
 	Run: func(cmd *cobra.Command, args []string) {
 		listEnabledModels()
 	},
@@ -27,6 +39,7 @@ var modelsCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(modelsCmd)
+	modelsCmd.AddCommand(modelsTableCmd)
 }
 
 func listEnabledModels() {

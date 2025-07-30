@@ -17,6 +17,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// requiresCrossRegionProfile checks if a model requires cross-region inference profile
+func requiresCrossRegionProfileList(modelID, modelArn string) bool {
+	// First check if the ARN explicitly indicates cross-region capability
+	if modelArn != "" && (strings.Contains(modelArn, "inference-profile") || strings.Contains(modelArn, "us.")) {
+		return true
+	}
+	
+	// Check for specific models that require cross-region inference profiles
+	crossRegionModels := []string{
+		"anthropic.claude-sonnet-4-20250514-v1:0",
+		"anthropic.claude-opus-4-20250514-v1:0",
+		"anthropic.claude-3-7-sonnet-20250219-v1:0",
+	}
+	
+	for _, crModel := range crossRegionModels {
+		if modelID == crModel {
+			return true
+		}
+	}
+	
+	return false
+}
+
 // modelsListCmd represents the list command
 var modelsListCmd = &cobra.Command{
 	Use:   "list",
@@ -74,10 +97,10 @@ func listModels() {
 		}
 
 		// Check for cross-region inference capability
-		// Cross-region models typically have ARNs containing 'inference-profile' or 'us.'
 		crossRegion := "No"
 		modelArn := aws.ToString(model.ModelArn)
-		if modelArn != "" && (strings.Contains(modelArn, "inference-profile") || strings.Contains(modelArn, "us.")) {
+		modelID := aws.ToString(model.ModelId)
+		if requiresCrossRegionProfileList(modelID, modelArn) {
 			crossRegion = "Yes"
 		}
 
