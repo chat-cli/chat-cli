@@ -16,20 +16,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// modelsCmd represents the models command
-var modelsCmd = &cobra.Command{
-	Use:   "models",
-	Short: "Configure and list available models",
+// modelsCrossRegionCmd represents the cross-region command
+var modelsCrossRegionCmd = &cobra.Command{
+	Use:   "cross-region",
+	Short: "List models supporting cross-region inference",
 	Run: func(cmd *cobra.Command, args []string) {
-		listEnabledModels()
+		listCrossRegionModels()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(modelsCmd)
+	modelsCmd.AddCommand(modelsCrossRegionCmd)
 }
 
-func listEnabledModels() {
+func listCrossRegionModels() {
 	// Load the default configuration
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-1"))
 	if err != nil {
@@ -40,10 +40,10 @@ func listEnabledModels() {
 	// Create a new Bedrock client
 	svc := bedrock.NewFromConfig(cfg)
 
-	// Call the ListModels API
-	result, err := svc.ListFoundationModels(context.TODO(), &bedrock.ListFoundationModelsInput{})
+	// Call the ListInferenceProfiles API to get cross-region inference profiles
+	profilesResult, err := svc.ListInferenceProfiles(context.TODO(), &bedrock.ListInferenceProfilesInput{})
 	if err != nil {
-		fmt.Println("Error listing models:", err)
+		fmt.Println("Error listing inference profiles:", err)
 		return
 	}
 
@@ -53,7 +53,7 @@ func listEnabledModels() {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 	// Print the header
-	if _, err := fmt.Fprintln(w, "Provider\t Name\t Model ID"); err != nil {
+	if _, err := fmt.Fprintln(w, "Name\t Profile ID\t Inference Profile ARN"); err != nil {
 		log.Printf("Error writing header: %v", err)
 	}
 
@@ -61,14 +61,15 @@ func listEnabledModels() {
 		log.Printf("Error writing separator: %v", err)
 	}
 
-	// Print only enabled models
-	for i := range result.ModelSummaries {
-		model := &result.ModelSummaries[i]
-		// Filter for enabled models - check if modelLifecycle status is ACTIVE
-		if model.ModelLifecycle != nil && string(model.ModelLifecycle.Status) == "ACTIVE" {
-			if _, err := fmt.Fprintf(w, "%s\t %s\t %s\n", aws.ToString(model.ProviderName), aws.ToString(model.ModelName), aws.ToString(model.ModelId)); err != nil {
-				log.Printf("Error writing model data: %v", err)
-			}
+	// Print inference profiles
+	for i := range profilesResult.InferenceProfileSummaries {
+		profile := &profilesResult.InferenceProfileSummaries[i]
+
+		if _, err := fmt.Fprintf(w, "%s\t %s\t %s\n",
+			aws.ToString(profile.InferenceProfileName),
+			aws.ToString(profile.InferenceProfileId),
+			aws.ToString(profile.InferenceProfileArn)); err != nil {
+			log.Printf("Error writing profile data: %v", err)
 		}
 	}
 

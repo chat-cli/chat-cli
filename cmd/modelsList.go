@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -54,18 +55,38 @@ func listModels() {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 	// Print the header
-	if _, err := fmt.Fprintln(w, "Provider\t Name\t Model ID"); err != nil {
+	if _, err := fmt.Fprintln(w, "Provider\t Name\t Model ID\t Status\t Cross-Region"); err != nil {
 		log.Printf("Error writing header: %v", err)
 	}
 
-	if _, err := fmt.Fprintln(w, "\t\t"); err != nil {
+	if _, err := fmt.Fprintln(w, "\t\t\t\t"); err != nil {
 		log.Printf("Error writing separator: %v", err)
 	}
 
 	// Print the models
 	for i := range result.ModelSummaries {
 		model := &result.ModelSummaries[i]
-		if _, err := fmt.Fprintf(w, "%s\t %s\t %s\n", aws.ToString(model.ProviderName), aws.ToString(model.ModelName), aws.ToString(model.ModelId)); err != nil {
+
+		// Determine status
+		status := "UNKNOWN"
+		if model.ModelLifecycle != nil {
+			status = string(model.ModelLifecycle.Status)
+		}
+
+		// Check for cross-region inference capability
+		// Cross-region models typically have ARNs containing 'inference-profile' or 'us.'
+		crossRegion := "No"
+		modelArn := aws.ToString(model.ModelArn)
+		if modelArn != "" && (strings.Contains(modelArn, "inference-profile") || strings.Contains(modelArn, "us.")) {
+			crossRegion = "Yes"
+		}
+
+		if _, err := fmt.Fprintf(w, "%s\t %s\t %s\t %s\t %s\n",
+			aws.ToString(model.ProviderName),
+			aws.ToString(model.ModelName),
+			aws.ToString(model.ModelId),
+			status,
+			crossRegion); err != nil {
 			log.Printf("Error writing model data: %v", err)
 		}
 	}
