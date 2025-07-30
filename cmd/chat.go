@@ -9,8 +9,6 @@ import (
 	"log"
 	"os"
 	"slices"
-	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -254,18 +252,25 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 			// handle /models slash command
 			if prompt == "/models\n" {
-				selectedModel, err := handleModelsSlashCommand(region)
-				if err != nil {
+				fmt.Println("\n🔄 Opening model selector...")
+				if err := runInteractiveModelSelectorWithRegion(region); err != nil {
 					fmt.Printf("Error with models command: %v\n", err)
 					continue
 				}
-				if selectedModel != "" {
-					// Update the model for this conversation
-					finalModelId = selectedModel
-					modelIdString = selectedModel
-					converseStreamInput.ModelId = aws.String(modelIdString)
-					fmt.Printf("✓ Switched to model: %s\n", selectedModel)
+
+				// Reload configuration after model selection
+				modelId = fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
+				customArn = fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
+
+				// Update final model ID for this conversation
+				if customArn != "" {
+					finalModelId = customArn
+				} else {
+					finalModelId = modelId
 				}
+				modelIdString = finalModelId
+				converseStreamInput.ModelId = aws.String(modelIdString)
+				fmt.Printf("✓ Model updated for this conversation\n")
 				continue
 			}
 
@@ -330,134 +335,6 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		}
 	},
-}
-
-// handleModelsSlashCommand provides an inline model selection interface within chat
-func handleModelsSlashCommand(region string) (string, error) {
-	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-	if err != nil {
-		return "", fmt.Errorf("error loading AWS configuration: %w", err)
-	}
-
-	// Create Bedrock client
-	svc := bedrock.NewFromConfig(cfg)
-
-	// Fetch models
-	result, err := svc.ListFoundationModels(context.TODO(), &bedrock.ListFoundationModelsInput{})
-	if err != nil {
-		return "", fmt.Errorf("error listing models: %w", err)
-	}
-
-	// Convert models to a simplified list for chat interface
-	var models []ModelOption
-	seenModels := make(map[string]bool)
-
-	for i := range result.ModelSummaries {
-		model := &result.ModelSummaries[i]
-
-		// Only include active models
-		if model.ModelLifecycle != nil && string(model.ModelLifecycle.Status) == "ACTIVE" {
-			modelID := aws.ToString(model.ModelId)
-
-			// Filter out model variants with capacity/context size suffixes (same logic as interactive)
-			if strings.Contains(modelID, ":") {
-				parts := strings.Split(modelID, ":")
-				if len(parts) >= 3 {
-					lastPart := parts[len(parts)-1]
-					if isCapacitySuffix(lastPart) {
-						continue
-					}
-				} else if len(parts) == 2 {
-					suffix := parts[1]
-					if isCapacitySuffix(suffix) {
-						continue
-					}
-				}
-			}
-
-			// Avoid duplicates
-			if seenModels[modelID] {
-				continue
-			}
-			seenModels[modelID] = true
-
-			modelArn := aws.ToString(model.ModelArn)
-			crossRegion := requiresCrossRegionProfile(modelID, modelArn)
-
-			models = append(models, ModelOption{
-				ID:          modelID,
-				Name:        aws.ToString(model.ModelName),
-				Provider:    aws.ToString(model.ProviderName),
-				CrossRegion: crossRegion,
-				Arn:         modelArn,
-			})
-		}
-	}
-
-	// Sort models by provider, then by name
-	sort.Slice(models, func(i, j int) bool {
-		if models[i].Provider != models[j].Provider {
-			return models[i].Provider < models[j].Provider
-		}
-		return models[i].Name < models[j].Name
-	})
-
-	// Display models in a simple numbered list
-	fmt.Println("\n📋 Available Models:")
-	fmt.Println("==================")
-
-	for i, model := range models {
-		crossRegionIndicator := ""
-		if model.CrossRegion {
-			crossRegionIndicator = " 🌐"
-		}
-		fmt.Printf("%2d) %s - %s (%s)%s\n", i+1, model.Provider, model.Name, model.ID, crossRegionIndicator)
-	}
-
-	fmt.Println("\n🌐 = Cross-region model")
-	fmt.Printf("\nSelect a model (1-%d) or press Enter to cancel: ", len(models))
-
-	// Get user selection
-	selection := utils.StringPrompt("")
-	selection = strings.TrimSpace(selection)
-
-	if selection == "" {
-		fmt.Println("Model selection cancelled.")
-		return "", nil
-	}
-
-	// Parse selection
-	index, err := strconv.Atoi(selection)
-	if err != nil || index < 1 || index > len(models) {
-		return "", fmt.Errorf("invalid selection: %s", selection)
-	}
-
-	selectedModel := models[index-1]
-
-	// For cross-region models, use inference profile ARN
-	if selectedModel.CrossRegion {
-		inferenceProfileArn := generateInferenceProfileArn(selectedModel.ID)
-		if err := setCustomArnInConfig(inferenceProfileArn); err != nil {
-			return "", fmt.Errorf("error setting custom ARN: %w", err)
-		}
-		return inferenceProfileArn, nil
-	} else {
-		// Regular models use model-id
-		if err := setModelInConfig(selectedModel.ID); err != nil {
-			return "", fmt.Errorf("error setting model: %w", err)
-		}
-		return selectedModel.ID, nil
-	}
-}
-
-// ModelOption represents a model choice for the slash command
-type ModelOption struct {
-	ID          string
-	Name        string
-	Provider    string
-	CrossRegion bool
-	Arn         string
 }
 
 func init() {

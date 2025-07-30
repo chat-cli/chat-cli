@@ -231,8 +231,12 @@ var modelsInteractiveCmd = &cobra.Command{
 }
 
 func runInteractiveModelSelector() error {
+	return runInteractiveModelSelectorWithRegion("us-east-1")
+}
+
+func runInteractiveModelSelectorWithRegion(region string) error {
 	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-1"))
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
 		return fmt.Errorf("error loading AWS configuration: %w", err)
 	}
