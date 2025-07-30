@@ -23,20 +23,20 @@ func requiresCrossRegionProfileList(modelID, modelArn string) bool {
 	if modelArn != "" && (strings.Contains(modelArn, "inference-profile") || strings.Contains(modelArn, "us.")) {
 		return true
 	}
-	
+
 	// Check for specific models that require cross-region inference profiles
 	crossRegionModels := []string{
 		"anthropic.claude-sonnet-4-20250514-v1:0",
 		"anthropic.claude-opus-4-20250514-v1:0",
 		"anthropic.claude-3-7-sonnet-20250219-v1:0",
 	}
-	
+
 	for _, crModel := range crossRegionModels {
 		if modelID == crModel {
 			return true
 		}
 	}
-	
+
 	return false
 }
 

@@ -59,7 +59,7 @@ func requiresCrossRegionProfile(modelID, modelArn string) bool {
 	if modelArn != "" && (strings.Contains(modelArn, "inference-profile") || strings.Contains(modelArn, "us.")) {
 		return true
 	}
-	
+
 	// Check for specific models that require cross-region inference profiles
 	// These are models that are only available through inference profiles
 	crossRegionModels := []string{
@@ -68,13 +68,13 @@ func requiresCrossRegionProfile(modelID, modelArn string) bool {
 		"anthropic.claude-3-7-sonnet-20250219-v1:0",
 		// Add other models that require cross-region profiles as they're released
 	}
-	
+
 	for _, crModel := range crossRegionModels {
 		if modelID == crModel {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -83,15 +83,15 @@ func generateInferenceProfileArn(modelID string) string {
 	// Map specific models to their known inference profile ARNs
 	// These ARNs are typically in the format: arn:aws:bedrock:us:anthropic::inference-profile/...
 	inferenceProfileMap := map[string]string{
-		"anthropic.claude-sonnet-4-20250514-v1:0": "arn:aws:bedrock:us:anthropic::inference-profile/claude-sonnet-4-20250514-v1:0",
-		"anthropic.claude-opus-4-20250514-v1:0":   "arn:aws:bedrock:us:anthropic::inference-profile/claude-opus-4-20250514-v1:0", 
+		"anthropic.claude-sonnet-4-20250514-v1:0":   "arn:aws:bedrock:us:anthropic::inference-profile/claude-sonnet-4-20250514-v1:0",
+		"anthropic.claude-opus-4-20250514-v1:0":     "arn:aws:bedrock:us:anthropic::inference-profile/claude-opus-4-20250514-v1:0",
 		"anthropic.claude-3-7-sonnet-20250219-v1:0": "arn:aws:bedrock:us:anthropic::inference-profile/claude-3-7-sonnet-20250219-v1:0",
 	}
-	
+
 	if profileArn, exists := inferenceProfileMap[modelID]; exists {
 		return profileArn
 	}
-	
+
 	// Fallback: if we don't have a specific mapping, try to construct a reasonable ARN
 	// This is a best-effort attempt and may need adjustment based on actual AWS patterns
 	return fmt.Sprintf("arn:aws:bedrock:us:anthropic::inference-profile/%s", modelID)
@@ -285,7 +285,7 @@ func runInteractiveModelSelector() error {
 			// Check for cross-region inference capability
 			crossRegion := false
 			modelArn := aws.ToString(model.ModelArn)
-			
+
 			// Check if this model requires cross-region inference profile
 			if requiresCrossRegionProfile(modelID, modelArn) {
 				crossRegion = true
