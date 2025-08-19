@@ -1,12 +1,28 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/spf13/viper"
 )
+
+// ErrorConfig represents error handling configuration options
+type ErrorConfig struct {
+	VerboseErrors bool   `yaml:"verbose_errors" mapstructure:"verbose_errors"`
+	DebugMode     bool   `yaml:"debug_mode" mapstructure:"debug_mode"`
+	LogLevel      string `yaml:"log_level" mapstructure:"log_level"`
+	LogFile       string `yaml:"log_file" mapstructure:"log_file"`
+	MaxLogSize    int64  `yaml:"max_log_size_mb" mapstructure:"max_log_size_mb"`
+	MaxLogFiles   int    `yaml:"max_log_files" mapstructure:"max_log_files"`
+	EnableColor   bool   `yaml:"enable_color" mapstructure:"enable_color"`
+	TimeFormat    string `yaml:"time_format" mapstructure:"time_format"`
+	RetryAttempts int    `yaml:"retry_attempts" mapstructure:"retry_attempts"`
+	RetryDelay    int    `yaml:"retry_delay_ms" mapstructure:"retry_delay_ms"`
+}
 
 // FileManager handles OS-specific paths for configuration and data storage
 type FileManager struct {
@@ -99,6 +115,9 @@ func (fm *FileManager) InitializeViper() error {
 	viper.SetDefault("db_path", fm.GetDBPath())
 	viper.SetDefault("db_driver", "sqlite")
 
+	// Set error handling defaults
+	fm.setErrorConfigDefaults()
+
 	// Create config file if it doesn't exist
 	if err := fm.createDefaultConfig(); err != nil {
 		return err
@@ -154,4 +173,158 @@ func (fm *FileManager) GetConfigValue(key string, flagValue, defaultValue interf
 
 	// Return default value
 	return defaultValue
+}
+
+// DefaultErrorConfig returns default error handling configuration
+func (fm *FileManager) DefaultErrorConfig() *ErrorConfig {
+	return &ErrorConfig{
+		VerboseErrors: false,
+		DebugMode:     false,
+		LogLevel:      "info",
+		LogFile:       "",               // Empty means console output
+		MaxLogSize:    10 * 1024 * 1024, // 10MB
+		MaxLogFiles:   5,
+		EnableColor:   true,
+		TimeFormat:    "2006-01-02T15:04:05Z07:00", // RFC3339
+		RetryAttempts: 3,
+		RetryDelay:    1000, // 1 second in milliseconds
+	}
+}
+
+// setErrorConfigDefaults sets default values in Viper for error configuration
+func (fm *FileManager) setErrorConfigDefaults() {
+	defaults := fm.DefaultErrorConfig()
+
+	viper.SetDefault("error.verbose_errors", defaults.VerboseErrors)
+	viper.SetDefault("error.debug_mode", defaults.DebugMode)
+	viper.SetDefault("error.log_level", defaults.LogLevel)
+	viper.SetDefault("error.log_file", defaults.LogFile)
+	viper.SetDefault("error.max_log_size_mb", defaults.MaxLogSize)
+	viper.SetDefault("error.max_log_files", defaults.MaxLogFiles)
+	viper.SetDefault("error.enable_color", defaults.EnableColor)
+	viper.SetDefault("error.time_format", defaults.TimeFormat)
+	viper.SetDefault("error.retry_attempts", defaults.RetryAttempts)
+	viper.SetDefault("error.retry_delay_ms", defaults.RetryDelay)
+}
+
+// LoadErrorConfig loads error handling configuration from Viper
+func (fm *FileManager) LoadErrorConfig() (*ErrorConfig, error) {
+	config := fm.DefaultErrorConfig()
+
+	// Load from Viper configuration
+	if viper.IsSet("error") {
+		if err := viper.UnmarshalKey("error", config); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal error config: %w", err)
+		}
+	}
+
+	// Validate configuration
+	if err := fm.ValidateErrorConfig(config); err != nil {
+		return nil, fmt.Errorf("invalid error configuration: %w", err)
+	}
+
+	return config, nil
+}
+
+// ValidateErrorConfig validates the error handling configuration
+func (fm *FileManager) ValidateErrorConfig(config *ErrorConfig) error {
+	// Validate log level
+	validLevels := []string{"debug", "info", "warn", "error"}
+	if !fm.isValidLogLevel(config.LogLevel, validLevels) {
+		return fmt.Errorf("invalid log level %q, must be one of: %s", 
+			config.LogLevel, strings.Join(validLevels, ", "))
+	}
+
+	// Validate max log size
+	if config.MaxLogSize <= 0 {
+		return fmt.Errorf("max_log_size_mb must be positive, got %d", config.MaxLogSize)
+	}
+
+	// Validate max log files
+	if config.MaxLogFiles <= 0 {
+		return fmt.Errorf("max_log_files must be positive, got %d", config.MaxLogFiles)
+	}
+
+	// Validate retry attempts
+	if config.RetryAttempts < 0 {
+		return fmt.Errorf("retry_attempts must be non-negative, got %d", config.RetryAttempts)
+	}
+
+	// Validate retry delay
+	if config.RetryDelay < 0 {
+		return fmt.Errorf("retry_delay_ms must be non-negative, got %d", config.RetryDelay)
+	}
+
+	// Validate log file path if specified
+	if config.LogFile != "" {
+		logPath := config.LogFile
+		if !filepath.IsAbs(logPath) {
+			logPath = filepath.Join(fm.DataPath, logPath)
+		}
+		
+		// Check if directory exists or can be created
+		logDir := filepath.Dir(logPath)
+		if err := os.MkdirAll(logDir, 0750); err != nil {
+			return fmt.Errorf("cannot create log directory %q: %w", logDir, err)
+		}
+	}
+
+	return nil
+}
+
+// isValidLogLevel checks if the provided log level is valid
+func (fm *FileManager) isValidLogLevel(level string, validLevels []string) bool {
+	level = strings.ToLower(level)
+	for _, valid := range validLevels {
+		if level == valid {
+			return true
+		}
+	}
+	return false
+}
+
+// GetErrorLogPath returns the full path to the error log file
+func (fm *FileManager) GetErrorLogPath(config *ErrorConfig) string {
+	if config.LogFile == "" {
+		return ""
+	}
+	
+	if filepath.IsAbs(config.LogFile) {
+		return config.LogFile
+	}
+	
+	return filepath.Join(fm.DataPath, config.LogFile)
+}
+
+// UpdateErrorConfig updates error configuration values in Viper
+func (fm *FileManager) UpdateErrorConfig(updates map[string]interface{}) error {
+	// Apply updates to Viper
+	for key, value := range updates {
+		viper.Set(fmt.Sprintf("error.%s", key), value)
+	}
+
+	// Validate the updated configuration
+	config, err := fm.LoadErrorConfig()
+	if err != nil {
+		return fmt.Errorf("invalid configuration after update: %w", err)
+	}
+
+	// If validation passes, save the configuration
+	if err := viper.WriteConfig(); err != nil {
+		return fmt.Errorf("failed to save configuration: %w", err)
+	}
+
+	// Store the validated config back (this ensures any normalization is applied)
+	viper.Set("error.verbose_errors", config.VerboseErrors)
+	viper.Set("error.debug_mode", config.DebugMode)
+	viper.Set("error.log_level", config.LogLevel)
+	viper.Set("error.log_file", config.LogFile)
+	viper.Set("error.max_log_size_mb", config.MaxLogSize)
+	viper.Set("error.max_log_files", config.MaxLogFiles)
+	viper.Set("error.enable_color", config.EnableColor)
+	viper.Set("error.time_format", config.TimeFormat)
+	viper.Set("error.retry_attempts", config.RetryAttempts)
+	viper.Set("error.retry_delay_ms", config.RetryDelay)
+
+	return nil
 }

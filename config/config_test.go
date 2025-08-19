@@ -329,3 +329,444 @@ func TestInitializeViper(t *testing.T) {
 
 	viper.Reset()
 }
+func TestDefaultErrorConfig(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	config := fm.DefaultErrorConfig()
+
+	if config.VerboseErrors != false {
+		t.Errorf("expected VerboseErrors false, got %v", config.VerboseErrors)
+	}
+
+	if config.DebugMode != false {
+		t.Errorf("expected DebugMode false, got %v", config.DebugMode)
+	}
+
+	if config.LogLevel != "info" {
+		t.Errorf("expected LogLevel 'info', got %q", config.LogLevel)
+	}
+
+	if config.LogFile != "" {
+		t.Errorf("expected LogFile empty, got %q", config.LogFile)
+	}
+
+	if config.MaxLogSize != 10*1024*1024 {
+		t.Errorf("expected MaxLogSize 10MB, got %d", config.MaxLogSize)
+	}
+
+	if config.MaxLogFiles != 5 {
+		t.Errorf("expected MaxLogFiles 5, got %d", config.MaxLogFiles)
+	}
+
+	if config.EnableColor != true {
+		t.Errorf("expected EnableColor true, got %v", config.EnableColor)
+	}
+
+	if config.RetryAttempts != 3 {
+		t.Errorf("expected RetryAttempts 3, got %d", config.RetryAttempts)
+	}
+
+	if config.RetryDelay != 1000 {
+		t.Errorf("expected RetryDelay 1000ms, got %d", config.RetryDelay)
+	}
+}
+
+func TestLoadErrorConfig(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	// Reset viper for clean test
+	viper.Reset()
+	fm.setErrorConfigDefaults()
+
+	// Test loading default configuration
+	config, err := fm.LoadErrorConfig()
+	if err != nil {
+		t.Fatalf("LoadErrorConfig failed: %v", err)
+	}
+
+	if config.LogLevel != "info" {
+		t.Errorf("expected default LogLevel 'info', got %q", config.LogLevel)
+	}
+
+	// Test loading custom configuration
+	viper.Set("error.verbose_errors", true)
+	viper.Set("error.debug_mode", true)
+	viper.Set("error.log_level", "debug")
+	viper.Set("error.retry_attempts", 5)
+
+	config, err = fm.LoadErrorConfig()
+	if err != nil {
+		t.Fatalf("LoadErrorConfig with custom values failed: %v", err)
+	}
+
+	if !config.VerboseErrors {
+		t.Errorf("expected VerboseErrors true, got %v", config.VerboseErrors)
+	}
+
+	if !config.DebugMode {
+		t.Errorf("expected DebugMode true, got %v", config.DebugMode)
+	}
+
+	if config.LogLevel != "debug" {
+		t.Errorf("expected LogLevel 'debug', got %q", config.LogLevel)
+	}
+
+	if config.RetryAttempts != 5 {
+		t.Errorf("expected RetryAttempts 5, got %d", config.RetryAttempts)
+	}
+}
+
+func TestValidateErrorConfig(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	tests := []struct {
+		name        string
+		config      *ErrorConfig
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name:        "valid default config",
+			config:      fm.DefaultErrorConfig(),
+			expectError: false,
+		},
+		{
+			name: "invalid log level",
+			config: &ErrorConfig{
+				LogLevel:      "invalid",
+				MaxLogSize:    10 * 1024 * 1024,
+				MaxLogFiles:   5,
+				RetryAttempts: 3,
+				RetryDelay:    1000,
+			},
+			expectError: true,
+			errorMsg:    "invalid log level",
+		},
+		{
+			name: "negative max log size",
+			config: &ErrorConfig{
+				LogLevel:      "info",
+				MaxLogSize:    -1,
+				MaxLogFiles:   5,
+				RetryAttempts: 3,
+				RetryDelay:    1000,
+			},
+			expectError: true,
+			errorMsg:    "max_log_size_mb must be positive",
+		},
+		{
+			name: "zero max log files",
+			config: &ErrorConfig{
+				LogLevel:      "info",
+				MaxLogSize:    10 * 1024 * 1024,
+				MaxLogFiles:   0,
+				RetryAttempts: 3,
+				RetryDelay:    1000,
+			},
+			expectError: true,
+			errorMsg:    "max_log_files must be positive",
+		},
+		{
+			name: "negative retry attempts",
+			config: &ErrorConfig{
+				LogLevel:      "info",
+				MaxLogSize:    10 * 1024 * 1024,
+				MaxLogFiles:   5,
+				RetryAttempts: -1,
+				RetryDelay:    1000,
+			},
+			expectError: true,
+			errorMsg:    "retry_attempts must be non-negative",
+		},
+		{
+			name: "negative retry delay",
+			config: &ErrorConfig{
+				LogLevel:      "info",
+				MaxLogSize:    10 * 1024 * 1024,
+				MaxLogFiles:   5,
+				RetryAttempts: 3,
+				RetryDelay:    -1,
+			},
+			expectError: true,
+			errorMsg:    "retry_delay_ms must be non-negative",
+		},
+		{
+			name: "valid custom config",
+			config: &ErrorConfig{
+				VerboseErrors: true,
+				DebugMode:     true,
+				LogLevel:      "debug",
+				LogFile:       "app.log",
+				MaxLogSize:    50 * 1024 * 1024,
+				MaxLogFiles:   10,
+				EnableColor:   false,
+				RetryAttempts: 5,
+				RetryDelay:    2000,
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := fm.ValidateErrorConfig(tt.config)
+			
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("expected error but got none")
+				} else if tt.errorMsg != "" && !contains(err.Error(), tt.errorMsg) {
+					t.Errorf("expected error message to contain %q, got %q", tt.errorMsg, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("expected no error but got: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestIsValidLogLevel(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	validLevels := []string{"debug", "info", "warn", "error"}
+
+	tests := []struct {
+		level    string
+		expected bool
+	}{
+		{"debug", true},
+		{"info", true},
+		{"warn", true},
+		{"error", true},
+		{"DEBUG", true}, // Case insensitive
+		{"INFO", true},
+		{"invalid", false},
+		{"trace", false},
+		{"", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.level, func(t *testing.T) {
+			result := fm.isValidLogLevel(tt.level, validLevels)
+			if result != tt.expected {
+				t.Errorf("isValidLogLevel(%q) = %v, expected %v", tt.level, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetErrorLogPath(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	tests := []struct {
+		name     string
+		config   *ErrorConfig
+		expected string
+	}{
+		{
+			name: "empty log file",
+			config: &ErrorConfig{
+				LogFile: "",
+			},
+			expected: "",
+		},
+		{
+			name: "relative log file",
+			config: &ErrorConfig{
+				LogFile: "app.log",
+			},
+			expected: filepath.Join(fm.DataPath, "app.log"),
+		},
+		{
+			name: "absolute log file",
+			config: &ErrorConfig{
+				LogFile: "/tmp/app.log",
+			},
+			expected: "/tmp/app.log",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := fm.GetErrorLogPath(tt.config)
+			if result != tt.expected {
+				t.Errorf("GetErrorLogPath() = %q, expected %q", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestUpdateErrorConfig(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	// Initialize viper and create config file
+	viper.Reset()
+	if err := fm.InitializeViper(); err != nil {
+		t.Fatalf("InitializeViper failed: %v", err)
+	}
+
+	// Test valid updates
+	updates := map[string]interface{}{
+		"verbose_errors": true,
+		"debug_mode":     true,
+		"log_level":      "debug",
+		"retry_attempts": 5,
+	}
+
+	err = fm.UpdateErrorConfig(updates)
+	if err != nil {
+		t.Fatalf("UpdateErrorConfig failed: %v", err)
+	}
+
+	// Verify updates were applied
+	config, err := fm.LoadErrorConfig()
+	if err != nil {
+		t.Fatalf("LoadErrorConfig after update failed: %v", err)
+	}
+
+	if !config.VerboseErrors {
+		t.Errorf("expected VerboseErrors true after update, got %v", config.VerboseErrors)
+	}
+
+	if !config.DebugMode {
+		t.Errorf("expected DebugMode true after update, got %v", config.DebugMode)
+	}
+
+	if config.LogLevel != "debug" {
+		t.Errorf("expected LogLevel 'debug' after update, got %q", config.LogLevel)
+	}
+
+	if config.RetryAttempts != 5 {
+		t.Errorf("expected RetryAttempts 5 after update, got %d", config.RetryAttempts)
+	}
+
+	// Test invalid updates
+	invalidUpdates := map[string]interface{}{
+		"log_level": "invalid",
+	}
+
+	err = fm.UpdateErrorConfig(invalidUpdates)
+	if err == nil {
+		t.Errorf("expected error for invalid log level update")
+	}
+}
+
+func TestSetErrorConfigDefaults(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	// Reset viper
+	viper.Reset()
+
+	// Set defaults
+	fm.setErrorConfigDefaults()
+
+	// Check that defaults are set
+	if !viper.IsSet("error.verbose_errors") {
+		t.Error("error.verbose_errors default not set")
+	}
+
+	if !viper.IsSet("error.debug_mode") {
+		t.Error("error.debug_mode default not set")
+	}
+
+	if !viper.IsSet("error.log_level") {
+		t.Error("error.log_level default not set")
+	}
+
+	if viper.GetString("error.log_level") != "info" {
+		t.Errorf("expected default log_level 'info', got %q", viper.GetString("error.log_level"))
+	}
+
+	if viper.GetInt("error.retry_attempts") != 3 {
+		t.Errorf("expected default retry_attempts 3, got %d", viper.GetInt("error.retry_attempts"))
+	}
+}
+
+func TestInitializeViperWithErrorDefaults(t *testing.T) {
+	fm, err := NewFileManager("test-app")
+	if err != nil {
+		t.Fatalf("NewFileManager failed: %v", err)
+	}
+	defer cleanup(t, fm)
+
+	// Reset viper
+	viper.Reset()
+
+	err = fm.InitializeViper()
+	if err != nil {
+		t.Fatalf("InitializeViper failed: %v", err)
+	}
+
+	// Check that error defaults are set
+	if !viper.IsSet("error.verbose_errors") {
+		t.Error("error.verbose_errors default not set after InitializeViper")
+	}
+
+	if !viper.IsSet("error.log_level") {
+		t.Error("error.log_level default not set after InitializeViper")
+	}
+
+	// Load error config to ensure it works
+	config, err := fm.LoadErrorConfig()
+	if err != nil {
+		t.Fatalf("LoadErrorConfig after InitializeViper failed: %v", err)
+	}
+
+	if config.LogLevel != "info" {
+		t.Errorf("expected default LogLevel 'info', got %q", config.LogLevel)
+	}
+}
+
+// Helper functions for tests
+
+func cleanup(t *testing.T, fm *FileManager) {
+	if err := os.RemoveAll(fm.ConfigPath); err != nil {
+		t.Errorf("Failed to remove config path: %v", err)
+	}
+	if err := os.RemoveAll(fm.DataPath); err != nil {
+		t.Errorf("Failed to remove data path: %v", err)
+	}
+	viper.Reset()
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 || 
+		(len(s) > len(substr) && (s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || 
+		func() bool {
+			for i := 0; i <= len(s)-len(substr); i++ {
+				if s[i:i+len(substr)] == substr {
+					return true
+				}
+			}
+			return false
+		}())))
+}
