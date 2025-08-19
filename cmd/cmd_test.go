@@ -256,3 +256,119 @@ func TestEnvironmentVariables(t *testing.T) {
 		t.Error("Environment variable setting failed")
 	}
 }
+// Test new error handling flags
+func TestErrorHandlingFlags(t *testing.T) {
+	// Test that verbose flag exists
+	verboseFlag := rootCmd.PersistentFlags().Lookup("verbose")
+	if verboseFlag == nil {
+		t.Error("Expected 'verbose' flag to exist")
+	} else {
+		if verboseFlag.DefValue != "false" {
+			t.Errorf("Expected default verbose 'false', got '%s'", verboseFlag.DefValue)
+		}
+	}
+
+	// Test that debug flag exists
+	debugFlag := rootCmd.PersistentFlags().Lookup("debug")
+	if debugFlag == nil {
+		t.Error("Expected 'debug' flag to exist")
+	} else {
+		if debugFlag.DefValue != "false" {
+			t.Errorf("Expected default debug 'false', got '%s'", debugFlag.DefValue)
+		}
+	}
+
+	// Test that log-level flag exists
+	logLevelFlag := rootCmd.PersistentFlags().Lookup("log-level")
+	if logLevelFlag == nil {
+		t.Error("Expected 'log-level' flag to exist")
+	} else {
+		if logLevelFlag.DefValue != "info" {
+			t.Errorf("Expected default log-level 'info', got '%s'", logLevelFlag.DefValue)
+		}
+	}
+}
+
+// Test that PersistentPreRunE is set up
+func TestPersistentPreRunE(t *testing.T) {
+	if rootCmd.PersistentPreRunE == nil {
+		t.Error("Expected root command to have PersistentPreRunE function")
+	}
+}
+
+// Test initializeErrorHandling function
+func TestInitializeErrorHandling(t *testing.T) {
+	// Create a test command with the flags
+	testCmd := &cobra.Command{
+		Use: "test",
+	}
+	testCmd.Flags().Bool("verbose", false, "verbose flag")
+	testCmd.Flags().Bool("debug", false, "debug flag")
+	testCmd.Flags().String("log-level", "info", "log level flag")
+
+	// Test with default values
+	err := initializeErrorHandling(testCmd)
+	if err != nil {
+		t.Errorf("Expected no error with default flags, got: %v", err)
+	}
+
+	// Test with verbose flag (should not call UpdateLogLevel)
+	testCmd.Flags().Set("verbose", "true")
+	testCmd.Flags().Set("debug", "false") // Reset debug
+	err = initializeErrorHandling(testCmd)
+	if err != nil {
+		t.Errorf("Expected no error with verbose flag, got: %v", err)
+	}
+
+	// Test with debug flag (should not call UpdateLogLevel)
+	testCmd.Flags().Set("verbose", "false") // Reset verbose
+	testCmd.Flags().Set("debug", "true")
+	err = initializeErrorHandling(testCmd)
+	if err != nil {
+		t.Errorf("Expected no error with debug flag, got: %v", err)
+	}
+
+	// Test with invalid log level (should call UpdateLogLevel and fail)
+	testCmd.Flags().Set("verbose", "false") // Reset verbose
+	testCmd.Flags().Set("debug", "false")   // Reset debug
+	testCmd.Flags().Set("log-level", "invalid")
+	err = initializeErrorHandling(testCmd)
+	if err == nil {
+		t.Error("Expected error with invalid log level")
+	} else {
+		t.Logf("Got error (as expected): %v", err)
+		if !strings.Contains(err.Error(), "invalid_log_level") && !strings.Contains(err.Error(), "invalid log level") {
+			t.Errorf("Expected invalid log level error, got: %v", err)
+		}
+	}
+}
+
+// Test performEarlyValidation function
+func TestPerformEarlyValidation(t *testing.T) {
+	// Create a test command with the region flag
+	testCmd := &cobra.Command{
+		Use: "test",
+	}
+	testCmd.Flags().String("region", "us-east-1", "region flag")
+
+	// Test with valid region
+	err := performEarlyValidation(testCmd)
+	// This will likely fail due to AWS credentials, but should not fail on region validation
+	if err != nil {
+		// Check if it's a region validation error (which would be unexpected)
+		if strings.Contains(err.Error(), "region_invalid_format") || strings.Contains(err.Error(), "region_unknown") {
+			t.Errorf("Unexpected region validation error: %v", err)
+		}
+		// AWS credential errors are expected in test environment
+	}
+
+	// Test with invalid region format
+	testCmd.Flags().Set("region", "invalid-region")
+	err = performEarlyValidation(testCmd)
+	if err == nil {
+		t.Error("Expected error with invalid region format")
+	}
+	if !strings.Contains(err.Error(), "region_invalid_format") {
+		t.Errorf("Expected region format error, got: %v", err)
+	}
+}
