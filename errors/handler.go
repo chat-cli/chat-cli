@@ -2,8 +2,9 @@ package errors
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	"github.com/chat-cli/chat-cli/logging"
 )
 
 // ErrorHandler interface for handling different error scenarios
@@ -11,28 +12,17 @@ type ErrorHandler interface {
 	Handle(err *AppError) error
 	SetVerbose(verbose bool)
 	SetDebug(debug bool)
-	SetLogger(logger Logger)
+	SetLogger(logger logging.Logger)
 }
 
-// Logger interface for structured logging
-type Logger interface {
-	Error(msg string, fields ...Field)
-	Warn(msg string, fields ...Field)
-	Info(msg string, fields ...Field)
-	Debug(msg string, fields ...Field)
-}
-
-// Field represents a key-value pair for structured logging
-type Field struct {
-	Key   string
-	Value interface{}
-}
+// Import the logging package types
+// Logger interface is now defined in the logging package
 
 // DefaultErrorHandler is the default implementation of ErrorHandler
 type DefaultErrorHandler struct {
 	verbose bool
 	debug   bool
-	logger  Logger
+	logger  logging.Logger
 }
 
 // NewDefaultErrorHandler creates a new instance of DefaultErrorHandler
@@ -40,7 +30,7 @@ func NewDefaultErrorHandler() *DefaultErrorHandler {
 	return &DefaultErrorHandler{
 		verbose: false,
 		debug:   false,
-		logger:  &DefaultLogger{}, // Use default logger if none provided
+		logger:  logging.GetGlobalLogger(), // Use global logger from logging package
 	}
 }
 
@@ -75,43 +65,43 @@ func (h *DefaultErrorHandler) SetDebug(debug bool) {
 }
 
 // SetLogger sets a custom logger
-func (h *DefaultErrorHandler) SetLogger(logger Logger) {
+func (h *DefaultErrorHandler) SetLogger(logger logging.Logger) {
 	h.logger = logger
 }
 
 // logError logs the error with appropriate detail level
 func (h *DefaultErrorHandler) logError(err *AppError) {
-	fields := []Field{
-		{Key: "type", Value: err.Type.String()},
-		{Key: "code", Value: err.Code},
-		{Key: "severity", Value: err.Severity.String()},
-		{Key: "recoverable", Value: err.Recoverable},
+	fields := []logging.Field{
+		logging.NewField("type", err.Type.String()),
+		logging.NewField("code", err.Code),
+		logging.NewField("severity", err.Severity.String()),
+		logging.NewField("recoverable", err.Recoverable),
 	}
 
 	// Add context fields if available
 	if err.Context != nil {
 		if err.Context.Operation != "" {
-			fields = append(fields, Field{Key: "operation", Value: err.Context.Operation})
+			fields = append(fields, logging.NewField("operation", err.Context.Operation))
 		}
 		if err.Context.Component != "" {
-			fields = append(fields, Field{Key: "component", Value: err.Context.Component})
+			fields = append(fields, logging.NewField("component", err.Context.Component))
 		}
 		if err.Context.ChatID != "" {
-			fields = append(fields, Field{Key: "chat_id", Value: err.Context.ChatID})
+			fields = append(fields, logging.NewField("chat_id", err.Context.ChatID))
 		}
 		if err.Context.UserID != "" {
-			fields = append(fields, Field{Key: "user_id", Value: err.Context.UserID})
+			fields = append(fields, logging.NewField("user_id", err.Context.UserID))
 		}
 	}
 
 	// Add metadata fields
 	for key, value := range err.Metadata {
-		fields = append(fields, Field{Key: key, Value: value})
+		fields = append(fields, logging.NewField(key, value))
 	}
 
 	// Add cause if available and in debug mode
 	if h.debug && err.Cause != nil {
-		fields = append(fields, Field{Key: "cause", Value: err.Cause.Error()})
+		fields = append(fields, logging.NewField("cause", err.Cause.Error()))
 	}
 
 	// Log at appropriate level based on severity
@@ -146,42 +136,7 @@ func (h *DefaultErrorHandler) displayUserMessage(err *AppError) {
 	}
 }
 
-// DefaultLogger is a simple logger implementation that uses the standard log package
-type DefaultLogger struct{}
 
-// Error logs an error message
-func (l *DefaultLogger) Error(msg string, fields ...Field) {
-	l.logWithFields("ERROR", msg, fields...)
-}
-
-// Warn logs a warning message
-func (l *DefaultLogger) Warn(msg string, fields ...Field) {
-	l.logWithFields("WARN", msg, fields...)
-}
-
-// Info logs an info message
-func (l *DefaultLogger) Info(msg string, fields ...Field) {
-	l.logWithFields("INFO", msg, fields...)
-}
-
-// Debug logs a debug message
-func (l *DefaultLogger) Debug(msg string, fields ...Field) {
-	l.logWithFields("DEBUG", msg, fields...)
-}
-
-// logWithFields logs a message with structured fields
-func (l *DefaultLogger) logWithFields(level, msg string, fields ...Field) {
-	logMsg := fmt.Sprintf("[%s] %s", level, msg)
-	
-	if len(fields) > 0 {
-		logMsg += " |"
-		for _, field := range fields {
-			logMsg += fmt.Sprintf(" %s=%v", field.Key, field.Value)
-		}
-	}
-	
-	log.Println(logMsg)
-}
 
 // Global error handler instance
 var globalHandler ErrorHandler = NewDefaultErrorHandler()
