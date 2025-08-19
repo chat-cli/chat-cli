@@ -8,18 +8,17 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types" //nolint:goimports // false positive from CI version diff
 	"github.com/chat-cli/chat-cli/db"
+	"github.com/chat-cli/chat-cli/errors"
 	"github.com/chat-cli/chat-cli/factory"
 	"github.com/chat-cli/chat-cli/repository"
 	"github.com/chat-cli/chat-cli/utils"
+	"github.com/chat-cli/chat-cli/validation"
 	uuid "github.com/satori/go.uuid" //nolint:goimports // false positive from CI version diff
 	"github.com/spf13/cobra"
 
@@ -39,14 +38,29 @@ To start a new interactive chat session, run 'chat-cli' (without the 'chat' subc
 To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 	Run: func(cmd *cobra.Command, args []string) {
+		ctx := context.Background()
 
 		fm, err := conf.NewFileManager("chat-cli")
 		if err != nil {
-			log.Fatal(err)
+			configErr := errors.NewConfigurationError(
+				"file_manager_init_failed",
+				fmt.Sprintf("Failed to initialize file manager: %v", err),
+				"Unable to initialize configuration. Please check your system permissions.",
+				err,
+			).WithOperation("NewFileManager").WithComponent("chat-command")
+			errors.Handle(configErr)
+			return
 		}
 
 		if initErr := fm.InitializeViper(); initErr != nil {
-			log.Fatal(initErr)
+			configErr := errors.NewConfigurationError(
+				"viper_init_failed",
+				fmt.Sprintf("Failed to initialize configuration: %v", initErr),
+				"Unable to load configuration. Please check your config file permissions.",
+				initErr,
+			).WithOperation("InitializeViper").WithComponent("chat-command")
+			errors.Handle(configErr)
+			return
 		}
 
 		// Get SQLite database path
@@ -65,86 +79,113 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		region, err := flagCmd.PersistentFlags().GetString("region")
 		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
+			flagErr := errors.NewValidationError(
+				"flag_parse_failed",
+				fmt.Sprintf("Unable to get region flag: %v", err),
+				"Unable to parse command line flags. Please check your command syntax.",
+				err,
+			).WithOperation("GetRegionFlag").WithComponent("chat-command")
+			errors.Handle(flagErr)
+			return
 		}
 
 		modelIdFlag, err := flagCmd.PersistentFlags().GetString("model-id")
 		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
+			flagErr := errors.NewValidationError(
+				"flag_parse_failed",
+				fmt.Sprintf("Unable to get model-id flag: %v", err),
+				"Unable to parse command line flags. Please check your command syntax.",
+				err,
+			).WithOperation("GetModelIdFlag").WithComponent("chat-command")
+			errors.Handle(flagErr)
+			return
 		}
 
 		customArnFlag, err := flagCmd.PersistentFlags().GetString("custom-arn")
 		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
+			flagErr := errors.NewValidationError(
+				"flag_parse_failed",
+				fmt.Sprintf("Unable to get custom-arn flag: %v", err),
+				"Unable to parse command line flags. Please check your command syntax.",
+				err,
+			).WithOperation("GetCustomArnFlag").WithComponent("chat-command")
+			errors.Handle(flagErr)
+			return
 		}
 
 		// Get configuration values with precedence order (flag -> config -> default)
 		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
 
-		// Ensure custom-arn takes precedence over model-id when both are set
-		// If custom-arn is set (from any source), use it; otherwise use model-id
-		var finalModelId string
-		if customArn != "" {
-			finalModelId = customArn
-		} else {
-			finalModelId = modelId
-		}
-
 		chatId, err := flagCmd.PersistentFlags().GetString("chat-id")
 		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
+			flagErr := errors.NewValidationError(
+				"flag_parse_failed",
+				fmt.Sprintf("Unable to get chat-id flag: %v", err),
+				"Unable to parse command line flags. Please check your command syntax.",
+				err,
+			).WithOperation("GetChatIdFlag").WithComponent("chat-command")
+			errors.Handle(flagErr)
+			return
 		}
 
 		temperature, err := flagCmd.PersistentFlags().GetFloat32("temperature")
 		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
+			flagErr := errors.NewValidationError(
+				"flag_parse_failed",
+				fmt.Sprintf("Unable to get temperature flag: %v", err),
+				"Unable to parse command line flags. Please check your command syntax.",
+				err,
+			).WithOperation("GetTemperatureFlag").WithComponent("chat-command")
+			errors.Handle(flagErr)
+			return
 		}
 
 		topP, err := flagCmd.PersistentFlags().GetFloat32("topP")
 		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
+			flagErr := errors.NewValidationError(
+				"flag_parse_failed",
+				fmt.Sprintf("Unable to get topP flag: %v", err),
+				"Unable to parse command line flags. Please check your command syntax.",
+				err,
+			).WithOperation("GetTopPFlag").WithComponent("chat-command")
+			errors.Handle(flagErr)
+			return
 		}
 
 		maxTokens, err := flagCmd.PersistentFlags().GetInt32("max-tokens")
 		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
+			flagErr := errors.NewValidationError(
+				"flag_parse_failed",
+				fmt.Sprintf("Unable to get max-tokens flag: %v", err),
+				"Unable to parse command line flags. Please check your command syntax.",
+				err,
+			).WithOperation("GetMaxTokensFlag").WithComponent("chat-command")
+			errors.Handle(flagErr)
+			return
 		}
 
-		// set up connection to AWS
-		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
-		if err != nil {
-			log.Fatalf("unable to load AWS config: %v", err)
+		// Validate AWS configuration early
+		awsValidator := validation.NewAWSConfigValidator(region)
+		if err := awsValidator.Validate(ctx); err != nil {
+			errors.Handle(err.(*errors.AppError))
+			return
+		}
+		cfg := awsValidator.GetConfig()
+
+		// Validate model before starting chat session
+		modelValidator := validation.NewModelValidator(modelId, customArn, region, cfg)
+		if err := modelValidator.Validate(ctx); err != nil {
+			errors.Handle(err.(*errors.AppError))
+			return
 		}
 
+		// Use the final model ID (custom ARN takes precedence)
 		var modelIdString string
-
-		if customArn == "" {
-			// Using model-id, need to validate with Bedrock
-			bedrockSvc := bedrock.NewFromConfig(cfg)
-
-			// get foundation model details
-			model, modelErr := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
-				ModelIdentifier: &finalModelId,
-			})
-			if modelErr != nil {
-				log.Fatalf("error: %v", modelErr)
-			}
-
-			// check if this is a text model
-			if !slices.Contains(model.ModelDetails.OutputModalities, "TEXT") {
-				log.Fatalf("model %s is not a text model, so it can't be used with the chat function", *model.ModelDetails.ModelId)
-			}
-
-			// check if model supports streaming
-			if !*model.ModelDetails.ResponseStreamingSupported {
-				log.Fatalf("model %s does not support streaming so it can't be used with the chat function", *model.ModelDetails.ModelId)
-			}
-
-			modelIdString = *model.ModelDetails.ModelId
+		if customArn != "" {
+			modelIdString = customArn
 		} else {
-			// Using custom-arn, skip validation and use directly
-			modelIdString = finalModelId
+			modelIdString = modelId
 		}
 
 		svc := bedrockruntime.NewFromConfig(cfg)
@@ -182,27 +223,65 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		database, err := factory.CreateDatabase(&config)
 		if err != nil {
-			log.Fatalf("Failed to create database: %v", err)
-		}
-		defer func() {
-			if err := database.Close(); err != nil {
-				log.Printf("Warning: failed to close database: %v", err)
+			dbErr := errors.NewDatabaseError(
+				"database_creation_failed",
+				fmt.Sprintf("Failed to create database: %v", err),
+				"Unable to initialize chat history database. Chat will work but history won't be saved.",
+				err,
+			).WithOperation("CreateDatabase").WithComponent("chat-command").
+				WithChatID(chatId)
+			
+			// This is recoverable - we can continue without database
+			errors.Handle(dbErr)
+			database = nil
+		} else {
+			defer func() {
+				if err := database.Close(); err != nil {
+					log.Printf("Warning: failed to close database: %v", err)
+				}
+			}()
+
+			// Run migrations to ensure tables exist
+			if err := database.Migrate(); err != nil {
+				dbErr := errors.NewDatabaseError(
+					"database_migration_failed",
+					fmt.Sprintf("Failed to migrate database: %v", err),
+					"Unable to set up chat history database. Chat will work but history won't be saved.",
+					err,
+				).WithOperation("MigrateDatabase").WithComponent("chat-command").
+					WithChatID(chatId)
+				
+				// This is recoverable - we can continue without database
+				errors.Handle(dbErr)
+				database = nil
 			}
-		}()
-
-		// Run migrations to ensure tables exist
-		if err := database.Migrate(); err != nil {
-			log.Fatalf("Failed to migrate database: %v", err)
 		}
 
-		// Create repositories
-		chatRepo := repository.NewChatRepository(database)
+		// Create repositories (only if database is available)
+		var chatRepo *repository.ChatRepository
+		if database != nil {
+			chatRepo = repository.NewChatRepository(database)
+		}
 
-		// load saved conversation
-		if chatId != "" {
+		// Load saved conversation with graceful degradation
+		if chatId != "" && chatRepo != nil {
 			if chats, err := chatRepo.GetMessages(chatId); err != nil {
-				log.Printf("Failed to load messages: %v", err)
+				historyErr := errors.NewDatabaseError(
+					"chat_history_load_failed",
+					fmt.Sprintf("Failed to load chat history: %v", err),
+					fmt.Sprintf("Unable to load chat history for session '%s'. Starting fresh conversation.", chatId),
+					err,
+				).WithOperation("LoadChatHistory").WithComponent("chat-command").
+					WithChatID(chatId)
+				
+				// This is recoverable - continue with fresh conversation
+				errors.Handle(historyErr)
 			} else {
+				// Successfully loaded chat history
+				if len(chats) > 0 {
+					fmt.Printf("Loaded %d previous messages from chat session %s\n", len(chats), chatId)
+				}
+				
 				for _, chat := range chats {
 					if chat.Persona == "User" {
 						fmt.Printf("[User]: %s\n", chat.Message)
@@ -229,6 +308,9 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 					}
 				}
 			}
+		} else if chatId != "" && chatRepo == nil {
+			// Database not available but chat ID was specified
+			fmt.Printf("Note: Chat history is not available due to database issues. Starting fresh conversation.\n")
 		}
 
 		// tty-loop
@@ -263,18 +345,38 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			output, err := svc.ConverseStream(context.Background(), converseStreamInput)
 
 			if err != nil {
-				log.Fatal(err)
+				bedrockErr := errors.NewAWSError(
+					"bedrock_converse_failed",
+					fmt.Sprintf("Bedrock conversation failed: %v", err),
+					"Unable to get response from AI model. Please check your AWS configuration and try again.",
+					err,
+				).WithOperation("ConverseStream").WithComponent("chat-command").
+					WithChatID(chatId).WithMetadata("model_id", modelIdString)
+				
+				errors.Handle(bedrockErr)
+				continue // Continue the chat loop instead of terminating
 			}
 
-			// Use the repository without knowing the underlying database type
-			chat := &repository.Chat{
-				ChatId:  chatId,
-				Persona: "User",
-				Message: prompt,
-			}
+			// Save user message to database (if available)
+			if chatRepo != nil {
+				chat := &repository.Chat{
+					ChatId:  chatId,
+					Persona: "User",
+					Message: prompt,
+				}
 
-			if createErr := chatRepo.Create(chat); createErr != nil {
-				log.Printf("Failed to create chat: %v", createErr)
+				if createErr := chatRepo.Create(chat); createErr != nil {
+					dbErr := errors.NewDatabaseError(
+						"chat_save_failed",
+						fmt.Sprintf("Failed to save user message: %v", createErr),
+						"Unable to save message to chat history. Conversation will continue but won't be saved.",
+						createErr,
+					).WithOperation("SaveUserMessage").WithComponent("chat-command").
+						WithChatID(chatId)
+					
+					// This is recoverable - continue conversation
+					errors.Handle(dbErr)
+				}
 			}
 
 			// Add an extra line between user message and assistant response
@@ -289,19 +391,40 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			})
 
 			if err != nil {
-				log.Fatal("streaming output processing error: ", err)
+				streamErr := errors.NewAWSError(
+					"streaming_output_failed",
+					fmt.Sprintf("Streaming output processing error: %v", err),
+					"Error processing AI response. Please try your question again.",
+					err,
+				).WithOperation("ProcessStreamingOutput").WithComponent("chat-command").
+					WithChatID(chatId).WithMetadata("model_id", modelIdString)
+				
+				errors.Handle(streamErr)
+				continue // Continue the chat loop instead of terminating
 			}
 
 			converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
 
-			chat = &repository.Chat{
-				ChatId:  chatId,
-				Persona: "Assistant",
-				Message: out,
-			}
+			// Save assistant message to database (if available)
+			if chatRepo != nil {
+				chat := &repository.Chat{
+					ChatId:  chatId,
+					Persona: "Assistant",
+					Message: out,
+				}
 
-			if err := chatRepo.Create(chat); err != nil {
-				log.Printf("Failed to create chat: %v", err)
+				if err := chatRepo.Create(chat); err != nil {
+					dbErr := errors.NewDatabaseError(
+						"chat_save_failed",
+						fmt.Sprintf("Failed to save assistant message: %v", err),
+						"Unable to save response to chat history. Conversation will continue but won't be saved.",
+						err,
+					).WithOperation("SaveAssistantMessage").WithComponent("chat-command").
+						WithChatID(chatId)
+					
+					// This is recoverable - continue conversation
+					errors.Handle(dbErr)
+				}
 			}
 
 			// Add extra lines after response for better conversation readability
