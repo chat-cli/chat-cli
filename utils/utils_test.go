@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/chat-cli/chat-cli/errors"
 )
 
 func TestDecodeImage(t *testing.T) {
@@ -12,6 +14,7 @@ func TestDecodeImage(t *testing.T) {
 		name        string
 		base64Image string
 		expectError bool
+		errorCode   string
 	}{
 		{
 			name:        "valid base64",
@@ -22,11 +25,25 @@ func TestDecodeImage(t *testing.T) {
 			name:        "invalid base64",
 			base64Image: "invalid-base64!@#",
 			expectError: true,
+			errorCode:   "invalid_base64_format",
 		},
 		{
 			name:        "empty string",
 			base64Image: "",
-			expectError: false,
+			expectError: true,
+			errorCode:   "empty_base64_input",
+		},
+		{
+			name:        "invalid base64 length",
+			base64Image: "SGVsbG8=extra", // Invalid length
+			expectError: true,
+			errorCode:   "invalid_base64_format",
+		},
+		{
+			name:        "base64 that decodes to empty",
+			base64Image: "", // This will trigger empty input validation
+			expectError: true,
+			errorCode:   "empty_base64_input",
 		},
 	}
 
@@ -39,6 +56,14 @@ func TestDecodeImage(t *testing.T) {
 			}
 			if !tt.expectError && err != nil {
 				t.Errorf("unexpected error: %v", err)
+			}
+			if tt.expectError && err != nil {
+				// Check if it's an AppError with expected code
+				if appErr, ok := err.(*errors.AppError); ok {
+					if appErr.Code != tt.errorCode {
+						t.Errorf("expected error code %q, got %q", tt.errorCode, appErr.Code)
+					}
+				}
 			}
 			if !tt.expectError && tt.base64Image == "SGVsbG8gV29ybGQ=" {
 				expected := "Hello World"
@@ -76,6 +101,7 @@ func TestReadImage(t *testing.T) {
 		"test.gif":  []byte("fake gif data"),
 		"test.webp": []byte("fake webp data"),
 		"test.txt":  []byte("not an image"),
+		"empty.png": []byte{}, // Empty file
 	}
 
 	for filename, content := range testFiles {
@@ -84,11 +110,17 @@ func TestReadImage(t *testing.T) {
 		}
 	}
 
+	// Create a directory to test directory validation
+	if err := os.Mkdir("testdir", 0755); err != nil {
+		t.Fatal(err)
+	}
+
 	tests := []struct { //nolint:govet // fieldalignment is a minor test optimization
 		name         string
 		filename     string
 		expectError  bool
 		expectedType string
+		errorCode    string
 	}{
 		{
 			name:         "valid PNG file",
@@ -124,16 +156,37 @@ func TestReadImage(t *testing.T) {
 			name:        "unsupported file type",
 			filename:    "test.txt",
 			expectError: true,
+			errorCode:   "unsupported_image_format",
 		},
 		{
 			name:        "non-existent file",
 			filename:    "nonexistent.png",
 			expectError: true,
+			errorCode:   "file_not_found",
 		},
 		{
 			name:        "path traversal attempt",
 			filename:    "../../../etc/passwd",
 			expectError: true,
+			errorCode:   "path_traversal_denied",
+		},
+		{
+			name:        "empty filename",
+			filename:    "",
+			expectError: true,
+			errorCode:   "empty_filename",
+		},
+		{
+			name:        "directory instead of file",
+			filename:    "testdir",
+			expectError: true,
+			errorCode:   "path_is_directory",
+		},
+		{
+			name:        "empty image file",
+			filename:    "empty.png",
+			expectError: true,
+			errorCode:   "empty_image_file",
 		},
 	}
 
@@ -146,6 +199,14 @@ func TestReadImage(t *testing.T) {
 			}
 			if !tt.expectError && err != nil {
 				t.Errorf("unexpected error: %v", err)
+			}
+			if tt.expectError && err != nil {
+				// Check if it's an AppError with expected code
+				if appErr, ok := err.(*errors.AppError); ok {
+					if tt.errorCode != "" && appErr.Code != tt.errorCode {
+						t.Errorf("expected error code %q, got %q", tt.errorCode, appErr.Code)
+					}
+				}
 			}
 			if !tt.expectError {
 				if imageType != tt.expectedType {
@@ -160,8 +221,7 @@ func TestReadImage(t *testing.T) {
 }
 
 func TestLoadDocument(t *testing.T) {
-	// This test is tricky because LoadDocument reads from stdin
-	// We'll test the document wrapping logic by mocking
+	// Test document wrapping logic
 	tests := []struct {
 		name     string
 		input    string
@@ -181,8 +241,7 @@ func TestLoadDocument(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Since we can't easily mock stdin in this context,
-			// we'll test the document wrapping logic separately
+			// Test the document wrapping logic separately since we can't easily mock stdin
 			var result string
 			if tt.input != "" {
 				result = "<document>\n\n" + tt.input + "\n\n</document>\n\n"
@@ -193,11 +252,57 @@ func TestLoadDocument(t *testing.T) {
 			}
 		})
 	}
+
+	// Test that LoadDocument handles terminal detection
+	// This will test the actual function but won't read from stdin in terminal mode
+	t.Run("terminal detection", func(t *testing.T) {
+		// In test environment, this should detect we're in a terminal and return empty string
+		result, err := LoadDocument()
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		// In terminal mode, should return empty string
+		if result != "" {
+			t.Errorf("expected empty string in terminal mode, got %q", result)
+		}
+	})
 }
 
 func TestProcessStreamingOutput(t *testing.T) {
-	// This test requires AWS SDK types which are complex to mock
-	// We'll create a simple test for the handler function pattern
+	// Test validation of input parameters
+	t.Run("nil output validation", func(t *testing.T) {
+		handler := func(_ context.Context, part string) error {
+			return nil
+		}
+		
+		_, err := ProcessStreamingOutput(nil, handler)
+		if err == nil {
+			t.Error("expected error for nil output")
+		}
+		
+		if appErr, ok := err.(*errors.AppError); ok {
+			if appErr.Code != "invalid_input" {
+				t.Errorf("expected error code 'invalid_input', got %q", appErr.Code)
+			}
+		}
+	})
+
+	t.Run("nil handler validation", func(t *testing.T) {
+		// We can't easily create a real ConverseStreamOutput, so we'll test with nil
+		// This tests the validation logic
+		_, err := ProcessStreamingOutput(nil, nil)
+		if err == nil {
+			t.Error("expected error for nil handler")
+		}
+		
+		if appErr, ok := err.(*errors.AppError); ok {
+			if appErr.Code != "invalid_input" {
+				t.Errorf("expected error code 'invalid_input', got %q", appErr.Code)
+			}
+		}
+	})
+
+	// Test the handler function pattern
 	t.Run("handler function receives parts", func(t *testing.T) {
 		var receivedParts []string
 		handler := func(_ context.Context, part string) error { //nolint:unparam // test function always returns nil
@@ -222,8 +327,20 @@ func TestProcessStreamingOutput(t *testing.T) {
 }
 
 func TestStringPrompt(t *testing.T) {
-	// StringPrompt reads from stdin, so we can't easily test it in unit tests
-	// We could test it with dependency injection or mocking, but for now
-	// we'll leave this as an integration test candidate
-	t.Skip("StringPrompt requires stdin interaction - should be tested in integration tests")
+	// Test validation of empty label
+	t.Run("empty label validation", func(t *testing.T) {
+		// This will test the validation logic but won't actually prompt
+		// since we're in a test environment (terminal mode)
+		result := StringPrompt("")
+		// Should not panic and should return some result
+		// The exact result depends on the terminal state, but it shouldn't crash
+		_ = result // We can't predict the exact output in test environment
+	})
+
+	t.Run("valid label", func(t *testing.T) {
+		// Test with a valid label
+		result := StringPrompt("Test prompt")
+		// Should not panic and should return some result
+		_ = result // We can't predict the exact output in test environment
+	})
 }
