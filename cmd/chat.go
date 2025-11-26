@@ -190,10 +190,27 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		svc := bedrockruntime.NewFromConfig(cfg)
 
+		// Build inference configuration
+		// Note: Some models (like Claude Sonnet 4.5) don't allow both temperature and topP
+		// Only include parameters that were explicitly set or use temperature as default
 		conf := types.InferenceConfiguration{
-			MaxTokens:   &maxTokens,
-			TopP:        &topP,
-			Temperature: &temperature,
+			MaxTokens: &maxTokens,
+		}
+
+		// Check if flags were explicitly changed from defaults
+		tempChanged := flagCmd.PersistentFlags().Changed("temperature")
+		topPChanged := flagCmd.PersistentFlags().Changed("topP")
+
+		if tempChanged && topPChanged {
+			// Both explicitly set - use temperature and warn user
+			fmt.Println("Warning: Both temperature and topP were set. Some models don't support both parameters simultaneously. Using temperature only.")
+			conf.Temperature = &temperature
+		} else if topPChanged {
+			// Only topP was explicitly set
+			conf.TopP = &topP
+		} else {
+			// Use temperature (either explicitly set or default)
+			conf.Temperature = &temperature
 		}
 
 		if chatId == "" {
