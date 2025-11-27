@@ -1,5 +1,6 @@
 .DS_Store
 bin/*
+chat-cli
 
 dist/
 
