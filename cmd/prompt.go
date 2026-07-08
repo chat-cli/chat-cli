@@ -148,13 +148,15 @@ var promptCmd = &cobra.Command{
 			modelIdString = finalModelId
 		}
 
-		// get options
-		temperature, err := cmd.PersistentFlags().GetFloat32("temperature")
+		// get options — temperature and topP are omitted from the Bedrock
+		// request unless explicitly set on the command line, since newer
+		// models (e.g. Claude Sonnet 5) reject them entirely.
+		temperature, err := optionalFloat32Flag(cmd.PersistentFlags(), "temperature")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		topP, err := cmd.PersistentFlags().GetFloat32("topP")
+		topP, err := optionalFloat32Flag(cmd.PersistentFlags(), "topP")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -203,11 +205,7 @@ var promptCmd = &cobra.Command{
 			userMsg.Content = append(userMsg.Content, buildDocumentContentBlock(docBytes, docFormat, sanitizeDocumentName(documentPath)))
 		}
 
-		conf := types.InferenceConfiguration{
-			MaxTokens:   &maxTokens,
-			TopP:        &topP,
-			Temperature: &temperature,
-		}
+		conf := buildInferenceConfiguration(maxTokens, temperature, topP)
 
 		if noStream {
 			// set up ConverseInput with model and prompt
@@ -220,13 +218,7 @@ var promptCmd = &cobra.Command{
 			converseInput.Messages = append(converseInput.Messages, userMsg)
 
 			// invoke and wait for full response
-			output, err := svc.Converse(context.TODO(), converseInput)
-			if err != nil && (hasSystemCachePoint(converseInput.System) || hasContentCachePoint(converseInput.Messages[0].Content)) {
-				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
-				converseInput.System = stripSystemCachePoints(converseInput.System)
-				converseInput.Messages[0].Content = stripContentCachePoints(converseInput.Messages[0].Content)
-				output, err = svc.Converse(context.TODO(), converseInput)
-			}
+			output, err := converseWithFallbacks(context.TODO(), svc, converseInput)
 			if err != nil {
 				log.Fatalf("error from Bedrock, %v", err)
 			}
@@ -254,13 +246,7 @@ var promptCmd = &cobra.Command{
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
 
 			// invoke with streaming response
-			output, err := svc.ConverseStream(context.Background(), converseStreamInput)
-			if err != nil && (hasSystemCachePoint(converseStreamInput.System) || hasContentCachePoint(converseStreamInput.Messages[0].Content)) {
-				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
-				converseStreamInput.System = stripSystemCachePoints(converseStreamInput.System)
-				converseStreamInput.Messages[0].Content = stripContentCachePoints(converseStreamInput.Messages[0].Content)
-				output, err = svc.ConverseStream(context.Background(), converseStreamInput)
-			}
+			output, err := converseStreamWithFallbacks(context.Background(), svc, converseStreamInput)
 			if err != nil {
 				log.Fatalf("error from Bedrock, %v", err)
 			}
@@ -305,7 +291,7 @@ func init() {
 	promptCmd.PersistentFlags().StringP("document", "d", "", "path to a document (pdf, csv, doc, docx, xls, xlsx, html, txt, md)")
 	promptCmd.PersistentFlags().Bool("no-stream", false, "return the full response once it has completed")
 
-	promptCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
-	promptCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
+	promptCmd.PersistentFlags().Float32("temperature", 1.0, "optional temperature (0-1); omitted from the request unless set")
+	promptCmd.PersistentFlags().Float32("topP", 0.999, "optional top-P (0-1); omitted from the request unless set")
 	promptCmd.PersistentFlags().Int32("max-tokens", 500, "max tokens")
 }

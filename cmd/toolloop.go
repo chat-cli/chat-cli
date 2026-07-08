@@ -141,12 +141,11 @@ func accumulateStream(events <-chan types.ConverseStreamOutput, onText, onReason
 			}
 			toolCalls = append(toolCalls, call)
 
-			var inputDoc json.RawMessage = call.Input
 			content = append(content, &types.ContentBlockMemberToolUse{
 				Value: types.ToolUseBlock{
 					Name:      aws.String(acc.toolName),
 					ToolUseId: aws.String(acc.toolUseID),
-					Input:     document.NewLazyDocument(inputDoc),
+					Input:     toolInputDocument(call.Input),
 				},
 			})
 		}
@@ -230,4 +229,17 @@ func finalizeToolCall(name, toolUseID, rawInput string) (tools.ToolCall, error) 
 		ToolUseID: toolUseID,
 		Input:     json.RawMessage(rawInput),
 	}, nil
+}
+
+// toolInputDocument converts validated tool-call JSON into the document
+// shape Bedrock expects when echoing a ToolUseBlock back into conversation
+// history. Passing json.RawMessage directly to NewLazyDocument serializes as
+// a JSON string, not an object, which Bedrock rejects on the follow-up turn.
+func toolInputDocument(raw json.RawMessage) document.Interface {
+	var parsed map[string]interface{}
+	if err := json.Unmarshal(raw, &parsed); err != nil || parsed == nil {
+		parsed = map[string]interface{}{}
+	}
+
+	return document.NewLazyDocument(parsed)
 }

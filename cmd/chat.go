@@ -118,12 +118,12 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		temperature, err := flagCmd.PersistentFlags().GetFloat32("temperature")
+		temperature, err := optionalFloat32Flag(flagCmd.PersistentFlags(), "temperature")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		topP, err := flagCmd.PersistentFlags().GetFloat32("topP")
+		topP, err := optionalFloat32Flag(flagCmd.PersistentFlags(), "topP")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -171,11 +171,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		svc := bedrockruntime.NewFromConfig(cfg)
 
-		conf := types.InferenceConfiguration{
-			MaxTokens:   &maxTokens,
-			TopP:        &topP,
-			Temperature: &temperature,
-		}
+		conf := buildInferenceConfiguration(maxTokens, temperature, topP)
 
 		if chatId == "" {
 			chatSessionId := uuid.NewV4()
@@ -204,7 +200,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		}
 
 		sendFn := func(ctx context.Context, in *bedrockruntime.ConverseStreamInput) (<-chan types.ConverseStreamOutput, error) {
-			out, streamErr := svc.ConverseStream(ctx, in)
+			out, streamErr := converseStreamWithFallbacks(ctx, svc, in)
 			if streamErr != nil {
 				return nil, streamErr
 			}

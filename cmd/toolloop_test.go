@@ -4,6 +4,7 @@ Copyright © 2024 Micah Walter
 package cmd
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -38,6 +39,22 @@ func TestFinalizeToolCall(t *testing.T) {
 		}
 		if string(call.Input) != "{}" {
 			t.Errorf("expected empty input to become '{}', got %q", string(call.Input))
+		}
+	})
+}
+
+func TestToolInputDocument(t *testing.T) {
+	t.Run("parses object fields from raw JSON", func(t *testing.T) {
+		doc := toolInputDocument(json.RawMessage(`{"path":"go.mod"}`))
+		if doc == nil {
+			t.Fatal("expected non-nil document")
+		}
+	})
+
+	t.Run("invalid object JSON falls back to empty object", func(t *testing.T) {
+		doc := toolInputDocument(json.RawMessage(`[]`))
+		if doc == nil {
+			t.Fatal("expected non-nil document")
 		}
 	})
 }
