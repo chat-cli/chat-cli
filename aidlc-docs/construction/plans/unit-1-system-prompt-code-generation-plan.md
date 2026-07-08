@@ -15,54 +15,54 @@
 ## TDD Order (per CLAUDE.md: tests before implementation)
 
 ### Step 1 — Failing test: config supports `system-prompt` key
-- [ ] Add test to `cmd/cmd_test.go`: `TestConfigCommandSupportsSystemPrompt` — asserts `"system-prompt"` is accepted by set/unset/list (by checking against the same supported-keys pattern `TestConfigCommand` already uses, extended with a table covering the three subcommands). Run `go test ./cmd/... -run TestConfigCommandSupportsSystemPrompt` and confirm it fails (key not yet supported).
+- [x] Add test to `cmd/cmd_test.go`: `TestConfigCommandSupportsSystemPrompt` — asserts `"system-prompt"` is accepted by set/unset/list (by checking against the same supported-keys pattern `TestConfigCommand` already uses, extended with a table covering the three subcommands). Run `go test ./cmd/... -run TestConfigCommandSupportsSystemPrompt` and confirm it fails (key not yet supported).
 
 ### Step 2 — Implementation: add `system-prompt` to config command
-- [ ] Modify `cmd/config.go`: add `"system-prompt": true` to `configSetCmd`'s `supportedKeys` map, `configUnsetCmd`'s `supportedKeys` map, and add `"system-prompt"` to `configListCmd`'s `configKeys` slice. Update the two `Long` help strings ("Supported keys: custom-arn, model-id") to include `system-prompt`.
-- [ ] Re-run Step 1's test — confirm it now passes.
+- [x] Modify `cmd/config.go`: add `"system-prompt": true`. **Refinement during generation**: extracted the 3 duplicated local `supportedKeys` map literals into one package-level `supportedConfigKeys` var (reduces duplication, matches the spirit of #92, and makes the key list directly unit-testable). Added `"system-prompt"` to it and to `configListCmd`'s `configKeys` slice; updated both `Long` help strings.
+- [x] Re-run Step 1's test — confirm it now passes.
 
 ### Step 3 — Failing test: system-content-block builder helper
-- [ ] Add test file `cmd/systemprompt_test.go` (new, small, focused): `TestBuildSystemContentBlocks` table-driven test covering:
+- [x] Add test file `cmd/systemprompt_test.go` (new, small, focused): `TestBuildSystemContentBlocks` table-driven test covering:
   - empty string in → `nil` (no blocks) — proves NFR1 (unchanged behavior when unset)
   - non-empty string in → single `[]types.SystemContentBlock{&types.SystemContentBlockMemberText{Value: "..."}}`
-- [ ] Run and confirm it fails (function doesn't exist yet).
+- [x] Run and confirm it fails (function doesn't exist yet).
 
 ### Step 4 — Implementation: extract testable helper
-- [ ] Add `cmd/systemprompt.go` (new file): `buildSystemContentBlocks(systemPrompt string) []types.SystemContentBlock` — pure function, no AWS calls, no I/O. Returns `nil` for an empty string, else a single `SystemContentBlockMemberText`.
-- [ ] Re-run Step 3's test — confirm it passes.
+- [x] Add `cmd/systemprompt.go` (new file): `buildSystemContentBlocks(systemPrompt string) []types.SystemContentBlock` — pure function, no AWS calls, no I/O. Returns `nil` for an empty string, else a single `SystemContentBlockMemberText`.
+- [x] Re-run Step 3's test — confirm it passes.
 
 ### Step 5 — Failing test: `--system` flag exists on root and prompt commands
-- [ ] Extend `TestRootCommand` (or add `TestSystemPromptFlag`) in `cmd/cmd_test.go` asserting `rootCmd.PersistentFlags().Lookup("system")` exists with an empty-string default.
-- [ ] Add equivalent assertion for `promptCmd.PersistentFlags().Lookup("system")`.
-- [ ] Run and confirm failure (flags don't exist yet).
+- [x] Extend `TestRootCommand` (or add `TestSystemPromptFlag`) in `cmd/cmd_test.go` asserting `rootCmd.PersistentFlags().Lookup("system")` exists with an empty-string default.
+- [x] Add equivalent assertion for `promptCmd.PersistentFlags().Lookup("system")`.
+- [x] Run and confirm failure (flags don't exist yet).
 
 ### Step 6 — Implementation: register `--system` flag
-- [ ] Modify `cmd/root.go`'s `init()`: add `rootCmd.PersistentFlags().String("system", "", "set a system prompt")`, alongside the existing `--model-id`/`--custom-arn`/etc. registrations (same pattern, so it works at both `chat-cli` and `chat-cli chat`).
-- [ ] Modify `cmd/prompt.go`'s `init()`: add `promptCmd.PersistentFlags().String("system", "", "set a system prompt")`, alongside its own existing `--model-id`/`--custom-arn` duplication.
-- [ ] Re-run Step 5's tests — confirm they pass.
-- [ ] Re-run `TestFlagInheritance`-style check is not required for `system` since (like `chat-id`/`temperature`) it doesn't need to appear in that specific test's list unless the user wants full parity — out of scope here, existing test only enumerates `region`/`model-id`/`custom-arn`.
+- [x] Modify `cmd/root.go`'s `init()`: add `rootCmd.PersistentFlags().String("system", "", "set a system prompt")`, alongside the existing `--model-id`/`--custom-arn`/etc. registrations (same pattern, so it works at both `chat-cli` and `chat-cli chat`).
+- [x] Modify `cmd/prompt.go`'s `init()`: add `promptCmd.PersistentFlags().String("system", "", "set a system prompt")`, alongside its own existing `--model-id`/`--custom-arn` duplication.
+- [x] Re-run Step 5's tests — confirm they pass.
+- [x] Re-run `TestFlagInheritance`-style check is not required for `system` since (like `chat-id`/`temperature`) it doesn't need to appear in that specific test's list unless the user wants full parity — out of scope here, existing test only enumerates `region`/`model-id`/`custom-arn`.
 
 ### Step 7 — Implementation: wire system prompt into `chat` (`cmd/chat.go`)
-- [ ] Read `--system` flag via the existing `flagCmd.PersistentFlags().GetString(...)` pattern already used for `model-id`/`custom-arn`/`chat-id`/etc.
-- [ ] Resolve via `fm.GetConfigValue("system-prompt", systemFlag, "")` — same precedence call already used for `model-id`.
-- [ ] Call `buildSystemContentBlocks(...)`; if non-nil, set `converseStreamInput.System = ...` before the tty-loop starts (system prompt is fixed for the session, per Assumption 1 in `requirements.md`).
-- [ ] No test added in this step — covered by Step 4's unit test of the pure helper, plus Step 9's manual verification (per NFR1/NFR2, `Run()` itself follows the codebase's existing untested-at-the-Run-level pattern).
+- [x] Read `--system` flag via the existing `flagCmd.PersistentFlags().GetString(...)` pattern already used for `model-id`/`custom-arn`/`chat-id`/etc.
+- [x] Resolve via `fm.GetConfigValue("system-prompt", systemFlag, "")` — same precedence call already used for `model-id`.
+- [x] Call `buildSystemContentBlocks(...)`; if non-nil, set `converseStreamInput.System = ...` before the tty-loop starts (system prompt is fixed for the session, per Assumption 1 in `requirements.md`).
+- [x] No test added in this step — covered by Step 4's unit test of the pure helper, plus Step 9's manual verification (per NFR1/NFR2, `Run()` itself follows the codebase's existing untested-at-the-Run-level pattern).
 
 ### Step 8 — Implementation: wire system prompt into `prompt` (`cmd/prompt.go`)
-- [ ] Same flag read + `GetConfigValue` resolution as Step 7, using `cmd.PersistentFlags()` (prompt's own flag set, matching its existing `model-id`/`custom-arn` read pattern).
-- [ ] Call `buildSystemContentBlocks(...)`; if non-nil, set `.System = ...` on **both** `converseInput` (the `--no-stream` path) and `converseStreamInput` (the default streaming path) — both code paths exist in `promptCmd.Run` today and both need the system prompt attached (FR1.3).
+- [x] Same flag read + `GetConfigValue` resolution as Step 7, using `cmd.PersistentFlags()` (prompt's own flag set, matching its existing `model-id`/`custom-arn` read pattern).
+- [x] Call `buildSystemContentBlocks(...)`; if non-nil, set `.System = ...` on **both** `converseInput` (the `--no-stream` path) and `converseStreamInput` (the default streaming path) — both code paths exist in `promptCmd.Run` today and both need the system prompt attached (FR1.3).
 
 ### Step 9 — Full test suite and lint
-- [ ] Run `make test` — confirm all existing tests plus the new ones pass, no regressions.
-- [ ] Run `make lint` — confirm clean.
-- [ ] Run `make test-coverage` — confirm `cmd` package coverage does not regress (NFR2); expect a small improvement given 2 new test functions.
+- [x] Run `make test` — confirm all existing tests plus the new ones pass, no regressions.
+- [x] Run `make lint` — confirm clean.
+- [x] Run `make test-coverage` — confirm `cmd` package coverage does not regress (NFR2); expect a small improvement given 2 new test functions.
 
 ### Step 10 — Documentation
-- [ ] Update `README.md`: add a "System Prompt" section (near the existing "Configuration"/"Prompt"/"Chat" sections) documenting `--system`, `chat-cli config set system-prompt "..."`, and precedence (flag → config → none), mirroring the existing model-id/custom-arn documentation style.
-- [ ] Update `docs/usage.md` with the same information for the Sphinx docs site (per `CLAUDE.md`'s documentation rules — edit existing docs, no new root-level `.md` files).
+- [x] Update `README.md`: add a "System Prompt" section (near the existing "Configuration"/"Prompt"/"Chat" sections) documenting `--system`, `chat-cli config set system-prompt "..."`, and precedence (flag → config → none), mirroring the existing model-id/custom-arn documentation style.
+- [x] Update `docs/usage.md` with the same information for the Sphinx docs site (per `CLAUDE.md`'s documentation rules — edit existing docs, no new root-level `.md` files).
 
 ### Step 11 — Unit Documentation Summary
-- [ ] Create `aidlc-docs/construction/unit-1-system-prompt/code/summary.md` (markdown summary only, per Code Location Rules) listing modified/created files and confirming story 1.1's acceptance criteria are met.
+- [x] Create `aidlc-docs/construction/unit-1-system-prompt/code/summary.md` (markdown summary only, per Code Location Rules) listing modified/created files and confirming story 1.1's acceptance criteria are met.
 
 ## Story Traceability
 - Story 1.1 (all 4 acceptance criteria) → Steps 1-8 implement and test them directly; Step 9 verifies the full suite; Step 10 satisfies NFR6.

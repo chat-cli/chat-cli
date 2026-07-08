@@ -114,6 +114,29 @@ The configuration system follows a clear precedence order:
 
 - `model-id`: The default model identifier to use for chat and prompt commands
 - `custom-arn`: A custom ARN from Bedrock marketplace or for cross-region inference
+- `system-prompt`: The default system prompt to use for chat and prompt commands
+
+## System Prompt
+
+You can give the model a system prompt with the `--system` flag, on either `prompt` or `chat`:
+
+```shell
+    chat-cli prompt "How are you today?" --system "You are a terse, no-nonsense assistant."
+```
+
+```shell
+    chat-cli --system "You are a terse, no-nonsense assistant."
+```
+
+For `chat`, the system prompt is set once at the start of the session and stays fixed for the rest of that conversation.
+
+You can also set a default system prompt so you don't have to pass `--system` every time:
+
+```shell
+    chat-cli config set system-prompt "You are a terse, no-nonsense assistant."
+```
+
+The same precedence rules as `model-id`/`custom-arn` apply: `--system` flag, then the persisted config value, then no system prompt at all.
 
 ## Prompt
 

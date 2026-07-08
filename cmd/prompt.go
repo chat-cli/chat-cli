@@ -80,9 +80,15 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		systemFlag, err := cmd.PersistentFlags().GetString("system")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
 		// Get configuration values with precedence order (flag -> config -> default)
 		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
+		systemPrompt := fm.GetConfigValue("system-prompt", systemFlag, "").(string)
 
 		// Ensure custom-arn takes precedence over model-id when both are set
 		// If custom-arn is set (from any source), use it; otherwise use model-id
@@ -184,6 +190,7 @@ var promptCmd = &cobra.Command{
 			converseInput := &bedrockruntime.ConverseInput{
 				ModelId:         &modelIdString,
 				InferenceConfig: &conf,
+				System:          buildSystemContentBlocks(systemPrompt),
 			}
 			converseInput.Messages = append(converseInput.Messages, userMsg)
 
@@ -203,6 +210,7 @@ var promptCmd = &cobra.Command{
 			converseStreamInput := &bedrockruntime.ConverseStreamInput{
 				ModelId:         &modelIdString,
 				InferenceConfig: &conf,
+				System:          buildSystemContentBlocks(systemPrompt),
 			}
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
 
@@ -229,6 +237,7 @@ func init() {
 	rootCmd.AddCommand(promptCmd)
 	promptCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
 	promptCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
+	promptCmd.PersistentFlags().String("system", "", "set a system prompt")
 
 	promptCmd.PersistentFlags().StringP("image", "i", "", "path to image")
 	promptCmd.PersistentFlags().Bool("no-stream", false, "return the full response once it has completed")

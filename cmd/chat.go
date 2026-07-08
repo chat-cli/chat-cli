@@ -78,9 +78,15 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		systemFlag, err := flagCmd.PersistentFlags().GetString("system")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
 		// Get configuration values with precedence order (flag -> config -> default)
 		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
+		systemPrompt := fm.GetConfigValue("system-prompt", systemFlag, "").(string)
 
 		// Ensure custom-arn takes precedence over model-id when both are set
 		// If custom-arn is set (from any source), use it; otherwise use model-id
@@ -168,6 +174,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			ModelId:         aws.String(modelIdString),
 			InferenceConfig: &conf,
 			RequestMetadata: metadata,
+			System:          buildSystemContentBlocks(systemPrompt),
 		}
 
 		// initial prompt

@@ -73,6 +73,7 @@ When both `model-id` and `custom-arn` are configured, `custom-arn` takes precede
 |---------|-------------|---------|
 | `model-id` | Default model identifier for Bedrock foundation models | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
 | `custom-arn` | Custom ARN for marketplace or cross-region inference | `arn:aws:bedrock:us-west-2::foundation-model/custom-model` |
+| `system-prompt` | Default system prompt used by `chat` and `prompt` | `You are a terse, no-nonsense assistant.` |
 
 ### Configuration Storage
 
@@ -85,8 +86,24 @@ Configuration values are stored in a YAML file in your system's standard configu
 (prompt)=
 ## Prompt
 
+Use `--system` to give the model a system prompt for a single one-shot request:
+
+```shell
+chat-cli prompt "How are you today?" --system "You are a terse, no-nonsense assistant."
+```
+
+If no `--system` flag is given, the persisted `system-prompt` config value (if any, see [Config](#config)) is used instead. If neither is set, no system prompt is sent — behavior is unchanged from before this feature existed.
+
 (chat)=
 ## Chat
+
+Use `--system` to set a system prompt for the whole interactive session (it applies at session start and doesn't change mid-conversation):
+
+```shell
+chat-cli --system "You are a terse, no-nonsense assistant."
+```
+
+Like `prompt`, this falls back to the persisted `system-prompt` config value, then to no system prompt at all.
 
 (image)=
 ## Image

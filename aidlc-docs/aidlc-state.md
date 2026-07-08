@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 1 (System Prompt Support, #81) - Code Generation
+- **Current Stage**: CONSTRUCTION - Unit 1 (System Prompt Support, #81) - Code Generation complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -48,9 +48,13 @@
 - [x] NFR Requirements - SKIP (no new security/performance concerns beyond cross-cutting NFRs already in requirements.md)
 - [x] NFR Design - SKIP (follows from NFR Requirements skip)
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [ ] Code Generation - Part 1 Planning complete, awaiting plan approval
+- [x] Code Generation - Complete 2026-07-08, awaiting user review/approval
   - Plan: aidlc-docs/construction/plans/unit-1-system-prompt-code-generation-plan.md
-- [ ] Build and Test - Pending all 5 units
+  - Summary: aidlc-docs/construction/unit-1-system-prompt/code/summary.md
+- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass)
+
+## Unit 1 Status: CODE COMPLETE, AWAITING REVIEW
+Next: Unit 2 (Tool Use / Function Calling, #82) once Unit 1 is approved.
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)

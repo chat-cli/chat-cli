@@ -173,3 +173,19 @@
 **User Input**: (n/a - executing per approved unit-of-work)
 **AI Response**: "Downloaded and inspected the AWS SDK v2 bedrockruntime module locally to confirm exact type names (ConverseInput.System/ConverseStreamInput.System are []types.SystemContentBlock, SystemContentBlockMemberText{Value string}) before writing the plan, rather than guessing. Reviewed existing cmd_test.go pattern (metadata/flag assertions only, no AWS mocking) and config_test.go (GetConfigValue already generically tested for any string key). Created unit-1-system-prompt-code-generation-plan.md: 11 TDD-ordered steps (failing test then implementation, per CLAUDE.md) covering config key support, a new testable buildSystemContentBlocks() helper, flag registration on root+prompt, wiring into chat.go and prompt.go (both streaming and no-stream paths), full test/lint run, and documentation. Presenting for approval before generation begins."
 **Context**: Unit 1 Code Generation (Planning), CONSTRUCTION phase
+
+---
+
+## Unit 1 Code Generation Plan Approval
+**Timestamp**: 2026-07-08T01:00:00Z
+**User Input**: "yes"
+**AI Response**: "Plan approved. Proceeding to Part 2 Generation, executing steps 1-11 in TDD order."
+**Context**: Unit 1 Code Generation (Planning) approval, CONSTRUCTION phase
+
+---
+
+## Unit 1 Code Generation - Complete
+**Timestamp**: 2026-07-08T01:15:00Z
+**User Input**: (n/a - continuation per approved plan)
+**AI Response**: "Executed all 11 steps in TDD order (red-green cycle confirmed for each new behavior via go test before/after implementation). Created cmd/systemprompt.go + cmd/systemprompt_test.go. Modified cmd/config.go (extracted duplicated supportedKeys maps into one package-level supportedConfigKeys var as a refinement - reduces duplication per the spirit of #92), cmd/root.go, cmd/prompt.go, cmd/chat.go, cmd/cmd_test.go, README.md, docs/usage.md. Verification: make test (all green, no regressions), make lint (clean), make cli + go test -tags=integration -v (all 7 integration tests pass), coverage cmd 7.4% to 8.0% (no regression). golangci-lint could not run due to a pre-existing binary/config version mismatch unrelated to this change (reinforces #96). Manual smoke test confirmed --system flag and config set/list/unset system-prompt work correctly end-to-end. Created unit summary doc. Presenting for approval before Unit 2."
+**Context**: Unit 1 Code Generation (Generation), CONSTRUCTION phase

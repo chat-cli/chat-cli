@@ -49,6 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
 	rootCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 	rootCmd.PersistentFlags().String("chat-id", "", "pass a valid chat-id to load a previous conversation")
+	rootCmd.PersistentFlags().String("system", "", "set a system prompt")
 	rootCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
 	rootCmd.PersistentFlags().Float32("topP", 0.999, "topP setting")
 	rootCmd.PersistentFlags().Int32("max-tokens", 500, "max tokens")

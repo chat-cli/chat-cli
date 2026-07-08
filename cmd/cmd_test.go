@@ -47,6 +47,13 @@ func TestRootCommand(t *testing.T) {
 	if flag == nil {
 		t.Error("Expected 'custom-arn' flag to exist")
 	}
+
+	flag = rootCmd.PersistentFlags().Lookup("system")
+	if flag == nil {
+		t.Error("Expected 'system' flag to exist")
+	} else if flag.DefValue != "" {
+		t.Errorf("Expected default 'system' flag value to be empty, got '%s'", flag.DefValue)
+	}
 }
 
 func TestPromptCommand(t *testing.T) {
@@ -62,6 +69,13 @@ func TestPromptCommand(t *testing.T) {
 	// Test that prompt command requires arguments
 	if promptCmd.Args == nil {
 		t.Error("Expected prompt command to have Args validation")
+	}
+
+	flag := promptCmd.PersistentFlags().Lookup("system")
+	if flag == nil {
+		t.Error("Expected 'system' flag to exist on prompt command")
+	} else if flag.DefValue != "" {
+		t.Errorf("Expected default 'system' flag value to be empty, got '%s'", flag.DefValue)
 	}
 
 	// Test prompt command without arguments (should fail)
@@ -113,6 +127,20 @@ func TestConfigCommand(t *testing.T) {
 	}
 	if !hasUnset {
 		t.Error("Expected config command to have 'unset' subcommand")
+	}
+}
+
+func TestConfigCommandSupportsSystemPrompt(t *testing.T) {
+	// Unit 1 (System Prompt Support, #81): "system-prompt" must be a supported
+	// config key, same as "model-id" and "custom-arn".
+	if !supportedConfigKeys["system-prompt"] {
+		t.Error("Expected 'system-prompt' to be a supported config key")
+	}
+	if !supportedConfigKeys["model-id"] {
+		t.Error("Expected 'model-id' to remain a supported config key")
+	}
+	if !supportedConfigKeys["custom-arn"] {
+		t.Error("Expected 'custom-arn' to remain a supported config key")
 	}
 }
 
