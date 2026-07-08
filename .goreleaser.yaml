@@ -46,6 +46,8 @@ brews:
     repository:
       owner: chat-cli
       name: homebrew-chat-cli
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      git:
+        url: ssh://git@github.com/chat-cli/homebrew-chat-cli.git
+        private_key: "{{ .Env.HOMEBREW_TAP_DEPLOY_KEY }}"
     description: "chat-cli is a command line tool for working with llms on Amazon Bedrock"
     homepage: "https://github.com/chat-cli/chat-cli/"

@@ -59,9 +59,32 @@ Configure these in **Settings → Secrets and variables → Actions**:
 | Secret | Purpose |
 |--------|---------|
 | `GITHUB_TOKEN` | Provided automatically; publishes release assets to this repo |
-| `HOMEBREW_TAP_GITHUB_TOKEN` | PAT with push access to `chat-cli/homebrew-chat-cli` |
+| `HOMEBREW_TAP_DEPLOY_KEY` | SSH private key (write deploy key on `chat-cli/homebrew-chat-cli`) |
 
-Without `HOMEBREW_TAP_GITHUB_TOKEN`, GoReleaser still publishes GitHub Release binaries but cannot update the Homebrew tap.
+Without `HOMEBREW_TAP_DEPLOY_KEY`, GoReleaser still publishes GitHub Release binaries but cannot update the Homebrew tap.
+
+### Homebrew tap deploy key (one-time setup)
+
+Generate a dedicated key (no passphrase):
+
+```bash
+ssh-keygen -t ed25519 -C "goreleaser-homebrew-tap" -f ~/.ssh/chat-cli-homebrew-tap -N ""
+```
+
+Add the public key to the tap repo with write access:
+
+```bash
+gh repo deploy-key add ~/.ssh/chat-cli-homebrew-tap.pub \
+  --repo chat-cli/homebrew-chat-cli \
+  --title "GoReleaser release automation" \
+  --allow-write
+```
+
+Store the private key as a repository secret:
+
+```bash
+gh secret set HOMEBREW_TAP_DEPLOY_KEY --repo chat-cli/chat-cli < ~/.ssh/chat-cli-homebrew-tap
+```
 
 ## Local GoReleaser (optional)
 
