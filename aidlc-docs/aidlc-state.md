@@ -272,4 +272,8 @@ a verified ancestor of the merge commit before reset).
 - [x] Functional Design - Completed 2026-07-08, awaiting user approval
   - Artifacts: aidlc-docs/construction/unit-6-confirmation-engine/functional-design/{business-logic-model,business-rules,domain-entities}.md
   - Key decisions: NOT reusing utils.StringPrompt (wrong shape - bubbletea widget for free text vs. a discrete choice); ConfirmationSummary parse failure = denial-equivalent (never reaches gate); pattern keys are base-command (run_shell) / repo-relative directory (write_file); persisted store at <ConfigPath>/tool-approvals.yaml, 0600 perms, keyed by absolute repo root; InteractivePermissionGate takes injectable io.Reader/io.Writer for testability; "always" not offered outside a git repo (BR10)
-- [ ] NFR Requirements + Design - Pending
+- [x] NFR Requirements + Design - Completed 2026-07-08, awaiting user approval (combined presentation, same pattern as Initiative 1 Units 2/4)
+  - Artifacts: aidlc-docs/construction/unit-6-confirmation-engine/nfr-requirements/nfr-requirements-and-design.md
+  - Security (dominant): Dispatch is the single choke point, fail-closed on every ambiguous state, per-repo scoping is a security boundary not just UX, 0600 file perms. Reliability: corrupted store degrades to empty (re-prompt), never fatal. Usability: informative prompts, stated truncation policy for large write_file content.
+- [ ] Infrastructure Design - SKIP (no infrastructure in this project)
+- [ ] Code Generation - Pending

@@ -628,3 +628,9 @@
 **Context**: CONSTRUCTION PHASE, Unit 6 - Functional Design complete, awaiting approval before NFR Requirements + Design
 
 ---
+## Unit 6 NFR Requirements + Design Complete
+**Timestamp**: 2026-07-08T17:55:00Z
+**AI Response**: Combined NFR presentation (Security dominant, Reliability + Usability secondary, Scalability/Performance/Availability N/A per established project-wide rationale). Key security design: Registry.Dispatch as the single choke point (structurally enforced by the interface, not just convention), fail-closed on every ambiguous state (unparseable summary, unrecognized prompt input, corrupted store all resolve to deny/re-prompt, never allow), per-repository scoping treated as a real security boundary with a dedicated Build and Test scenario planned to verify it, 0600 file permissions on the persisted store.
+**Context**: CONSTRUCTION PHASE, Unit 6 - NFR complete, awaiting approval before Code Generation
+
+---
