@@ -326,6 +326,14 @@
 **AI Response**: "Verified DocumentBlock/DocumentSource/ContentBlockMemberDocument/DocumentFormat directly against the SDK. Found DocumentBlock.Name has a hard character restriction (raw filenames like 'report.pdf' are invalid - the period isn't allowed) and the SDK's own docs flag unsanitized names as a prompt-injection vector - designed sanitizeDocumentName to address both. Confirmed bedrock's ModelModality enum has no DOCUMENT value (same pattern as tool use and caching - no pre-flight capability check exists). Decided NOT to retry-without-document on error (unlike Unit 3's caching) since a document is requested content, not an optional optimization - errors surface clearly instead. Decided no client-side file-size check, consistent with ReadImage's existing precedent. NFR Requirements+Design combined into one light document since SEC-1 (path safety) is fully satisfied by reusing Unit 2's utils.ValidateLocalPath as-is - no fresh security design needed, only SEC-2 (name sanitization) is new. Presenting both for one combined approval."
 **Context**: Unit 4 Functional Design + NFR, CONSTRUCTION phase
 
+---
+
+## Unit 4 Approval - Code Generation Planning
+**Timestamp**: 2026-07-08T03:15:00Z
+**User Input**: "Approve and continue"
+**AI Response**: "Approval recorded. Designing Code Generation plan: utils.ReadDocument mirrors utils.ReadImage's shape (validates via ValidateLocalPath, checks extension against the DocumentFormat allow-list); a new cmd/documentinput.go holds sanitizeDocumentName and the ContentBlockMemberDocument builder, mirroring how buildSystemContentBlocks/promptcache.go are cmd-level SDK-type-specific helpers separate from utils' file-IO layer."
+**Context**: Unit 4 Code Generation (Planning), CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)

@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 4 (Native Document Input, #84) - Functional Design + NFR complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 4 (Native Document Input, #84) - Code Generation Part 1 Planning complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -93,14 +93,15 @@ build+test+lint+integration verification passed with no regressions.
 ## Unit 3 Status: COMPLETE AND APPROVED (commit e315d18)
 
 ### Construction Phase - Unit 4 (Native Document Input, #84)
-- [x] Functional Design - Complete 2026-07-08, awaiting approval
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
   - Artifacts: aidlc-docs/construction/unit-4-document-input/functional-design/
-- [x] NFR Requirements - Complete 2026-07-08, awaiting approval (combined with NFR Design - SEC-1 reuses Unit 2's ValidateLocalPath as-is, only SEC-2 (name sanitization) is new)
+- [x] NFR Requirements - Completed 2026-07-08 (approved by user, combined with NFR Design)
   - Artifacts: aidlc-docs/construction/unit-4-document-input/nfr-requirements/
-- [x] NFR Design - Complete 2026-07-08, awaiting approval (combined presentation)
+- [x] NFR Design - Completed 2026-07-08 (approved by user, combined presentation)
   - Artifacts: aidlc-docs/construction/unit-4-document-input/nfr-design/
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [ ] Code Generation - Not started
+- [ ] Code Generation - Part 1 Planning complete, awaiting approval
+  - Plan: aidlc-docs/construction/plans/unit-4-document-input-code-generation-plan.md
 - [ ] Build and Test - Pending all 5 units
 
 ### Operations Phase
