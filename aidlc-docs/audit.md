@@ -445,3 +445,10 @@
 **Context**: INCEPTION PHASE, Initiative 2 - Workspace Detection complete, entering Requirements Analysis
 
 ---
+## Initiative 2 Requirements Analysis Complete
+**Timestamp**: 2026-07-08T15:35:00Z
+**User Input**: Answered clarifying questions directly in chat: "1. Just chat 2. Automatic 3. Overuse wins 4. Skip cursor for now 5. Don't know. Use best judgement"
+**AI Response**: Recorded answers into agents-md-convention-questions.md for the audit trail (interpreting "Overuse wins" as "override wins" - explicit --system/config system-prompt takes precedence entirely; interpreting "use best judgement" on walk-up scope as walk up to the nearest .git boundary, the safest default balancing usefulness against scanning unrelated ancestor directories). Wrote agents-md-convention-requirements.md with FR1-FR6/NFR1-NFR5, incorporating all 5 decisions plus assumptions on the filename precedence list, config key shape, size guard (32KB), disable mechanism, and cache-point synergy reuse from #83.
+**Context**: INCEPTION PHASE, Initiative 2 - Requirements Analysis complete, awaiting approval
+
+---

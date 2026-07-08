@@ -192,9 +192,11 @@ No PR opened (not requested by user). Recommended before merge: run the
 ## Stage Progress
 - [x] Workspace Detection - Brownfield confirmed, existing `aidlc-docs/aidlc-state.md` found (Initiative 1, complete)
   - **Reverse engineering artifacts exist but are STALE** relative to current `main` (Initiative 1 added `tools/` package, `cmd/systemprompt.go`, `cmd/promptcache.go`, `cmd/documentinput.go`, `cmd/reasoning.go`, `cmd/toolloop.go`, SDK upgrade to v1.55.0; separately `main` gained CI/release automation). **Decision**: do NOT re-run full Reverse Engineering for this narrow, additive feature - scope is well understood from this session's own recent work (system prompt + config precedence pattern directly reused). Full RE re-run would be disproportionate to a single-feature initiative. Proceeding directly to Requirements Analysis with current-state knowledge loaded ad hoc from `cmd/systemprompt.go`, `cmd/config.go`, `cmd/promptcache.go`.
-- [ ] Requirements Analysis - IN PROGRESS, clarifying questions issued
-  - Design already substantially discussed in-conversation (precedence list, no-merge policy, config key, git-root walk-up, size guard, cache-point synergy) - requirements.md will incorporate these as settled decisions; clarifying questions target only the remaining open parameters.
-- [ ] User Stories - TBD (likely SKIP - single cohesive feature, one persona already established)
+- [x] Requirements Analysis - Completed 2026-07-08, awaiting user approval
+  - Clarifying questions answered by user (chat-only scope, automatic activation, explicit-system-wins precedence, Cursor dropped from scope, walk-up-to-.git left to AI judgment)
+  - Artifacts: aidlc-docs/inception/requirements/agents-md-convention-questions.md, aidlc-docs/inception/requirements/agents-md-convention-requirements.md
+  - FR1-FR6 + NFR1-NFR5 documented; Out of Scope section captures prompt-command support, Cursor's real .mdc convention, and README.md-as-default as explicit non-goals for this pass
+- [ ] User Stories - RECOMMENDED SKIP (single cohesive feature, one persona already established in Initiative 1, requirements already concrete with FR-level acceptance detail) - offered as an option in completion message per core-workflow.md
 - [ ] Workflow Planning - TBD
 - [ ] Application Design - TBD (likely lightweight - single unit)
 - [ ] Units Generation - TBD (likely SKIP - naturally one unit of work, no parallelization benefit)

@@ -13,7 +13,7 @@ C) `prompt` only
 
 D) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: B
 
 ## Question 2
 Should this be automatic/always-on (matching how Claude Code/Cursor/etc. silently load their convention files), or opt-in like tool use (`--tools`) was?
@@ -26,7 +26,7 @@ C) Opt-in via config only (`chat-cli config set context-files ...`), no CLI flag
 
 D) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: A
 
 ## Question 3
 How should the project-context file's content combine with an explicit `--system` flag or configured `system-prompt` (from #81) when both are present?
@@ -39,7 +39,7 @@ C) Project-context file is the base, explicit `--system` flag can only append to
 
 D) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: B (user clarified in chat as "override wins" - explicit --system flag / configured system-prompt takes precedence entirely over the project-context file)
 
 ## Question 4
 What scope should Cursor's convention get in this first pass, given `.cursor/rules/*.mdc` is a directory of multiple frontmatter-scoped files (structurally different from a single flat markdown file), while `.cursorrules` is a legacy single-file format?
@@ -52,7 +52,7 @@ C) Drop Cursor support entirely from this pass; only cover `AGENTS.md`, `CLAUDE.
 
 D) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: C
 
 ## Question 5
 How far should the walk-up-to-repo-root search go if the file isn't found in the current directory?
@@ -65,4 +65,4 @@ C) Walk up unconditionally until filesystem root if no `.git` is found
 
 D) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: A (AI best judgment, per user's "don't know, use best judgment" - the .git-boundary walk-up is the safest default: avoids scanning unrelated ancestor directories while still finding the file from any subdirectory of the repo)
