@@ -62,4 +62,5 @@ usage
 models
 marketplace
 testing
+release
 ```

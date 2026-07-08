@@ -1,5 +1,8 @@
+VERSION ?= dev
+LDFLAGS := -X github.com/chat-cli/chat-cli/cmd.version=$(VERSION)
+
 cli:
-	go build -o ./bin/chat-cli main.go
+	go build -ldflags "$(LDFLAGS)" -o ./bin/chat-cli main.go
 
 test:
 	go test ./... -v
