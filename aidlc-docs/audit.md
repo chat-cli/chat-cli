@@ -683,3 +683,9 @@
 **Context**: CONSTRUCTION PHASE, Unit 7 - Code Generation Part 1 (Planning) complete, awaiting approval to begin generation
 
 ---
+## Unit 7 Code Generation Complete
+**Timestamp**: 2026-07-08T19:10:00Z
+**AI Response**: Executed all 10 steps TDD-ordered. Found and fixed a real reliability bug not caught by functional design: RunShellTool's timeout used exec.CommandContext, which only kills the direct child (sh) - a grandchild process (sleep, spawned via sh -c) kept running and holding the output pipe open, so Execute didn't actually return until the full command duration elapsed regardless of the configured timeout. Caught via a "test passes but takes 5s instead of ~50ms" signal. Fixed with process-group kill (Setpgid + syscall.Kill(-pid, SIGKILL)), racing the blocking CombinedOutput() call against ctx.Done(). Verified the fix drops the affected test from 5.02s to 0.066s, and strengthened the test to assert prompt return time going forward, not just eventual correctness. Manually verified the full wiring end-to-end using real components (no AWS needed) since a live model can't be driven to request tool calls in this environment: approve-once/deny/session-approval-reuse/gate-never-consulted-for-read-only-tools all confirmed working through the actual Registry.Dispatch + InteractivePermissionGate + ApprovalStore code path chat.go uses.
+**Context**: CONSTRUCTION PHASE, Unit 7 - Code Generation complete, awaiting approval before Unit 8
+
+---

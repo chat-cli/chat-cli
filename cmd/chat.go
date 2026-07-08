@@ -238,13 +238,14 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		registry := tools.NewRegistry()
 		if toolsEnabled {
 			registry.Register(tools.NewReadFileTool())
+			registry.Register(tools.NewWriteFileTool())
+			registry.Register(tools.NewRunShellTool())
+			registry.Register(tools.NewGitDiffTool())
 		}
 
 		// The permission gate is constructed unconditionally: it's inert
-		// until a registered tool actually requires confirmation (none do
-		// yet - read_file is read-only), but building it here means every
-		// unit that adds a destructive tool doesn't need to touch this
-		// wiring again.
+		// unless a registered tool actually requires confirmation.
+		// write_file/run_shell do; read_file/git_diff don't.
 		var repoRoot string
 		if toolCwd, cwdErr := os.Getwd(); cwdErr == nil {
 			repoRoot = utils.FindGitBoundary(toolCwd)

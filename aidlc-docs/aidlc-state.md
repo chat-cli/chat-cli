@@ -289,6 +289,13 @@ a verified ancestor of the merge commit before reset).
   - Artifacts: aidlc-docs/construction/unit-7-new-tools/functional-design/{business-logic-model,business-rules,domain-entities}.md, aidlc-docs/construction/unit-7-new-tools/nfr-requirements/nfr-requirements-and-design.md
   - Key finding: utils.ValidateLocalPath requires the target file to already exist (existence check baked in) - wrong for write_file's create-new-file case. Resolved additively: new utils.ValidateLocalPathForWrite (confinement-only) sharing a private confineToWorkingDir helper with the unchanged, existing ValidateLocalPath - zero regression risk to Units 2/4's already-shipped call sites.
   - run_shell: 30s timeout, 32KB truncated combined output, non-zero exit code reported in output text (not a Go error) so the model sees command failures as normal operation, not tool bugs.
-- [x] Code Generation - Plan complete 2026-07-08, awaiting approval to begin generation
-  - Plan: aidlc-docs/construction/plans/unit-7-new-tools-code-generation-plan.md (10 TDD-ordered steps)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-7-new-tools-code-generation-plan.md (all 10 steps complete)
+  - Summary: aidlc-docs/construction/unit-7-new-tools/code/summary.md
+  - Real bug found+fixed during implementation: RunShellTool's timeout didn't bound wall-clock time for commands with grandchild processes (sh -c "sleep 5" - killing only sh left sleep running, holding the output pipe open). Fixed via process-group kill (Setpgid + syscall.Kill(-pid)). Caught by a "passing but suspiciously slow" test (5s instead of ~50ms).
+  - Manual verification via real components (Registry+tools+InteractivePermissionGate+ApprovalStore, scripted stdin, no AWS needed): approve-once creates file, deny blocks it cleanly, session approval correctly skips re-prompting for a matching run_shell call, git_diff never touches the gate.
+  - cmd 33.3%->33.1% (negligible), tools 84.1%->81.9%, utils 53.7%->55.0%, total 69.7%->71.2%, no regressions. 7/7 integration tests pass.
+
+## Unit 7 Status: COMPLETE, AWAITING APPROVAL
+
 - [ ] Build and Test - Pending all 3 units

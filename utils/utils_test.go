@@ -354,6 +354,39 @@ func TestValidateLocalPath(t *testing.T) {
 	}
 }
 
+func TestValidateLocalPathForWrite(t *testing.T) {
+	tempDir := t.TempDir()
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("Failed to change back to original directory: %v", err)
+		}
+	}()
+
+	t.Run("a path to a file that does not exist yet succeeds", func(t *testing.T) {
+		fullPath, err := ValidateLocalPathForWrite("new-file.txt")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if fullPath == "" {
+			t.Error("expected a non-empty validated path")
+		}
+	})
+
+	t.Run("path traversal attempt is still rejected", func(t *testing.T) {
+		if _, err := ValidateLocalPathForWrite("../../../etc/passwd"); err == nil {
+			t.Error("expected an error for a path outside the working directory")
+		}
+	})
+}
+
 func TestResolveUserPath(t *testing.T) {
 	tempDir := t.TempDir()
 	docPath := filepath.Join(tempDir, "doc.pdf")
