@@ -170,3 +170,31 @@ No PR opened (not requested by user). Recommended before merge: run the
 - #96 Add CI workflow to enforce lint/test on PRs
 
 **Related pre-existing open issues surfaced during triage**: #58 (file attachments, relates to #84), #46 (document in chat mode), #41 (token counts, overlaps future UX idea - not re-filed), #65 (models placeholder output, relates to #91), #21 (concept of modules, relates to #81)
+
+---
+
+# INITIATIVE 1 EPILOGUE (post-completion events, outside AI-DLC stages)
+
+- PR #97 opened for branch `claude/ai-dlc-documentation-rl4e5s` -> `main`, closing #81-#85. Merged 2026-07-08T15:07:16Z.
+- Separately, PRs #99/#100/#101 (release automation, CI workflow, Homebrew deploy key) merged to `main`, closing #98. Not part of this AI-DLC initiative's scope.
+- GitHub issue cleanup performed in conversation (not an AI-DLC stage, just tracker hygiene): #96 closed as resolved by #99's `ci.yml`; #95 closed as resolved (backup file gone, README Go version fixed). #91, #92, #93, #94, #58, #46 verified still open/unresolved on `main` and left open.
+- Branch `claude/ai-dlc-documentation-rl4e5s` reset to latest `origin/main` (`d1619d2`) to start Initiative 2 fresh, per merged-branch restart protocol - old commit history for Initiative 1 is fully captured in `main` via PR #97.
+
+---
+
+# INITIATIVE 2: Universal Project-Context File Convention (#88, redefined)
+
+## Project Information
+- **Start Date**: 2026-07-08 (same day, continued session)
+- **Trigger**: User requested Phase 2 discussion; picked #88 (project-context file), redefined scope from a chat-cli-specific `CHATCLI.md` to a universal `AGENTS.md`-first convention with fallback to other tools' conventions (`CLAUDE.md`, Cursor rules, Copilot instructions), per brainstorm discussion in this conversation.
+- **Issue #88 updated** on GitHub with the new design (title + body rewritten) before starting this initiative.
+
+## Stage Progress
+- [x] Workspace Detection - Brownfield confirmed, existing `aidlc-docs/aidlc-state.md` found (Initiative 1, complete)
+  - **Reverse engineering artifacts exist but are STALE** relative to current `main` (Initiative 1 added `tools/` package, `cmd/systemprompt.go`, `cmd/promptcache.go`, `cmd/documentinput.go`, `cmd/reasoning.go`, `cmd/toolloop.go`, SDK upgrade to v1.55.0; separately `main` gained CI/release automation). **Decision**: do NOT re-run full Reverse Engineering for this narrow, additive feature - scope is well understood from this session's own recent work (system prompt + config precedence pattern directly reused). Full RE re-run would be disproportionate to a single-feature initiative. Proceeding directly to Requirements Analysis with current-state knowledge loaded ad hoc from `cmd/systemprompt.go`, `cmd/config.go`, `cmd/promptcache.go`.
+- [ ] Requirements Analysis - IN PROGRESS, clarifying questions issued
+  - Design already substantially discussed in-conversation (precedence list, no-merge policy, config key, git-root walk-up, size guard, cache-point synergy) - requirements.md will incorporate these as settled decisions; clarifying questions target only the remaining open parameters.
+- [ ] User Stories - TBD (likely SKIP - single cohesive feature, one persona already established)
+- [ ] Workflow Planning - TBD
+- [ ] Application Design - TBD (likely lightweight - single unit)
+- [ ] Units Generation - TBD (likely SKIP - naturally one unit of work, no parallelization benefit)
