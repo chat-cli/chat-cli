@@ -104,6 +104,18 @@ chat-cli prompt "summarize this" --document report.pdf
 
 This is independent of `--image` — you can use both in the same invocation if the model supports both. The document's filename is sanitized before being sent to the model (Bedrock only allows certain characters in a document name, and recommends against passing raw filenames through unchanged).
 
+### Extended Thinking
+
+Use `--thinking` on a model that supports extended thinking / reasoning mode to see the model's reasoning before its final answer:
+
+```shell
+chat-cli prompt "What's 17 * 24?" --thinking
+```
+
+Reasoning is printed dimmed and prefixed with `[thinking]`, separate from the final answer. Extended thinking needs a token budget, controlled by `--thinking-budget` (default `1024`) — this budget must fit within `--max-tokens` (default `500`), so you'll likely need to raise `--max-tokens` when using `--thinking`. `--thinking` has no effect unless explicitly set (behavior is unchanged by default).
+
+> **Note**: the exact request format for enabling extended thinking varies by model provider and isn't part of Bedrock's typed API — if `--thinking` doesn't work for a given model, that's the most likely reason.
+
 (chat)=
 ## Chat
 
@@ -128,6 +140,10 @@ This is off by default — Bedrock doesn't expose whether a given model supports
 ### Prompt Caching
 
 When you set a system prompt (`--system` or the persisted config value) or pipe in a document, chat-cli automatically adds a cache checkpoint so repeated requests can reuse that content instead of reprocessing it every time, on models that support it. There's no flag to turn this on — it's automatic whenever there's a system prompt or piped document to cache. If a model doesn't support caching, the request is automatically retried once without it, so nothing breaks; you'll just see a log line noting caching wasn't used for that request.
+
+### Extended Thinking
+
+Same as `prompt` — use `--thinking` (and optionally `--thinking-budget`, default `1024`) to see the model's reasoning, printed dimmed and prefixed with `[thinking]`, before its response for that turn. Remember to raise `--max-tokens` if needed, since the thinking budget must fit within it.
 
 (image)=
 ## Image

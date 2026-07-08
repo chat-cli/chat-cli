@@ -78,7 +78,9 @@ func TestRunChatTurnWithTools_NoToolUse(t *testing.T) {
 	input := &bedrockruntime.ConverseStreamInput{}
 	onText := func(_ context.Context, _ string) error { return nil }
 
-	result, err := runChatTurnWithTools(context.Background(), send, input, registry, onText)
+	onReasoning := func(_ context.Context, _ string) error { return nil }
+
+	result, err := runChatTurnWithTools(context.Background(), send, input, registry, onText, onReasoning)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -102,7 +104,9 @@ func TestRunChatTurnWithTools_RoundTripCap(t *testing.T) {
 	input := &bedrockruntime.ConverseStreamInput{}
 	onText := func(_ context.Context, _ string) error { return nil }
 
-	_, err := runChatTurnWithTools(context.Background(), send, input, registry, onText)
+	onReasoning := func(_ context.Context, _ string) error { return nil }
+
+	_, err := runChatTurnWithTools(context.Background(), send, input, registry, onText, onReasoning)
 	if err == nil {
 		t.Fatal("expected an error when the round-trip cap is exceeded, got none")
 	}

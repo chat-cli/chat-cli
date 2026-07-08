@@ -17,7 +17,10 @@ import (
 
 type StreamingOutputHandler func(ctx context.Context, part string) error
 
-func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler StreamingOutputHandler) (types.Message, error) {
+// ProcessStreamingOutput drains a Bedrock ConverseStream, invoking handler
+// for each text delta and reasoningHandler for each reasoning-content delta
+// (pass a no-op handler if the caller doesn't support reasoning mode).
+func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler, reasoningHandler StreamingOutputHandler) (types.Message, error) {
 
 	var combinedResult string
 
@@ -31,11 +34,24 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 
 		case *types.ConverseStreamOutputMemberContentBlockDelta:
 
-			textResponse := v.Value.Delta.(*types.ContentBlockDeltaMemberText)
-			if err := handler(context.Background(), textResponse.Value); err != nil {
-				return msg, fmt.Errorf("handler error: %w", err)
+			switch delta := v.Value.Delta.(type) {
+			case *types.ContentBlockDeltaMemberText:
+				if err := handler(context.Background(), delta.Value); err != nil {
+					return msg, fmt.Errorf("handler error: %w", err)
+				}
+				combinedResult += delta.Value
+
+			case *types.ContentBlockDeltaMemberReasoningContent:
+				if textDelta, ok := delta.Value.(*types.ReasoningContentBlockDeltaMemberText); ok {
+					if err := reasoningHandler(context.Background(), textDelta.Value); err != nil {
+						return msg, fmt.Errorf("handler error: %w", err)
+					}
+				}
+				// Signature and redacted-content deltas aren't rendered as
+				// visible text; prompt is one-shot so there's no next turn
+				// to preserve them for (Functional Design Decision 3,
+				// unit-5-extended-thinking).
 			}
-			combinedResult += textResponse.Value
 
 		case *types.UnknownUnionMember:
 			fmt.Println("unknown tag:", v.Tag)

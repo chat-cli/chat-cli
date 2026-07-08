@@ -90,6 +90,16 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		thinkingEnabled, err := cmd.PersistentFlags().GetBool("thinking")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		thinkingBudget, err := cmd.PersistentFlags().GetInt32("thinking-budget")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
 		// Get configuration values with precedence order (flag -> config -> default)
 		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
@@ -202,9 +212,10 @@ var promptCmd = &cobra.Command{
 		if noStream {
 			// set up ConverseInput with model and prompt
 			converseInput := &bedrockruntime.ConverseInput{
-				ModelId:         &modelIdString,
-				InferenceConfig: &conf,
-				System:          withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
+				ModelId:                      &modelIdString,
+				InferenceConfig:              &conf,
+				System:                       withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
+				AdditionalModelRequestFields: buildReasoningConfig(thinkingEnabled, thinkingBudget),
 			}
 			converseInput.Messages = append(converseInput.Messages, userMsg)
 
@@ -221,16 +232,24 @@ var promptCmd = &cobra.Command{
 			}
 
 			response, _ := output.Output.(*types.ConverseOutputMemberMessage)
-			responseContentBlock := response.Value.Content[0]
-			text, _ := responseContentBlock.(*types.ContentBlockMemberText)
-
-			fmt.Println(text.Value)
+			for _, block := range response.Value.Content {
+				if reasoningBlock, ok := block.(*types.ContentBlockMemberReasoningContent); ok {
+					printReasoningBlock(reasoningBlock)
+				}
+			}
+			for _, block := range response.Value.Content {
+				if textBlock, ok := block.(*types.ContentBlockMemberText); ok {
+					fmt.Println(textBlock.Value)
+					break
+				}
+			}
 
 		} else {
 			converseStreamInput := &bedrockruntime.ConverseStreamInput{
-				ModelId:         &modelIdString,
-				InferenceConfig: &conf,
-				System:          withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
+				ModelId:                      &modelIdString,
+				InferenceConfig:              &conf,
+				System:                       withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
+				AdditionalModelRequestFields: buildReasoningConfig(thinkingEnabled, thinkingBudget),
 			}
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
 
@@ -246,10 +265,25 @@ var promptCmd = &cobra.Command{
 				log.Fatalf("error from Bedrock, %v", err)
 			}
 
-			_, err = utils.ProcessStreamingOutput(output, func(ctx context.Context, part string) error {
+			reasoningActive := false
+			onText := func(ctx context.Context, part string) error {
+				if reasoningActive {
+					fmt.Print("\033[0m\n\n")
+					reasoningActive = false
+				}
 				fmt.Print(part)
 				return nil
-			})
+			}
+			onReasoning := func(ctx context.Context, part string) error {
+				if !reasoningActive {
+					fmt.Print("\033[90m[thinking] ")
+					reasoningActive = true
+				}
+				fmt.Print(part)
+				return nil
+			}
+
+			_, err = utils.ProcessStreamingOutput(output, onText, onReasoning)
 			if err != nil {
 				log.Fatal("streaming output processing error: ", err)
 			}
@@ -264,6 +298,8 @@ func init() {
 	promptCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
 	promptCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 	promptCmd.PersistentFlags().String("system", "", "set a system prompt")
+	promptCmd.PersistentFlags().Bool("thinking", false, "enable extended thinking / reasoning mode")
+	promptCmd.PersistentFlags().Int32("thinking-budget", 1024, "token budget for extended thinking (requires --thinking)")
 
 	promptCmd.PersistentFlags().StringP("image", "i", "", "path to image")
 	promptCmd.PersistentFlags().StringP("document", "d", "", "path to a document (pdf, csv, doc, docx, xls, xlsx, html, txt, md)")

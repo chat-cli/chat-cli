@@ -374,8 +374,26 @@
 **AI Response**: "Approval recorded. NFR Requirements/Design: SKIP - no new security surface (no file access, no untrusted execution); the request-shape uncertainty already flagged is a functional/product risk (may need adjustment once tested), not a security concern, and doesn't warrant a fresh NFR pass. Proceeding directly to Code Generation planning."
 **Context**: Unit 5 Functional Design approval, CONSTRUCTION phase
 
+---
+
+## Unit 5 Code Generation Plan Approval
+**Timestamp**: 2026-07-08T03:50:00Z
+**User Input**: "Yes"
+**AI Response**: "Plan approved. Proceeding to Part 2 Generation, executing 9 steps in TDD order."
+**Context**: Unit 5 Code Generation (Planning) approval, CONSTRUCTION phase
+
+---
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)
 **AI Response**: "While writing the code generation plan, discovered that Bedrock exposes no 'supports tool use' capability flag (confirmed via SDK inspection - only OutputModalities/InputModalities/ResponseStreamingSupported exist). Making tool use unconditionally active would risk breaking chat for non-tool-capable models, violating NFR1. Revised the plan to gate tool use behind a new --tools opt-in flag (default false, same pattern as --no-stream) rather than silently choosing always-on. Verified remaining SDK facts (ContentBlockIndex fields, ToolResultContentBlockMemberText, document.NewLazyDocument, Events() channel type). Designed test strategy: extract accumulateStream() as a pure function over a real Go channel of types.ConverseStreamOutput (constructible directly in tests without needing to mock the SDK's unexported stream internals) and runChatTurnWithTools() behind an injectable converseStreamFunc, following Unit 1's pure-function-extraction pattern. Created 22-step TDD plan across tools/ (new package), utils/ (ValidateLocalPath extraction), and cmd/ (toolloop.go + chat.go wiring). Presenting for approval, explicitly flagging the --tools decision."
 **Context**: Unit 2 Code Generation (Planning), CONSTRUCTION phase
+
+---
+
+## Unit 5 Code Generation - Complete (Final Unit)
+**Timestamp**: 2026-07-08T04:00:00Z
+**User Input**: (n/a - continuation per approved plan)
+**AI Response**: "Executed all 9 steps in TDD order. Created cmd/reasoning.go (buildReasoningConfig 100% covered, printReasoningBlock). Extended Unit 2's blockAccumulator/accumulateStream/runChatTurnWithTools to handle reasoning content blocks rather than duplicating the machinery. Extended utils.ProcessStreamingOutput with a reasoningHandler parameter - found and fixed a latent unchecked-type-assertion bug in the process (would have panicked on any non-text delta, including reasoning, in prompt's streaming path). Wired --thinking/--thinking-budget into both chat.go and prompt.go (all paths: streaming and non-streaming). Verification: make test all green (existing Unit 2 tests updated for new signatures, still pass), make lint clean, integration tests all pass, coverage held steady at 66.3%. Re-flagged the unverified reasoning_config request shape prominently in the unit summary as the top item to verify with real credentials. Updated README.md/docs/usage.md. This completes Code Generation for all 5 units. Presenting for approval before Build and Test."
+**Context**: Unit 5 Code Generation (Generation), CONSTRUCTION phase - FINAL UNIT

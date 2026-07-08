@@ -39,7 +39,9 @@ func TestAccumulateStream_TextOnly(t *testing.T) {
 		return nil
 	}
 
-	msg, toolCalls, stopReason, err := accumulateStream(events, onText)
+	onReasoning := func(_ context.Context, _ string) error { return nil }
+
+	msg, toolCalls, stopReason, err := accumulateStream(events, onText, onReasoning)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -99,7 +101,9 @@ func TestAccumulateStream_ToolUse(t *testing.T) {
 
 	onText := func(_ context.Context, _ string) error { return nil }
 
-	msg, toolCalls, stopReason, err := accumulateStream(events, onText)
+	onReasoning := func(_ context.Context, _ string) error { return nil }
+
+	msg, toolCalls, stopReason, err := accumulateStream(events, onText, onReasoning)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -120,5 +124,79 @@ func TestAccumulateStream_ToolUse(t *testing.T) {
 	}
 	if _, ok := msg.Content[0].(*types.ContentBlockMemberToolUse); !ok {
 		t.Fatalf("expected tool use content block, got %T", msg.Content[0])
+	}
+}
+
+func TestAccumulateStream_ReasoningContent(t *testing.T) {
+	events := make(chan types.ConverseStreamOutput, 10)
+	events <- &types.ConverseStreamOutputMemberContentBlockDelta{
+		Value: types.ContentBlockDeltaEvent{
+			ContentBlockIndex: aws.Int32(0),
+			Delta: &types.ContentBlockDeltaMemberReasoningContent{
+				Value: &types.ReasoningContentBlockDeltaMemberText{Value: "Let me think"},
+			},
+		},
+	}
+	events <- &types.ConverseStreamOutputMemberContentBlockDelta{
+		Value: types.ContentBlockDeltaEvent{
+			ContentBlockIndex: aws.Int32(0),
+			Delta: &types.ContentBlockDeltaMemberReasoningContent{
+				Value: &types.ReasoningContentBlockDeltaMemberSignature{Value: "sig-123"},
+			},
+		},
+	}
+	events <- &types.ConverseStreamOutputMemberContentBlockStop{
+		Value: types.ContentBlockStopEvent{ContentBlockIndex: aws.Int32(0)},
+	}
+	events <- &types.ConverseStreamOutputMemberContentBlockDelta{
+		Value: types.ContentBlockDeltaEvent{
+			ContentBlockIndex: aws.Int32(1),
+			Delta:             &types.ContentBlockDeltaMemberText{Value: "final answer"},
+		},
+	}
+	events <- &types.ConverseStreamOutputMemberContentBlockStop{
+		Value: types.ContentBlockStopEvent{ContentBlockIndex: aws.Int32(1)},
+	}
+	events <- &types.ConverseStreamOutputMemberMessageStop{
+		Value: types.MessageStopEvent{StopReason: types.StopReasonEndTurn},
+	}
+	close(events)
+
+	onText := func(_ context.Context, _ string) error { return nil }
+
+	var receivedReasoning string
+	onReasoning := func(_ context.Context, part string) error {
+		receivedReasoning += part
+		return nil
+	}
+
+	msg, _, _, err := accumulateStream(events, onText, onReasoning)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if receivedReasoning != "Let me think" {
+		t.Errorf("expected onReasoning to receive 'Let me think', got %q", receivedReasoning)
+	}
+	if len(msg.Content) != 2 {
+		t.Fatalf("expected 2 content blocks (reasoning + text), got %d", len(msg.Content))
+	}
+
+	reasoningBlock, ok := msg.Content[0].(*types.ContentBlockMemberReasoningContent)
+	if !ok {
+		t.Fatalf("expected reasoning content block first, got %T", msg.Content[0])
+	}
+	reasoningText, ok := reasoningBlock.Value.(*types.ReasoningContentBlockMemberReasoningText)
+	if !ok {
+		t.Fatalf("expected reasoning text member, got %T", reasoningBlock.Value)
+	}
+	if aws.ToString(reasoningText.Value.Text) != "Let me think" {
+		t.Errorf("expected finalized reasoning text 'Let me think', got %q", aws.ToString(reasoningText.Value.Text))
+	}
+	if aws.ToString(reasoningText.Value.Signature) != "sig-123" {
+		t.Errorf("expected finalized signature 'sig-123', got %q", aws.ToString(reasoningText.Value.Signature))
+	}
+
+	if _, ok := msg.Content[1].(*types.ContentBlockMemberText); !ok {
+		t.Fatalf("expected text content block second, got %T", msg.Content[1])
 	}
 }

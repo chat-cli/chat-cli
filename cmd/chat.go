@@ -89,6 +89,16 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		thinkingEnabled, err := flagCmd.PersistentFlags().GetBool("thinking")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		thinkingBudget, err := flagCmd.PersistentFlags().GetInt32("thinking-budget")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
 		// Get configuration values with precedence order (flag -> config -> default)
 		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
@@ -177,10 +187,11 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		}
 
 		converseStreamInput := &bedrockruntime.ConverseStreamInput{
-			ModelId:         aws.String(modelIdString),
-			InferenceConfig: &conf,
-			RequestMetadata: metadata,
-			System:          withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
+			ModelId:                      aws.String(modelIdString),
+			InferenceConfig:              &conf,
+			RequestMetadata:              metadata,
+			System:                       withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
+			AdditionalModelRequestFields: buildReasoningConfig(thinkingEnabled, thinkingBudget),
 		}
 
 		// Tool registry is empty (and therefore inert - ToolConfiguration()
@@ -304,16 +315,30 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			// Add an extra line between user message and assistant response
 			fmt.Print("\n\n* ")
 
+			reasoningActive := false
 			onText := func(ctx context.Context, part string) error {
+				if reasoningActive {
+					fmt.Print("\033[0m\n\n")
+					reasoningActive = false
+				}
 				fmt.Print(part)
 				return nil
 			}
 
-			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText)
+			onReasoning := func(ctx context.Context, part string) error {
+				if !reasoningActive {
+					fmt.Print("\033[90m[thinking] ")
+					reasoningActive = true
+				}
+				fmt.Print(part)
+				return nil
+			}
+
+			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
 			if err != nil && hasSystemCachePoint(converseStreamInput.System) {
 				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
 				converseStreamInput.System = stripSystemCachePoints(converseStreamInput.System)
-				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText)
+				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
 			}
 
 			if err != nil {

@@ -33,16 +33,19 @@ type blockKind int
 const (
 	blockKindText blockKind = iota
 	blockKindToolUse
+	blockKindReasoning
 )
 
 // blockAccumulator tracks one in-progress content block by its stream index,
 // per functional-design/domain-entities.md.
 type blockAccumulator struct {
-	kind      blockKind
-	text      strings.Builder
-	toolName  string
-	toolUseID string
-	toolInput strings.Builder
+	kind               blockKind
+	text               strings.Builder
+	toolName           string
+	toolUseID          string
+	toolInput          strings.Builder
+	reasoningText      strings.Builder
+	reasoningSignature string
 }
 
 // accumulateStream drains a Bedrock ConverseStream event channel, invoking
@@ -52,7 +55,7 @@ type blockAccumulator struct {
 // conversation history), any finalized tool calls (in stream order), the
 // stop reason, and an error only for malformed tool-input JSON (Rule 4) -
 // never for an unknown tool, which is Registry.Dispatch's job (Rule 2).
-func accumulateStream(events <-chan types.ConverseStreamOutput, onText utils.StreamingOutputHandler) (types.Message, []tools.ToolCall, types.StopReason, error) {
+func accumulateStream(events <-chan types.ConverseStreamOutput, onText, onReasoning utils.StreamingOutputHandler) (types.Message, []tools.ToolCall, types.StopReason, error) {
 	blocks := make(map[int32]*blockAccumulator)
 	var order []int32
 	var stopReason types.StopReason
@@ -74,7 +77,14 @@ func accumulateStream(events <-chan types.ConverseStreamOutput, onText utils.Str
 			idx := aws.ToInt32(v.Value.ContentBlockIndex)
 			acc, ok := blocks[idx]
 			if !ok {
-				acc = &blockAccumulator{kind: blockKindText}
+				// Text and reasoning blocks have no explicit
+				// ContentBlockStart event (only tool-use does) - the kind
+				// is determined by whichever delta type arrives first.
+				kind := blockKindText
+				if _, isReasoning := v.Value.Delta.(*types.ContentBlockDeltaMemberReasoningContent); isReasoning {
+					kind = blockKindReasoning
+				}
+				acc = &blockAccumulator{kind: kind}
 				blocks[idx] = acc
 				order = append(order, idx)
 			}
@@ -87,6 +97,20 @@ func accumulateStream(events <-chan types.ConverseStreamOutput, onText utils.Str
 				}
 			case *types.ContentBlockDeltaMemberToolUse:
 				acc.toolInput.WriteString(aws.ToString(delta.Value.Input))
+			case *types.ContentBlockDeltaMemberReasoningContent:
+				switch reasoningDelta := delta.Value.(type) {
+				case *types.ReasoningContentBlockDeltaMemberText:
+					acc.reasoningText.WriteString(reasoningDelta.Value)
+					if err := onReasoning(context.Background(), reasoningDelta.Value); err != nil {
+						return types.Message{}, nil, "", fmt.Errorf("handler error: %w", err)
+					}
+				case *types.ReasoningContentBlockDeltaMemberSignature:
+					acc.reasoningSignature = reasoningDelta.Value
+				// ReasoningContentBlockDeltaMemberRedactedContent is preserved
+				// implicitly (nothing to accumulate into visible text) - it's
+				// encrypted bytes, not rendered per Rule 5.
+				default:
+				}
 			}
 
 		case *types.ConverseStreamOutputMemberMessageStop:
@@ -102,6 +126,14 @@ func accumulateStream(events <-chan types.ConverseStreamOutput, onText utils.Str
 		switch acc.kind {
 		case blockKindText:
 			content = append(content, &types.ContentBlockMemberText{Value: acc.text.String()})
+		case blockKindReasoning:
+			reasoningTextBlock := types.ReasoningTextBlock{Text: aws.String(acc.reasoningText.String())}
+			if acc.reasoningSignature != "" {
+				reasoningTextBlock.Signature = aws.String(acc.reasoningSignature)
+			}
+			content = append(content, &types.ContentBlockMemberReasoningContent{
+				Value: &types.ReasoningContentBlockMemberReasoningText{Value: reasoningTextBlock},
+			})
 		case blockKindToolUse:
 			call, err := finalizeToolCall(acc.toolName, acc.toolUseID, acc.toolInput.String())
 			if err != nil {
@@ -136,6 +168,7 @@ func runChatTurnWithTools(
 	input *bedrockruntime.ConverseStreamInput,
 	registry *tools.Registry,
 	onText utils.StreamingOutputHandler,
+	onReasoning utils.StreamingOutputHandler,
 ) (string, error) {
 	input.ToolConfig = registry.ToolConfiguration()
 
@@ -146,7 +179,7 @@ func runChatTurnWithTools(
 			return "", err
 		}
 
-		assistantMsg, toolCalls, stopReason, err := accumulateStream(events, onText)
+		assistantMsg, toolCalls, stopReason, err := accumulateStream(events, onText, onReasoning)
 		if err != nil {
 			return "", err
 		}

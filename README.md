@@ -152,6 +152,18 @@ Tool use is off by default. Bedrock has no way to report whether a given model s
 
 chat-cli automatically caches your system prompt (if set) and any piped-in document, on models that support it, so repeated requests don't reprocess the same content every time. There's no flag for this — it kicks in automatically whenever there's a system prompt or document to cache. If the model doesn't support caching, the request is retried once without it and everything still works, just without the caching benefit.
 
+## Extended Thinking
+
+On models that support extended thinking / reasoning mode, use `--thinking` (both `chat` and `prompt`) to see the model's reasoning, printed dimmed and prefixed with `[thinking]`, separate from its final answer:
+
+```shell
+    chat-cli prompt "What's 17 * 24?" --thinking
+```
+
+Extended thinking needs a token budget — `--thinking-budget` (default `1024`) — which must fit within `--max-tokens` (default `500`), so raise `--max-tokens` when using `--thinking`. `--thinking` is off by default and has no effect unless set.
+
+> **Note**: the request format for enabling extended thinking is model-provider-specific and isn't part of Bedrock's typed API — if `--thinking` doesn't work for a given model, that's the most likely reason.
+
 ## Prompt
 
 You can send a one liner prompt like this:

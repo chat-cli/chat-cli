@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 5 (Extended Thinking, #85) - Code Generation Part 1 Planning complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 5 (Extended Thinking, #85) - Code Generation complete, awaiting approval (final unit)
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -114,9 +114,14 @@ build+test+lint+integration verification passed with no regressions.
 - [x] NFR Requirements - SKIP (no new security surface; request-shape risk is functional, not security)
 - [x] NFR Design - SKIP (follows from NFR Requirements skip)
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [ ] Code Generation - Part 1 Planning complete, awaiting approval
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
   - Plan: aidlc-docs/construction/plans/unit-5-extended-thinking-code-generation-plan.md
-- [ ] Build and Test - Pending all 5 units
+  - Summary: aidlc-docs/construction/unit-5-extended-thinking/code/summary.md
+  - **CAVEAT CARRIED FORWARD**: reasoning_config request shape is unverified, top item to test with real credentials
+- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass)
+
+## Unit 5 Status: CODE COMPLETE, AWAITING REVIEW (FINAL UNIT)
+Next: Build and Test (cross-unit integration phase) once Unit 5 is approved - completes all 5 units.
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)
