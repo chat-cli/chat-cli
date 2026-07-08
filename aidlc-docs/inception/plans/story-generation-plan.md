@@ -29,16 +29,16 @@ Following the same calibration used for `requirements.md` (given this is a solo-
 - [x] Step 1: Validate User Stories Need — see `user-stories-assessment.md` (Decision: Yes)
 - [x] Step 2: Create this story plan
 - [x] Step 3-6: Resolve story-format questions via stated assumptions above (in place of a second Q&A file)
-- [ ] Step 7: Generate `aidlc-docs/inception/user-stories/personas.md` — one persona: "chat-cli User"
-- [ ] Step 8: Generate `aidlc-docs/inception/user-stories/stories.md` covering:
-  - [ ] Epic 1 (FR1, #81): Story 1.1 — Set a system prompt for a session
-  - [ ] Epic 2 (FR2, #82): Story 2.1 — Model calls a registered tool mid-conversation; Story 2.2 — Use the built-in `read_file` tool
-  - [ ] Epic 3 (FR3, #83): Story 3.1 — Automatic prompt caching with graceful fallback
-  - [ ] Epic 4 (FR4, #84): Story 4.1 — Attach a non-image document to a prompt
-  - [ ] Epic 5 (FR5, #85): Story 5.1 — Enable extended thinking and see the reasoning distinctly
-- [ ] Step 9: Verify every story follows INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable)
-- [ ] Step 10: Map persona to all stories (single persona, applies to all)
-- [ ] Step 11: Present completion message and request approval
+- [x] Step 7: Generate `aidlc-docs/inception/user-stories/personas.md` — one persona: "chat-cli User"
+- [x] Step 8: Generate `aidlc-docs/inception/user-stories/stories.md` covering:
+  - [x] Epic 1 (FR1, #81): Story 1.1 — Set a system prompt for a session
+  - [x] Epic 2 (FR2, #82): Story 2.1 — Model calls a registered tool mid-conversation; Story 2.2 — Use the built-in `read_file` tool
+  - [x] Epic 3 (FR3, #83): Story 3.1 — Automatic prompt caching with graceful fallback
+  - [x] Epic 4 (FR4, #84): Story 4.1 — Attach a non-image document to a prompt
+  - [x] Epic 5 (FR5, #85): Story 5.1 — Enable extended thinking and see the reasoning distinctly
+- [x] Step 9: Verify every story follows INVEST (Independent, Negotiable, Valuable, Estimable, Small, Testable) — noted per story in stories.md
+- [x] Step 10: Map persona to all stories (single persona, applies to all) — see Traceability Summary in stories.md
+- [x] Step 11: Present completion message and request approval
 
 ## Out of Scope for This Stage
 - No prioritization, sequencing, or unit-of-work decisions (that's Workflow Planning, next stage)
