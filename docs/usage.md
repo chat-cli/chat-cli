@@ -115,6 +115,10 @@ chat-cli --tools
 
 This is off by default — Bedrock doesn't expose whether a given model supports tool use, so `chat` behaves exactly as before unless you opt in. With `--tools` set, one built-in tool is available: `read_file`, which lets the model read a file in your current working directory (it can't read anything outside that directory). If the model asks for a tool that doesn't exist, or a tool call fails, you'll see the conversation continue normally — chat-cli reports the failure back to the model rather than crashing.
 
+### Prompt Caching
+
+When you set a system prompt (`--system` or the persisted config value) or pipe in a document, chat-cli automatically adds a cache checkpoint so repeated requests can reuse that content instead of reprocessing it every time, on models that support it. There's no flag to turn this on — it's automatic whenever there's a system prompt or piped document to cache. If a model doesn't support caching, the request is automatically retried once without it, so nothing breaks; you'll just see a log line noting caching wasn't used for that request.
+
 (image)=
 ## Image
 

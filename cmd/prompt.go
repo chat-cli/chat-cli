@@ -35,7 +35,6 @@ var promptCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("unable to load document: %v", err)
 		}
-		prompt += document
 
 		// Initialize configuration
 		fm, err := conf.NewFileManager("chat-cli")
@@ -151,14 +150,13 @@ var promptCmd = &cobra.Command{
 
 		svc := bedrockruntime.NewFromConfig(cfg)
 
-		// craft prompt
+		// craft prompt - split into separate document/question content blocks
+		// (with a cache point between them) when a document was piped in, so
+		// the document can be cached separately from the always-different
+		// question (Functional Design Decision 2, unit-3-prompt-caching)
 		userMsg := types.Message{
-			Role: types.ConversationRoleUser,
-			Content: []types.ContentBlock{
-				&types.ContentBlockMemberText{
-					Value: prompt,
-				},
-			},
+			Role:    types.ConversationRoleUser,
+			Content: buildQuestionContent(document, prompt),
 		}
 
 		// attach image if we have one
@@ -190,12 +188,18 @@ var promptCmd = &cobra.Command{
 			converseInput := &bedrockruntime.ConverseInput{
 				ModelId:         &modelIdString,
 				InferenceConfig: &conf,
-				System:          buildSystemContentBlocks(systemPrompt),
+				System:          withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
 			}
 			converseInput.Messages = append(converseInput.Messages, userMsg)
 
 			// invoke and wait for full response
 			output, err := svc.Converse(context.TODO(), converseInput)
+			if err != nil && (hasSystemCachePoint(converseInput.System) || hasContentCachePoint(converseInput.Messages[0].Content)) {
+				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
+				converseInput.System = stripSystemCachePoints(converseInput.System)
+				converseInput.Messages[0].Content = stripContentCachePoints(converseInput.Messages[0].Content)
+				output, err = svc.Converse(context.TODO(), converseInput)
+			}
 			if err != nil {
 				log.Fatalf("error from Bedrock, %v", err)
 			}
@@ -210,12 +214,18 @@ var promptCmd = &cobra.Command{
 			converseStreamInput := &bedrockruntime.ConverseStreamInput{
 				ModelId:         &modelIdString,
 				InferenceConfig: &conf,
-				System:          buildSystemContentBlocks(systemPrompt),
+				System:          withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
 			}
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
 
 			// invoke with streaming response
 			output, err := svc.ConverseStream(context.Background(), converseStreamInput)
+			if err != nil && (hasSystemCachePoint(converseStreamInput.System) || hasContentCachePoint(converseStreamInput.Messages[0].Content)) {
+				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
+				converseStreamInput.System = stripSystemCachePoints(converseStreamInput.System)
+				converseStreamInput.Messages[0].Content = stripContentCachePoints(converseStreamInput.Messages[0].Content)
+				output, err = svc.ConverseStream(context.Background(), converseStreamInput)
+			}
 			if err != nil {
 				log.Fatalf("error from Bedrock, %v", err)
 			}

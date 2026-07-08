@@ -294,6 +294,22 @@
 **AI Response**: "Approval recorded, NFR stages confirmed skipped. Designing Code Generation plan: a stripCachePoints-style approach (remove cache-point blocks from an already-built request on retry) rather than parameterizing two full variants, so it works uniformly whether system caching, document caching, or both are active at once. Retry wraps the outer call only (runChatTurnWithTools in chat.go; svc.Converse/ConverseStream in prompt.go), not each internal tool round-trip, per Functional Design's accepted edge-case tradeoff."
 **Context**: Unit 3 Code Generation (Planning), CONSTRUCTION phase
 
+---
+
+## Unit 3 Code Generation Plan Approval
+**Timestamp**: 2026-07-08T02:50:00Z
+**User Input**: "Yes"
+**AI Response**: "Plan approved. Proceeding to Part 2 Generation, executing 13 steps in TDD order."
+**Context**: Unit 3 Code Generation (Planning) approval, CONSTRUCTION phase
+
+---
+
+## Unit 3 Code Generation - Complete
+**Timestamp**: 2026-07-08T03:00:00Z
+**User Input**: (n/a - continuation per approved plan)
+**AI Response**: "Executed all 13 steps in TDD order. Created cmd/promptcache.go (6 pure functions incl. an unplanned but natural hasContentCachePoint addition for symmetry, all 100% covered). Modified prompt.go (split document/question, added cache points, retry-on-error for both request paths) and chat.go (cache point + retry wrapper around runChatTurnWithTools). Verification: make test all green, make lint clean, integration tests all pass, coverage cmd 18.7%->22.0%, total 62.4%->64.7%. Could not verify an actual cache-hit/miss round-trip against real Bedrock (no AWS credentials) - noted in summary.md. Updated README.md/docs/usage.md. Presenting for approval before Unit 4."
+**Context**: Unit 3 Code Generation (Generation), CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)

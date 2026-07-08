@@ -148,6 +148,10 @@ You can let the model call tools mid-conversation with the `--tools` flag:
 
 Tool use is off by default. Bedrock has no way to report whether a given model supports it, so enabling it unconditionally would risk breaking `chat` for models that don't — `--tools` opts in explicitly instead. With it set, one built-in tool is available: `read_file`, which lets the model read files within your current working directory (and only that directory). An unrecognized tool request or a failed tool call is reported back to the model as part of the conversation, not treated as a fatal error.
 
+## Prompt Caching
+
+chat-cli automatically caches your system prompt (if set) and any piped-in document, on models that support it, so repeated requests don't reprocess the same content every time. There's no flag for this — it kicks in automatically whenever there's a system prompt or document to cache. If the model doesn't support caching, the request is retried once without it and everything still works, just without the caching benefit.
+
 ## Prompt
 
 You can send a one liner prompt like this:

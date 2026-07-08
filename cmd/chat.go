@@ -180,7 +180,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			ModelId:         aws.String(modelIdString),
 			InferenceConfig: &conf,
 			RequestMetadata: metadata,
-			System:          buildSystemContentBlocks(systemPrompt),
+			System:          withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
 		}
 
 		// Tool registry is empty (and therefore inert - ToolConfiguration()
@@ -304,10 +304,17 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			// Add an extra line between user message and assistant response
 			fmt.Print("\n\n* ")
 
-			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, func(ctx context.Context, part string) error {
+			onText := func(ctx context.Context, part string) error {
 				fmt.Print(part)
 				return nil
-			})
+			}
+
+			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText)
+			if err != nil && hasSystemCachePoint(converseStreamInput.System) {
+				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
+				converseStreamInput.System = stripSystemCachePoints(converseStreamInput.System)
+				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText)
+			}
 
 			if err != nil {
 				log.Fatal("streaming output processing error: ", err)
