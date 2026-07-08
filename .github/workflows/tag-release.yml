@@ -1,0 +1,63 @@
+name: Tag Release
+
+# Bumps semver, runs tests, and pushes a v* tag. The Release workflow runs on tag push.
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Semver bump level
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: Run tests
+        run: make test
+
+      - name: Run lint
+        run: make lint
+
+      - name: Compute next tag
+        id: next
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          latest="$(git describe --tags --abbrev=0 2>/dev/null || echo v0.0.0)"
+          version="${latest#v}"
+          IFS='.' read -r major minor patch <<< "$version"
+          case "${{ inputs.bump }}" in
+            major) next="v$((major + 1)).0.0" ;;
+            minor) next="v${major}.$((minor + 1)).0" ;;
+            patch) next="v${major}.${minor}.$((patch + 1))" ;;
+            *) echo "Unknown bump type" >&2; exit 1 ;;
+          esac
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "Next tag: $next (after $latest)"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.next.outputs.next }}"
+          git push origin "${{ steps.next.outputs.next }}"

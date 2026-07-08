@@ -15,6 +15,9 @@ builds:
       - windows
       - linux
       - darwin
+    ldflags:
+      - -s -w
+      - -X=github.com/chat-cli/chat-cli/cmd.version=v{{.Version}}
 
 archives:
   - format: tar.gz
@@ -43,5 +46,6 @@ brews:
     repository:
       owner: chat-cli
       name: homebrew-chat-cli
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     description: "chat-cli is a command line tool for working with llms on Amazon Bedrock"
     homepage: "https://github.com/chat-cli/chat-cli/"

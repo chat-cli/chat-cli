@@ -10,17 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// version is set at build time via -ldflags (GoReleaser / Makefile).
+// Local builds without ldflags report "dev".
+var version = "dev"
+
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Prints the current version",
 	Long:  `Prints the current version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// until there is a better way to do this
-		v := "v0.5.3"
-		o := runtime.GOOS
-		a := runtime.GOARCH
-		fmt.Printf("chat-cli %s, %s/%s\n", v, o, a)
+		fmt.Printf("chat-cli %s, %s/%s\n", version, runtime.GOOS, runtime.GOARCH)
 	},
 }
 
