@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: INCEPTION - User Stories (Generation complete, awaiting review/approval)
+- **Current Stage**: INCEPTION - Workflow Planning (awaiting execution plan approval)
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -29,8 +29,28 @@
 - [x] Workspace Detection - Completed 2026-07-08
 - [x] Reverse Engineering - Completed 2026-07-08 (approved by user)
 - [x] Requirements Analysis - Completed 2026-07-08 (approved by user)
-- [x] User Stories - Plan approved, stories/personas generated 2026-07-08, awaiting review/approval
-- [ ] Workflow Planning
+- [x] User Stories - Completed 2026-07-08 (approved by user)
+- [x] Workflow Planning - Execution plan created 2026-07-08, awaiting approval
+- [ ] Application Design - EXECUTE (planned, not started - scoped to Tool Use unit's registry/interface)
+- [ ] Units Generation - EXECUTE (planned, not started)
+
+### Construction Phase (per-unit, pending Units Generation)
+- [ ] Functional Design - PENDING per-unit
+- [ ] NFR Requirements - PENDING per-unit
+- [ ] NFR Design - PENDING per-unit
+- [ ] Infrastructure Design - SKIP (no infrastructure in this project)
+- [ ] Code Generation - EXECUTE (ALWAYS, per-unit)
+- [ ] Build and Test - EXECUTE (ALWAYS, after all units)
+
+### Operations Phase
+- [ ] Operations - PLACEHOLDER (not in scope)
+
+## Recommended Unit Sequence (from execution-plan.md, to be finalized in Units Generation)
+1. System Prompt (#81) - foundational
+2. Tool Use (#82) - highest complexity
+3. Prompt Caching (#83) - depends on System Prompt
+4. Document Input (#84) - independent
+5. Extended Thinking (#85) - independent
 
 ## GitHub Issues Filed (brainstorm session, 2026-07-08)
 **Group 1 - Catch up to current Bedrock/Claude capabilities (IN SCOPE for current Requirements Analysis)**
