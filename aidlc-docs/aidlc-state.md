@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - NFR Requirements+Design complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - Code Generation Part 1 Planning complete, awaiting approval (--tools flag decision flagged for confirmation)
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -58,10 +58,13 @@
 ### Construction Phase - Unit 2 (Tool Use / Function Calling, #82)
 - [x] Functional Design - Completed 2026-07-08 (approved by user)
   - Artifacts: aidlc-docs/construction/unit-2-tool-use/functional-design/
-- [x] NFR Requirements - Complete 2026-07-08, awaiting approval (combined with NFR Design - narrow NFR profile, Security-only)
+- [x] NFR Requirements - Completed 2026-07-08 (approved by user, combined with NFR Design)
   - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-requirements/
-- [x] NFR Design - Complete 2026-07-08, awaiting approval (combined presentation)
+- [x] NFR Design - Completed 2026-07-08 (approved by user, combined presentation)
   - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-design/
+- [ ] Code Generation - Part 1 Planning complete, awaiting approval
+  - Plan: aidlc-docs/construction/plans/unit-2-tool-use-code-generation-plan.md
+  - **Open decision**: --tools opt-in flag (default false) vs always-on tool use - plan defaults to opt-in for NFR1 safety, awaiting user confirmation
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
 - [ ] Code Generation - Not started
 - [ ] Build and Test - Pending all 5 units

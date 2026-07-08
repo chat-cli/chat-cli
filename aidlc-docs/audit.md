@@ -221,3 +221,19 @@
 **User Input**: (n/a - executing per stated calibration)
 **AI Response**: "Generated nfr-requirements.md (Security is the only applicable category: 4 requirements SEC-1..SEC-4 covering path traversal, unknown-tool rejection, untrusted-input handling, and no tool-output-as-instructions; Reliability REL-1 formalizes the round-trip cap; Scalability/Performance/Availability marked N/A with rationale for a single-user local CLI), tech-stack-decisions.md (no new dependencies), nfr-design-patterns.md (shared path validation choke point, fail-closed dispatch without panic recovery, bounded-loop pattern; explicitly did NOT apply circuit breaker/caching/rate limiting, with rationale), logical-components.md (no infra components needed). Presenting combined for one approval before Code Generation."
 **Context**: Unit 2 NFR Requirements + NFR Design, CONSTRUCTION phase
+
+---
+
+## Unit 2 NFR Approval - Code Generation Planning
+**Timestamp**: 2026-07-08T01:38:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "Approval recorded. Verified remaining SDK details by inspection before planning: ContentBlockStopEvent/ContentBlockStartEvent/ContentBlockDeltaEvent all carry ContentBlockIndex *int32; ConverseStreamInput.ToolConfig *types.ToolConfiguration; ToolResultContentBlockMemberText confirmed; document.NewLazyDocument confirmed. Creating detailed TDD-ordered code generation plan for Unit 2."
+**Context**: Unit 2 Code Generation (Planning), CONSTRUCTION phase
+
+---
+
+## Unit 2 Code Generation Plan - Decision Flagged
+**Timestamp**: 2026-07-08T01:45:00Z
+**User Input**: (n/a - AI-initiated risk discovery during planning)
+**AI Response**: "While writing the code generation plan, discovered that Bedrock exposes no 'supports tool use' capability flag (confirmed via SDK inspection - only OutputModalities/InputModalities/ResponseStreamingSupported exist). Making tool use unconditionally active would risk breaking chat for non-tool-capable models, violating NFR1. Revised the plan to gate tool use behind a new --tools opt-in flag (default false, same pattern as --no-stream) rather than silently choosing always-on. Verified remaining SDK facts (ContentBlockIndex fields, ToolResultContentBlockMemberText, document.NewLazyDocument, Events() channel type). Designed test strategy: extract accumulateStream() as a pure function over a real Go channel of types.ConverseStreamOutput (constructible directly in tests without needing to mock the SDK's unexported stream internals) and runChatTurnWithTools() behind an injectable converseStreamFunc, following Unit 1's pure-function-extraction pattern. Created 22-step TDD plan across tools/ (new package), utils/ (ValidateLocalPath extraction), and cmd/ (toolloop.go + chat.go wiring). Presenting for approval, explicitly flagging the --tools decision."
+**Context**: Unit 2 Code Generation (Planning), CONSTRUCTION phase
