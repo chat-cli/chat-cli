@@ -397,3 +397,26 @@
 **User Input**: (n/a - continuation per approved plan)
 **AI Response**: "Executed all 9 steps in TDD order. Created cmd/reasoning.go (buildReasoningConfig 100% covered, printReasoningBlock). Extended Unit 2's blockAccumulator/accumulateStream/runChatTurnWithTools to handle reasoning content blocks rather than duplicating the machinery. Extended utils.ProcessStreamingOutput with a reasoningHandler parameter - found and fixed a latent unchecked-type-assertion bug in the process (would have panicked on any non-text delta, including reasoning, in prompt's streaming path). Wired --thinking/--thinking-budget into both chat.go and prompt.go (all paths: streaming and non-streaming). Verification: make test all green (existing Unit 2 tests updated for new signatures, still pass), make lint clean, integration tests all pass, coverage held steady at 66.3%. Re-flagged the unverified reasoning_config request shape prominently in the unit summary as the top item to verify with real credentials. Updated README.md/docs/usage.md. This completes Code Generation for all 5 units. Presenting for approval before Build and Test."
 **Context**: Unit 5 Code Generation (Generation), CONSTRUCTION phase - FINAL UNIT
+
+---
+
+## Unit 5 Approval - All Units Complete, Build and Test Begins
+**Timestamp**: 2026-07-08T04:05:00Z
+**User Input**: "Approve and continue e"
+**AI Response**: "Approval recorded. Unit 5 (Extended Thinking, #85) complete and merged (commit a2b0b63). All 5 units (#81-#85) now complete and individually verified. Proceeding to Build and Test - the cross-unit integration phase per core-workflow.md, executed once after all units complete."
+**Context**: CONSTRUCTION PHASE, Build and Test begins - ALL UNITS COMPLETE
+
+---
+
+## Build and Test Stage Complete
+**Timestamp**: 2026-07-08T04:15:00Z
+**Build Status**: Success
+**Test Status**: Pass (unit + integration; performance N/A with documented rationale)
+**Files Generated**:
+- build-instructions.md
+- unit-test-instructions.md
+- integration-test-instructions.md (includes 3 cross-unit composition scenarios actually executed: all-flags-visible, prompt with system+document+thinking combined, chat with system+tools+thinking combined - all passed, no panics, clean expected failures only at the AWS-credentials boundary)
+- performance-test-instructions.md (N/A, with rationale)
+- build-and-test-summary.md (consolidates the "needs real-credential verification" list from all 5 units, ranked by risk - Unit 5's reasoning_config shape is highest priority)
+**AI Response**: "Ran fresh go build/vet/test across the whole repo, confirmed all green with no regressions. Built the CLI and ran the full integration suite (7/7 pass) plus 3 new cross-unit smoke tests combining flags from multiple units in single invocations (prompt with --system+--document+--thinking; chat with --system+--tools+--thinking) - both reached the expected AWS-credentials failure point cleanly with no panics, confirming the 5 units compose correctly. Generated all mandatory Build and Test artifacts. Presenting consolidated summary and risk list for final approval."
+**Context**: Build and Test stage, CONSTRUCTION phase - final stage of the initiative

@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 5 (Extended Thinking, #85) - Code Generation complete, awaiting approval (final unit)
+- **Current Stage**: CONSTRUCTION - Build and Test complete, awaiting final approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -118,10 +118,16 @@ build+test+lint+integration verification passed with no regressions.
   - Plan: aidlc-docs/construction/plans/unit-5-extended-thinking-code-generation-plan.md
   - Summary: aidlc-docs/construction/unit-5-extended-thinking/code/summary.md
   - **CAVEAT CARRIED FORWARD**: reasoning_config request shape is unverified, top item to test with real credentials
-- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass)
+- [x] Build and Test - Completed 2026-07-08, awaiting final approval
+  - Artifacts: aidlc-docs/construction/build-and-test/
+  - Fresh full test suite: all green, no regressions
+  - 3 cross-unit composition scenarios executed manually, all passed (no panics, clean expected failures at the AWS-credentials boundary)
+  - Consolidated risk list: 5 items need real-credential verification, ranked by priority (Unit 5's reasoning_config shape highest)
 
-## Unit 5 Status: CODE COMPLETE, AWAITING REVIEW (FINAL UNIT)
-Next: Build and Test (cross-unit integration phase) once Unit 5 is approved - completes all 5 units.
+## Unit 5 Status: COMPLETE AND APPROVED (commit a2b0b63)
+
+## ALL 5 UNITS COMPLETE: #81, #82, #83, #84, #85
+## BUILD AND TEST COMPLETE - INITIATIVE READY FOR FINAL APPROVAL
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)
