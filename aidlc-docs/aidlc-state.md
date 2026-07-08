@@ -289,5 +289,6 @@ a verified ancestor of the merge commit before reset).
   - Artifacts: aidlc-docs/construction/unit-7-new-tools/functional-design/{business-logic-model,business-rules,domain-entities}.md, aidlc-docs/construction/unit-7-new-tools/nfr-requirements/nfr-requirements-and-design.md
   - Key finding: utils.ValidateLocalPath requires the target file to already exist (existence check baked in) - wrong for write_file's create-new-file case. Resolved additively: new utils.ValidateLocalPathForWrite (confinement-only) sharing a private confineToWorkingDir helper with the unchanged, existing ValidateLocalPath - zero regression risk to Units 2/4's already-shipped call sites.
   - run_shell: 30s timeout, 32KB truncated combined output, non-zero exit code reported in output text (not a Go error) so the model sees command failures as normal operation, not tool bugs.
-- [ ] Code Generation - Pending
+- [x] Code Generation - Plan complete 2026-07-08, awaiting approval to begin generation
+  - Plan: aidlc-docs/construction/plans/unit-7-new-tools-code-generation-plan.md (10 TDD-ordered steps)
 - [ ] Build and Test - Pending all 3 units
