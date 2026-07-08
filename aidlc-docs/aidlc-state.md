@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 3 (Prompt Caching, #83) - Code Generation complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 4 (Native Document Input, #84) - starting Functional Design
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -90,8 +90,15 @@ build+test+lint+integration verification passed with no regressions.
   - Summary: aidlc-docs/construction/unit-3-prompt-caching/code/summary.md
 - [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass; cmd coverage 18.7%->22.0%)
 
-## Unit 3 Status: CODE COMPLETE, AWAITING REVIEW
-Next: Unit 4 (Native Document Input, #84) once Unit 3 is approved.
+## Unit 3 Status: COMPLETE AND APPROVED (commit e315d18)
+
+### Construction Phase - Unit 4 (Native Document Input, #84)
+- [ ] Functional Design - Starting (format validation, content-block construction)
+- [ ] NFR Requirements - Likely EXECUTE (security: path-confined file reads, same category as Unit 2)
+- [ ] NFR Design - Pending NFR Requirements
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [ ] Code Generation - Not started
+- [ ] Build and Test - Pending all 5 units
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)

@@ -310,6 +310,14 @@
 **AI Response**: "Executed all 13 steps in TDD order. Created cmd/promptcache.go (6 pure functions incl. an unplanned but natural hasContentCachePoint addition for symmetry, all 100% covered). Modified prompt.go (split document/question, added cache points, retry-on-error for both request paths) and chat.go (cache point + retry wrapper around runChatTurnWithTools). Verification: make test all green, make lint clean, integration tests all pass, coverage cmd 18.7%->22.0%, total 62.4%->64.7%. Could not verify an actual cache-hit/miss round-trip against real Bedrock (no AWS credentials) - noted in summary.md. Updated README.md/docs/usage.md. Presenting for approval before Unit 4."
 **Context**: Unit 3 Code Generation (Generation), CONSTRUCTION phase
 
+---
+
+## Unit 3 Approval - Unit 4 Begins
+**Timestamp**: 2026-07-08T03:05:00Z
+**User Input**: "Approve and continue / let's be sure to commit changes along the way"
+**AI Response**: "Approval recorded. Unit 3 (Prompt Caching, #83) complete and merged (commit e315d18). Confirming: every stage this session has been committed and pushed individually (reverse engineering, requirements, stories, workflow planning, application design, units generation, and each unit's functional design/NFR/code generation) - will keep following that practice, no change needed. Beginning Unit 4 (Native Document Input, #84). Per execution-plan.md's preliminary flags, this unit likely needs both Functional Design (format validation, content-block construction) and NFR Requirements/Design (security - path-confined file reads, same category as Unit 2's read_file tool)."
+**Context**: CONSTRUCTION PHASE, Unit 4 begins
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)
