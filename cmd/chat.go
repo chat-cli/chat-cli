@@ -19,6 +19,7 @@ import (
 	"github.com/chat-cli/chat-cli/db"
 	"github.com/chat-cli/chat-cli/factory"
 	"github.com/chat-cli/chat-cli/repository"
+	"github.com/chat-cli/chat-cli/tools"
 	"github.com/chat-cli/chat-cli/utils"
 	uuid "github.com/satori/go.uuid" //nolint:goimports // false positive from CI version diff
 	"github.com/spf13/cobra"
@@ -79,6 +80,11 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		}
 
 		systemFlag, err := flagCmd.PersistentFlags().GetString("system")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		toolsEnabled, err := flagCmd.PersistentFlags().GetBool("tools")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -177,6 +183,23 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			System:          buildSystemContentBlocks(systemPrompt),
 		}
 
+		// Tool registry is empty (and therefore inert - ToolConfiguration()
+		// returns nil, request shape unchanged) unless --tools is set, since
+		// Bedrock has no way to report whether a given model supports tool
+		// use and we don't want to break chat for models that don't.
+		registry := tools.NewRegistry()
+		if toolsEnabled {
+			registry.Register(tools.NewReadFileTool())
+		}
+
+		sendFn := func(ctx context.Context, in *bedrockruntime.ConverseStreamInput) (<-chan types.ConverseStreamOutput, error) {
+			out, streamErr := svc.ConverseStream(ctx, in)
+			if streamErr != nil {
+				return nil, streamErr
+			}
+			return out.GetStream().Events(), nil
+		}
+
 		// initial prompt
 		fmt.Println()
 		fmt.Printf("Hi there. You can ask me stuff!\n")
@@ -267,12 +290,6 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
 
-			output, err := svc.ConverseStream(context.Background(), converseStreamInput)
-
-			if err != nil {
-				log.Fatal(err)
-			}
-
 			// Use the repository without knowing the underlying database type
 			chat := &repository.Chat{
 				ChatId:  chatId,
@@ -287,19 +304,14 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			// Add an extra line between user message and assistant response
 			fmt.Print("\n\n* ")
 
-			var out string
-
-			assistantMsg, err := utils.ProcessStreamingOutput(output, func(ctx context.Context, part string) error {
+			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, func(ctx context.Context, part string) error {
 				fmt.Print(part)
-				out += part
 				return nil
 			})
 
 			if err != nil {
 				log.Fatal("streaming output processing error: ", err)
 			}
-
-			converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
 
 			chat = &repository.Chat{
 				ChatId:  chatId,

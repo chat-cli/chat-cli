@@ -51,12 +51,14 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 	return msg, nil
 }
 
-func ReadImage(filename string) (data []byte, imageType string, err error) {
-
-	// Define a base directory for allowed images
+// ValidateLocalPath confines filename resolution to the current working
+// directory, returning the validated absolute path or an error if filename
+// escapes it or doesn't exist. Shared by ReadImage, ReadDocument, and the
+// read_file tool so path-traversal protection lives in exactly one place.
+func ValidateLocalPath(filename string) (string, error) {
 	baseDir, err := os.Getwd()
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to get working directory: %w", err)
+		return "", fmt.Errorf("unable to get working directory: %w", err)
 	}
 
 	// Clean the filename and create the full path
@@ -66,12 +68,22 @@ func ReadImage(filename string) (data []byte, imageType string, err error) {
 	// Ensure the full path is within the base directory
 	relPath, err := filepath.Rel(baseDir, fullPath)
 	if err != nil || strings.HasPrefix(relPath, "..") || strings.HasPrefix(relPath, string(filepath.Separator)) {
-		return nil, "", fmt.Errorf("access denied: %s is outside of the allowed directory", filename)
+		return "", fmt.Errorf("access denied: %s is outside of the allowed directory", filename)
 	}
 
 	// Check if the file exists
 	if _, statErr := os.Stat(fullPath); os.IsNotExist(statErr) {
-		return nil, "", fmt.Errorf("file does not exist: %s", filename)
+		return "", fmt.Errorf("file does not exist: %s", filename)
+	}
+
+	return fullPath, nil
+}
+
+func ReadImage(filename string) (data []byte, imageType string, err error) {
+
+	fullPath, err := ValidateLocalPath(filename)
+	if err != nil {
+		return nil, "", err
 	}
 
 	// Read the file

@@ -232,6 +232,20 @@
 
 ---
 
+## Unit 2 Code Generation Plan Approval
+**Timestamp**: 2026-07-08T01:50:00Z
+**User Input**: "ok"
+**AI Response**: "Plan approved, including the --tools opt-in flag default. Proceeding to Part 2 Generation, executing 22 steps in TDD order."
+**Context**: Unit 2 Code Generation (Planning) approval, CONSTRUCTION phase
+
+---
+
+## Unit 2 Code Generation - Complete
+**Timestamp**: 2026-07-08T02:10:00Z
+**User Input**: (n/a - continuation per approved plan)
+**AI Response**: "Executed all 22 steps in TDD order. Created tools/ package (tool.go, registry.go, readfile.go + tests, 90% coverage). Extracted utils.ValidateLocalPath from ReadImage as a pure refactor (TestReadImage passed unmodified). Created cmd/toolloop.go (accumulateStream, runChatTurnWithTools, finalizeToolCall) using pure-function extraction to make the streaming protocol testable without mocking SDK internals - constructed real Go channels of types.ConverseStreamOutput directly in tests. Wired --tools flag (default false) into root.go and chat.go per the confirmed opt-in decision. Verification: make test (all green), make lint (clean), integration tests (all 7 pass), coverage cmd 8.0%->18.7%, tools package 90.0%, total 52.6%->62.4%. Could not live-test an actual Bedrock tool-call round-trip (no AWS credentials in this environment) - noted explicitly in summary.md; the untested seam is a thin closure with no logic beyond forwarding to the SDK. Updated README.md/docs/usage.md. Presenting for approval before Unit 3."
+**Context**: Unit 2 Code Generation (Generation), CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)

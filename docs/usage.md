@@ -105,6 +105,16 @@ chat-cli --system "You are a terse, no-nonsense assistant."
 
 Like `prompt`, this falls back to the persisted `system-prompt` config value, then to no system prompt at all.
 
+### Tool Use
+
+Pass `--tools` to let the model call tools mid-conversation:
+
+```shell
+chat-cli --tools
+```
+
+This is off by default — Bedrock doesn't expose whether a given model supports tool use, so `chat` behaves exactly as before unless you opt in. With `--tools` set, one built-in tool is available: `read_file`, which lets the model read a file in your current working directory (it can't read anything outside that directory). If the model asks for a tool that doesn't exist, or a tool call fails, you'll see the conversation continue normally — chat-cli reports the failure back to the model rather than crashing.
+
 (image)=
 ## Image
 

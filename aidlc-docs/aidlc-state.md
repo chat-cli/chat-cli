@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - Code Generation Part 1 Planning complete, awaiting approval (--tools flag decision flagged for confirmation)
+- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - Code Generation complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -62,12 +62,15 @@
   - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-requirements/
 - [x] NFR Design - Completed 2026-07-08 (approved by user, combined presentation)
   - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-design/
-- [ ] Code Generation - Part 1 Planning complete, awaiting approval
-  - Plan: aidlc-docs/construction/plans/unit-2-tool-use-code-generation-plan.md
-  - **Open decision**: --tools opt-in flag (default false) vs always-on tool use - plan defaults to opt-in for NFR1 safety, awaiting user confirmation
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [ ] Code Generation - Not started
-- [ ] Build and Test - Pending all 5 units
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-2-tool-use-code-generation-plan.md
+  - Summary: aidlc-docs/construction/unit-2-tool-use/code/summary.md
+  - **Decision made**: --tools opt-in flag (default false), confirmed with user before generation
+- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass; cmd coverage 8.0%->18.7%, new tools package 90%)
+
+## Unit 2 Status: CODE COMPLETE, AWAITING REVIEW
+Next: Unit 3 (Prompt Caching, #83) once Unit 2 is approved.
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)

@@ -138,6 +138,16 @@ You can also set a default system prompt so you don't have to pass `--system` ev
 
 The same precedence rules as `model-id`/`custom-arn` apply: `--system` flag, then the persisted config value, then no system prompt at all.
 
+## Tool Use
+
+You can let the model call tools mid-conversation with the `--tools` flag:
+
+```shell
+    chat-cli --tools
+```
+
+Tool use is off by default. Bedrock has no way to report whether a given model supports it, so enabling it unconditionally would risk breaking `chat` for models that don't — `--tools` opts in explicitly instead. With it set, one built-in tool is available: `read_file`, which lets the model read files within your current working directory (and only that directory). An unrecognized tool request or a failed tool call is reported back to the model as part of the conversation, not treated as a fatal error.
+
 ## Prompt
 
 You can send a one liner prompt like this:

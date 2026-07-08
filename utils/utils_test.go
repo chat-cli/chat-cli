@@ -221,6 +221,60 @@ func TestProcessStreamingOutput(t *testing.T) {
 	})
 }
 
+func TestValidateLocalPath(t *testing.T) {
+	tempDir := t.TempDir()
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("Failed to change back to original directory: %v", err)
+		}
+	}()
+
+	if err := os.WriteFile("in-bounds.txt", []byte("hello"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name        string
+		filename    string
+		expectError bool
+	}{
+		{
+			name:        "valid in-bounds path",
+			filename:    "in-bounds.txt",
+			expectError: false,
+		},
+		{
+			name:        "path traversal attempt",
+			filename:    "../../../etc/passwd",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fullPath, err := ValidateLocalPath(tt.filename)
+
+			if tt.expectError && err == nil {
+				t.Errorf("expected error but got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if !tt.expectError && fullPath == "" {
+				t.Error("expected a non-empty validated path")
+			}
+		})
+	}
+}
+
 func TestStringPrompt(t *testing.T) {
 	// StringPrompt reads from stdin, so we can't easily test it in unit tests
 	// We could test it with dependency injection or mocking, but for now
