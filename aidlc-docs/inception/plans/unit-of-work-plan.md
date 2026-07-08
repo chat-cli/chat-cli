@@ -40,6 +40,6 @@ Same calibration used throughout this session:
 This matches the sequence already recommended in `requirements.md` and `execution-plan.md` — Units Generation confirms it at the unit-of-work level rather than changing it.
 
 ## Mandatory Artifacts (Part 2, pending this plan's approval)
-- [ ] `aidlc-docs/inception/application-design/unit-of-work.md`
-- [ ] `aidlc-docs/inception/application-design/unit-of-work-dependency.md`
-- [ ] `aidlc-docs/inception/application-design/unit-of-work-story-map.md`
+- [x] `aidlc-docs/inception/application-design/unit-of-work.md`
+- [x] `aidlc-docs/inception/application-design/unit-of-work-dependency.md`
+- [x] `aidlc-docs/inception/application-design/unit-of-work-story-map.md`

@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: INCEPTION - Units Generation (Planning, awaiting plan approval)
+- **Current Stage**: INCEPTION - Units Generation (Generation complete, awaiting final approval)
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -33,7 +33,15 @@
 - [x] Workflow Planning - Completed 2026-07-08 (approved by user)
 - [x] Application Design - Completed 2026-07-08 (approved by user)
   - **Artifacts Location**: aidlc-docs/inception/application-design/
-- [ ] Units Generation - Plan created 2026-07-08, awaiting plan approval
+- [x] Units Generation - Plan approved, artifacts generated 2026-07-08, awaiting final approval
+  - **Artifacts Location**: aidlc-docs/inception/application-design/unit-of-work*.md
+
+## Units of Work (finalized)
+1. Unit 1 - System Prompt Support (#81) - no dependencies
+2. Unit 2 - Tool Use / Function Calling (#82) - soft-depends on Unit 1
+3. Unit 3 - Prompt Caching (#83) - soft-depends on Unit 1
+4. Unit 4 - Native Document Input (#84) - soft-depends on Unit 2 (shared ValidateLocalPath helper)
+5. Unit 5 - Extended Thinking / Reasoning Mode (#85) - no dependencies
 
 ### Construction Phase (per-unit, pending Units Generation)
 - [ ] Functional Design - PENDING per-unit
