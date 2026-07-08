@@ -7,6 +7,15 @@ This file provides guidance to Claude Code when working with code in this reposi
 When the user invokes AI-DLC, read and follow
 `.aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md` to start the workflow.
 
+## Work Tracking
+
+**Always use GitHub issues to track ideas and document work in this repo.**
+
+- New ideas, features, and bugs get a GitHub issue before work starts, even for small items.
+- Use the issue to document decisions, progress, and open questions as the work happens, not just at the end.
+- Link pull requests to the issue they address (e.g. `Closes #123`) so the issue reflects the outcome.
+- If work surfaces a new idea or follow-up that's out of scope for the current task, open a new issue for it rather than letting it get lost.
+
 ## Project Overview
 
 Chat-CLI is a terminal-based program built with Go and Cobra that provides an interface to Amazon Bedrock LLMs. It supports interactive chat sessions, one-shot prompts, image generation, and persistent configuration management.
