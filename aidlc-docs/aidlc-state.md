@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: INCEPTION - Requirements Analysis (PAUSED by user)
+- **Current Stage**: INCEPTION - Requirements Analysis
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -28,13 +28,32 @@
 ## Stage Progress
 - [x] Workspace Detection - Completed 2026-07-08
 - [x] Reverse Engineering - Completed 2026-07-08 (approved by user)
-- [ ] Requirements Analysis - PAUSED 2026-07-08 (clarifying questions issued, not yet answered)
+- [x] Requirements Analysis - Completed 2026-07-08 (scope: issues #81-#85, awaiting user review/approval)
 - [ ] Workflow Planning
 
-## Resume Instructions
-Session paused at the user's request before answering the clarifying
-questions below. To resume:
-1. Read `aidlc-docs/inception/reverse-engineering/` artifacts (already generated - business overview,
-   architecture, code structure, API docs, component inventory, tech stack, dependencies, code quality)
-2. Read and answer `aidlc-docs/inception/requirements/requirement-verification-questions.md`
-3. Continue Requirements Analysis Step 7 (generate requirements.md) once answers are provided
+## GitHub Issues Filed (brainstorm session, 2026-07-08)
+**Group 1 - Catch up to current Bedrock/Claude capabilities (IN SCOPE for current Requirements Analysis)**
+- #81 Add system prompt support to chat and prompt commands
+- #82 Add tool use / function calling support (Bedrock Converse API)
+- #83 Add prompt caching support (cachePoint)
+- #84 Add native document input (PDF/CSV/DOCX) via Converse document content blocks
+- #85 Add extended thinking / reasoning mode support
+
+**Group 2 - Agentic coding tool direction (logged, not started)**
+- #86 Add built-in agent tools (file read/write, shell exec, git diff)
+- #87 Add MCP client support
+- #88 Support a project-context file convention (e.g. CHATCLI.md)
+
+**Group 3 - UX modernization (logged, not started)**
+- #89 Render markdown and code blocks in chat/prompt output
+- #90 Add slash commands to the interactive chat loop
+
+**Group 4 - Technical debt / fix what's there (logged, not started)**
+- #91 models list ignores --region flag (bug)
+- #92 Deduplicate model-validation logic across chat/prompt/image commands
+- #93 Repository[T] interface mismatch with ChatRepository
+- #94 Replace unmaintained github.com/satori/go.uuid dependency
+- #95 Repo housekeeping (.goreleaser.yaml.backup, README Go version drift)
+- #96 Add CI workflow to enforce lint/test on PRs
+
+**Related pre-existing open issues surfaced during triage**: #58 (file attachments, relates to #84), #46 (document in chat mode), #41 (token counts, overlaps future UX idea - not re-filed), #65 (models placeholder output, relates to #91), #21 (concept of modules, relates to #81)
