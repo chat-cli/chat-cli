@@ -282,6 +282,9 @@ a verified ancestor of the merge commit before reset).
   - cmd 31.8%->33.3%, tools 90.0%->84.1%, utils 51.8%->53.7%, total 67.8%->69.7%, no regressions. 7/7 integration tests pass. No user-visible behavior change yet (by design) - gate fully wired but inert until Unit 7.
   - One caught-and-fixed deviation during implementation: persisted-entry format initially used the wrong (internal NUL-joined) key before being corrected to the documented human-readable "toolName:patternKey" format.
 
-## Unit 6 Status: COMPLETE, AWAITING APPROVAL
+## Unit 6 Status: COMPLETE AND APPROVED (commit 2e04ef0)
 
+### Construction Phase - Unit 7 (New Built-in Tools, #86)
+- [ ] Functional Design + NFR - Pending
+- [ ] Code Generation - Pending
 - [ ] Build and Test - Pending all 3 units
