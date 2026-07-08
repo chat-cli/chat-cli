@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 3 (Prompt Caching, #83) - Functional Design complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 3 (Prompt Caching, #83) - Code Generation Part 1 Planning complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -80,13 +80,13 @@ aidlc-docs/construction/sdk-upgrade/summary.md. go.mod's `go` directive moved 1.
 build+test+lint+integration verification passed with no regressions.
 
 ### Construction Phase - Unit 3 (Prompt Caching, #83)
-- [x] Functional Design - Complete 2026-07-08, awaiting approval
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
   - Artifacts: aidlc-docs/construction/unit-3-prompt-caching/functional-design/
-  - Key decisions: retry-without-distinguishing-error-cause policy; prompt.go must split document+question into separate content blocks (currently merged into one string)
 - [x] NFR Requirements - SKIP (no new security surface, reliability concern already fully specified as a business rule)
 - [x] NFR Design - SKIP (follows from NFR Requirements skip)
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [ ] Code Generation - Not started
+- [ ] Code Generation - Part 1 Planning complete, awaiting approval
+  - Plan: aidlc-docs/construction/plans/unit-3-prompt-caching-code-generation-plan.md
 - [ ] Build and Test - Pending all 5 units
 
 ### Operations Phase

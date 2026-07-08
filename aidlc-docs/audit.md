@@ -286,6 +286,14 @@
 **AI Response**: "Inspected the v1.55.0 SDK's cache-point types and full error-type list directly. Found no dedicated 'unsupported cache point' exception exists, so designed a retry policy that doesn't try to distinguish error cause (any error -> retry once without cache points -> surface the second error normally if it also fails) rather than brittle string-matching on error messages. Also discovered prompt.go currently merges piped document + question into ONE string/content block before Unit 3 work even starts - for caching to be meaningful, restructured the design to split them into separate content blocks with a cache point between. Generated a single combined business-logic-model.md (proportionate to this unit's modest scope). Assessing NFR Requirements/Design: SKIP - no new security surface, and the one reliability concern (retry-once-then-surface) is fully specified as a business rule already, not needing a separate NFR pass, consistent with Unit 1's precedent."
 **Context**: Unit 3 Functional Design, CONSTRUCTION phase
 
+---
+
+## Unit 3 Functional Design Approval - Code Generation Planning
+**Timestamp**: 2026-07-08T02:45:00Z
+**User Input**: "Approve and continue"
+**AI Response**: "Approval recorded, NFR stages confirmed skipped. Designing Code Generation plan: a stripCachePoints-style approach (remove cache-point blocks from an already-built request on retry) rather than parameterizing two full variants, so it works uniformly whether system caching, document caching, or both are active at once. Retry wraps the outer call only (runChatTurnWithTools in chat.go; svc.Converse/ConverseStream in prompt.go), not each internal tool round-trip, per Functional Design's accepted edge-case tradeoff."
+**Context**: Unit 3 Code Generation (Planning), CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)
