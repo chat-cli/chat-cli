@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: INCEPTION - Workflow Planning (awaiting execution plan approval)
+- **Current Stage**: INCEPTION - Application Design (awaiting approval)
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -30,8 +30,9 @@
 - [x] Reverse Engineering - Completed 2026-07-08 (approved by user)
 - [x] Requirements Analysis - Completed 2026-07-08 (approved by user)
 - [x] User Stories - Completed 2026-07-08 (approved by user)
-- [x] Workflow Planning - Execution plan created 2026-07-08, awaiting approval
-- [ ] Application Design - EXECUTE (planned, not started - scoped to Tool Use unit's registry/interface)
+- [x] Workflow Planning - Completed 2026-07-08 (approved by user)
+- [x] Application Design - Artifacts generated 2026-07-08, awaiting approval
+  - **Artifacts Location**: aidlc-docs/inception/application-design/
 - [ ] Units Generation - EXECUTE (planned, not started)
 
 ### Construction Phase (per-unit, pending Units Generation)
