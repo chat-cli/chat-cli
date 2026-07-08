@@ -278,6 +278,14 @@
 **AI Response**: "go get bumped bedrockruntime v1.23.0->v1.55.0, aws-sdk-go-v2 core v1.32.6->v1.42.1, smithy-go v1.22.1->v1.27.3, plus transitive deps. Side effect: go.mod's go directive moved 1.23.4->1.24 with an explicit toolchain go1.24.7 line (newer SDK needs newer toolchain). Updated README.md/CLAUDE.md Go version references to match. Verification: go build clean, make test all green, make lint clean, integration tests all pass. bedrock (control-plane) module left at v1.25.0, unaffected. Created aidlc-docs/construction/sdk-upgrade/summary.md. Resuming Unit 3 Functional Design."
 **Context**: Unit 3, CONSTRUCTION phase
 
+---
+
+## Unit 3 Functional Design (+ NFR skip decision)
+**Timestamp**: 2026-07-08T02:40:00Z
+**User Input**: (n/a - Functional Design executing per per-unit assessment)
+**AI Response**: "Inspected the v1.55.0 SDK's cache-point types and full error-type list directly. Found no dedicated 'unsupported cache point' exception exists, so designed a retry policy that doesn't try to distinguish error cause (any error -> retry once without cache points -> surface the second error normally if it also fails) rather than brittle string-matching on error messages. Also discovered prompt.go currently merges piped document + question into ONE string/content block before Unit 3 work even starts - for caching to be meaningful, restructured the design to split them into separate content blocks with a cache point between. Generated a single combined business-logic-model.md (proportionate to this unit's modest scope). Assessing NFR Requirements/Design: SKIP - no new security surface, and the one reliability concern (retry-once-then-surface) is fully specified as a business rule already, not needing a separate NFR pass, consistent with Unit 1's precedent."
+**Context**: Unit 3 Functional Design, CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)

@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 3 (Prompt Caching, #83) - SDK upgrade prerequisite complete, resuming Functional Design
+- **Current Stage**: CONSTRUCTION - Unit 3 (Prompt Caching, #83) - Functional Design complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -80,9 +80,11 @@ aidlc-docs/construction/sdk-upgrade/summary.md. go.mod's `go` directive moved 1.
 build+test+lint+integration verification passed with no regressions.
 
 ### Construction Phase - Unit 3 (Prompt Caching, #83)
-- [ ] Functional Design - Resuming next (light pass: retry-on-cache-rejection algorithm)
-- [ ] NFR Requirements - Likely SKIP (no new security surface; performance is the feature itself)
-- [ ] NFR Design - Pending NFR Requirements
+- [x] Functional Design - Complete 2026-07-08, awaiting approval
+  - Artifacts: aidlc-docs/construction/unit-3-prompt-caching/functional-design/
+  - Key decisions: retry-without-distinguishing-error-cause policy; prompt.go must split document+question into separate content blocks (currently merged into one string)
+- [x] NFR Requirements - SKIP (no new security surface, reliability concern already fully specified as a business rule)
+- [x] NFR Design - SKIP (follows from NFR Requirements skip)
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
 - [ ] Code Generation - Not started
 - [ ] Build and Test - Pending all 5 units
