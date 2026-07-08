@@ -366,6 +366,14 @@
 **AI Response**: "Verified response-side reasoning types (ContentBlockMemberReasoningContent, ReasoningTextBlock with Text+Signature, streaming delta variants) directly against the SDK. Discovered AdditionalModelRequestFields (the request-side field for enabling reasoning) is untyped/free-form (document.Interface) - unlike every other unit, its exact JSON shape can't be confirmed by static SDK inspection. Documented the assumed shape ({\"reasoning_config\":{\"type\":\"enabled\",\"budget_tokens\":n}}) as unverified, based on training knowledge not a live source, and flagged it as the single highest-risk assumption in the initiative. Also found the SDK requires preserving the reasoning block's signature across multi-turn conversation history (same category as Unit 2's tool-use requirement) - designed to extend Unit 2's existing accumulateStream rather than duplicate it. Added a --thinking-budget flag alongside --thinking given the max-tokens interaction. Presenting for approval, prominently flagging the unverified request shape."
 **Context**: Unit 5 Functional Design, CONSTRUCTION phase
 
+---
+
+## Unit 5 Functional Design Approval + NFR Skip
+**Timestamp**: 2026-07-08T03:45:00Z
+**User Input**: "Approve and continue"
+**AI Response**: "Approval recorded. NFR Requirements/Design: SKIP - no new security surface (no file access, no untrusted execution); the request-shape uncertainty already flagged is a functional/product risk (may need adjustment once tested), not a security concern, and doesn't warrant a fresh NFR pass. Proceeding directly to Code Generation planning."
+**Context**: Unit 5 Functional Design approval, CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)

@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 5 (Extended Thinking, #85) - Functional Design complete, awaiting approval (unverified request-shape flagged)
+- **Current Stage**: CONSTRUCTION - Unit 5 (Extended Thinking, #85) - Code Generation Part 1 Planning complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -108,12 +108,14 @@ build+test+lint+integration verification passed with no regressions.
 ## Unit 4 Status: COMPLETE AND APPROVED (commit 6edbcce)
 
 ### Construction Phase - Unit 5 (Extended Thinking, #85) - FINAL UNIT
-- [x] Functional Design - Complete 2026-07-08, awaiting approval
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
   - Artifacts: aidlc-docs/construction/unit-5-extended-thinking/functional-design/
   - **IMPORTANT CAVEAT**: the request-side JSON shape for enabling reasoning (AdditionalModelRequestFields) is UNVERIFIED - it's an untyped free-form field, assumed shape based on training knowledge not a live source. Highest-risk assumption in the initiative; flagged prominently to user.
-- [ ] NFR Requirements/Design - Pending (likely SKIP, no new security surface)
+- [x] NFR Requirements - SKIP (no new security surface; request-shape risk is functional, not security)
+- [x] NFR Design - SKIP (follows from NFR Requirements skip)
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [ ] Code Generation - Not started
+- [ ] Code Generation - Part 1 Planning complete, awaiting approval
+  - Plan: aidlc-docs/construction/plans/unit-5-extended-thinking-code-generation-plan.md
 - [ ] Build and Test - Pending all 5 units
 
 ### Operations Phase
