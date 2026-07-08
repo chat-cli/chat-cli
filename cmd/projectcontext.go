@@ -23,12 +23,15 @@ var defaultContextFilenames = []string{"AGENTS.md", "CLAUDE.md", ".github/copilo
 
 // resolveContextFilenames implements BR11-BR13: parses a comma-separated
 // context-files config value into an ordered candidate list, trimming
-// whitespace and dropping empty entries. An unset (empty) configValue yields
-// the default list; a value that trims down to zero entries yields an empty
-// list (the disable case, BR12).
-func resolveContextFilenames(configValue string) []string {
-	if configValue == "" {
+// whitespace and dropping empty entries. When configSet is false (key unset),
+// the default list is used. When configSet is true and configValue is empty
+// or trims down to zero entries, an empty list is returned (BR12 disable).
+func resolveContextFilenames(configValue string, configSet bool) []string {
+	if !configSet {
 		return defaultContextFilenames
+	}
+	if configValue == "" {
+		return []string{}
 	}
 
 	parts := strings.Split(configValue, ",")
@@ -75,13 +78,37 @@ func findProjectContextFile(cwd string, candidates []string) (path string, match
 func matchCandidateInDir(dir string, candidates []string) (path string, matchedCandidate string, ok bool) {
 	for _, candidate := range candidates {
 		candidatePath := filepath.Join(dir, candidate)
-		info, err := os.Stat(candidatePath)
-		if err != nil || !info.Mode().IsRegular() {
+		if !isContextFileMatch(candidatePath) {
 			continue
 		}
 		return candidatePath, candidate, true
 	}
 	return "", "", false
+}
+
+// isContextFileMatch reports whether path is a regular file or a symlink to
+// one (BR2). Directories and other non-file entries are rejected.
+func isContextFileMatch(path string) bool {
+	f, err := os.Open(path) // nolint:gosec // path is from a fixed candidate list, not user-supplied
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return false
+	}
+	return info.Mode().IsRegular()
+}
+
+// formatProjectContextDisplayPath returns a cwd-relative path for the notice
+// (BR16), falling back to the basename when relative resolution fails.
+func formatProjectContextDisplayPath(cwd, sourcePath string) string {
+	if rel, err := filepath.Rel(cwd, sourcePath); err == nil && rel != "" && rel != "." {
+		return rel
+	}
+	return filepath.Base(sourcePath)
 }
 
 // findGitBoundary walks upward from dir looking for the first ancestor

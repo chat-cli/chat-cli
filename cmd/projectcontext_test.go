@@ -14,33 +14,44 @@ func TestResolveContextFilenames(t *testing.T) {
 	tests := []struct {
 		name        string
 		configValue string
+		configSet   bool
 		want        []string
 	}{
 		{
-			name:        "unset config value yields the default precedence list",
+			name:        "unset config key yields the default precedence list",
 			configValue: "",
+			configSet:   false,
 			want:        []string{"AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"},
+		},
+		{
+			name:        "explicitly set empty config value disables discovery",
+			configValue: "",
+			configSet:   true,
+			want:        []string{},
 		},
 		{
 			name:        "custom comma-separated list is parsed and trimmed",
 			configValue: "CLAUDE.md, AGENTS.md ,README.md",
+			configSet:   true,
 			want:        []string{"CLAUDE.md", "AGENTS.md", "README.md"},
 		},
 		{
 			name:        "empty entries from stray commas are dropped",
 			configValue: "AGENTS.md,,CLAUDE.md,",
+			configSet:   true,
 			want:        []string{"AGENTS.md", "CLAUDE.md"},
 		},
 		{
 			name:        "a value that trims down to nothing yields an empty list (disable case)",
 			configValue: "  ,  ,",
+			configSet:   true,
 			want:        []string{},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := resolveContextFilenames(tt.configValue)
+			got := resolveContextFilenames(tt.configValue, tt.configSet)
 
 			if len(got) != len(tt.want) {
 				t.Fatalf("expected %v, got %v", tt.want, got)
@@ -87,6 +98,24 @@ func TestFindProjectContextFile(t *testing.T) {
 		_, _, ok := findProjectContextFile(dir, []string{"AGENTS.md"})
 		if ok {
 			t.Fatal("expected no match - a directory should not count as a match")
+		}
+	})
+
+	t.Run("a symlink to a regular file is treated as a match", func(t *testing.T) {
+		dir := t.TempDir()
+		target := filepath.Join(dir, "instructions.md")
+		writeFile(t, target, "hello")
+		link := filepath.Join(dir, "AGENTS.md")
+		if err := os.Symlink(target, link); err != nil {
+			t.Skip("symlinks not supported in this environment")
+		}
+
+		path, _, ok := findProjectContextFile(dir, []string{"AGENTS.md"})
+		if !ok {
+			t.Fatal("expected a match via symlink")
+		}
+		if path != link {
+			t.Errorf("expected match at %s, got %s", link, path)
 		}
 	})
 
@@ -268,6 +297,30 @@ func TestResolveAndLoadProjectContext(t *testing.T) {
 		_, _, _, found := resolveAndLoadProjectContext(dir, []string{})
 		if found {
 			t.Fatal("expected no match when the candidate list is empty")
+		}
+	})
+}
+
+func TestFormatProjectContextDisplayPath(t *testing.T) {
+	t.Run("returns basename when file is in cwd", func(t *testing.T) {
+		cwd := "/repo"
+		source := "/repo/AGENTS.md"
+		got := formatProjectContextDisplayPath(cwd, source)
+		if got != "AGENTS.md" {
+			t.Errorf("expected AGENTS.md, got %q", got)
+		}
+	})
+
+	t.Run("returns relative path when file is at repo root from nested cwd", func(t *testing.T) {
+		cwd := "/repo/a/b"
+		source := "/repo/AGENTS.md"
+		want, err := filepath.Rel(cwd, source)
+		if err != nil {
+			t.Fatalf("unexpected rel error: %v", err)
+		}
+		got := formatProjectContextDisplayPath(cwd, source)
+		if got != want {
+			t.Errorf("expected %q, got %q", want, got)
 		}
 	})
 }

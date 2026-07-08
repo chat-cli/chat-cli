@@ -125,17 +125,21 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		// an empty context-files config value.
 		if systemPrompt == "" && !noContextFile {
 			contextFilesConfig := fm.GetConfigValue("context-files", "", "").(string)
-			candidates := resolveContextFilenames(contextFilesConfig)
+			candidates := resolveContextFilenames(contextFilesConfig, fm.IsConfigSet("context-files"))
 
 			if len(candidates) > 0 {
-				if cwd, cwdErr := os.Getwd(); cwdErr == nil {
+				cwd, cwdErr := os.Getwd()
+				if cwdErr != nil {
+					fmt.Fprintf(os.Stderr, "warning: unable to determine current directory for project context discovery: %v\n", cwdErr)
+				} else {
 					content, sourcePath, truncated, found := resolveAndLoadProjectContext(cwd, candidates)
 					if found {
+						displayPath := formatProjectContextDisplayPath(cwd, sourcePath)
 						if truncated {
-							fmt.Fprintf(os.Stderr, "warning: project context file %s exceeds 32KB and was truncated\n", sourcePath)
+							fmt.Fprintf(os.Stderr, "warning: project context file %s exceeds 32KB and was truncated\n", displayPath)
 						}
 						systemPrompt = content
-						fmt.Printf("\033[90mUsing project context: %s\033[0m\n", sourcePath)
+						fmt.Printf("\033[90mUsing project context: %s\033[0m\n", displayPath)
 					}
 				}
 			}
