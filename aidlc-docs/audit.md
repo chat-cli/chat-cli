@@ -600,3 +600,17 @@
 **Context**: INCEPTION PHASE, Initiative 3 - Application Design complete, awaiting approval before Units Generation
 
 ---
+## Application Design - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:27:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: Application design approved for #86; Units Generation begins
+
+---
+
+## Units Generation Complete (Initiative 3)
+**Timestamp**: 2026-07-08T17:35:00Z
+**AI Response**: Decomposed into 3 units directly from the approved Application Design (no additional Q&A round needed - the component design already made the seams clear): Unit 6 (Confirmation and Sticky Approval Engine - foundational, extended Tool interface + PermissionGate + ApprovalStore + InteractivePermissionGate + utils.FindGitBoundary extraction), Unit 7 (New Built-in Tools - write_file/run_shell/git_diff, with a HARD compile-time dependency on Unit 6 unlike every other soft dependency in this session's work so far), Unit 8 (Automatic Tool-Use Enablement - --tools removal, retry-without-tools wrapper). Build order 6->7->8. All 8 stories mapped, 0 orphaned.
+**Context**: INCEPTION PHASE COMPLETE for Initiative 3, awaiting approval to enter CONSTRUCTION PHASE
+
+---

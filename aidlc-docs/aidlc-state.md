@@ -262,3 +262,6 @@ a verified ancestor of the merge commit before reset).
 - [x] Application Design - Completed 2026-07-08, awaiting user approval
   - Artifacts: Initiative 3 sections appended to aidlc-docs/inception/application-design/{components,component-methods,services,component-dependency,application-design}.md
   - Key design: extended `Tool` interface (RequiresConfirmation/ConfirmationSummary), 3 new tools, new `PermissionGate`/`ApprovalStore` (tools package) + `InteractivePermissionGate` (cmd package), `utils.FindGitBoundary` extracted from #88's private `findGitBoundary` to avoid a tools->cmd import cycle (the one change to already-shipped Initiative 2 code in this initiative, flagged explicitly)
+- [x] Units Generation - Completed 2026-07-08, awaiting user approval - INCEPTION PHASE (Initiative 3) COMPLETE pending this approval
+  - Artifacts: Initiative 3 sections appended to unit-of-work.md, unit-of-work-dependency.md, unit-of-work-story-map.md
+  - 3 units: Unit 6 (Confirmation and Sticky Approval Engine, foundational), Unit 7 (New Built-in Tools, HARD dependency on Unit 6 - literally won't compile without it), Unit 8 (Automatic Tool-Use Enablement, soft dependency on 6+7). Build order: 6 -> 7 -> 8. All 8 stories assigned, 0 orphaned.
