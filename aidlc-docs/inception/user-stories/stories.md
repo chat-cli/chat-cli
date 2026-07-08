@@ -88,7 +88,7 @@ Persona: **The chat-cli User** (see `personas.md`). Breakdown: Feature-based, on
 
 ---
 
-## Traceability Summary
+## Traceability Summary (Initiative 1, #81-#85)
 
 | Story | Epic | FR/NFR IDs | Issue |
 |---|---|---|---|
@@ -100,3 +100,115 @@ Persona: **The chat-cli User** (see `personas.md`). Breakdown: Feature-based, on
 | 5.1 | Extended Thinking | FR5.1-FR5.4 | #85 |
 
 NFR1 (backward compatibility), NFR2 (TDD/coverage), NFR4 (error handling), NFR5 (no new deps), NFR6 (docs), NFR7 (streaming compatibility) apply across all 6 stories and are re-asserted per-story implicitly by "behavior unchanged when flag not set" acceptance criteria.
+
+---
+
+# Initiative 3 — Built-in Agent Tools (#86)
+
+FR/NFR IDs below reference `aidlc-docs/inception/requirements/builtin-tools-requirements.md` (a separate numbering space from Initiative 1's FR1-FR5 above - disambiguated here as "Epic 6/7/8" to avoid confusion with Epics 1-5).
+
+## Epic 6 — Automatic Tool-Use Enablement (FR1, [#86](https://github.com/chat-cli/chat-cli/issues/86))
+
+### Story 6.1 — Tool use works without any flag
+**As** the chat-cli User, **I want** `chat` to make tools available to the model automatically, **so that** I don't have to remember and pass `--tools` every session.
+
+**Acceptance Criteria**:
+- Given I start `chat-cli` with no special flags, when a request is sent, then it includes a non-empty `ToolConfiguration` built from the registry (now `read_file`, `write_file`, `run_shell`, `git_diff`). *(FR1.1)*
+- Given the `--tools` flag from Initiative 1 no longer exists, when I run `chat-cli --help`, then `--tools` is absent from the flag list. *(FR1.4)*
+
+**INVEST**: Small, independent - pure wiring change, testable by asserting the request always carries a `ToolConfiguration`.
+
+### Story 6.2 — Graceful degradation for models that reject tool use
+**As** the chat-cli User, **I want** `chat` to keep working even on a model that doesn't support tool use, **so that** the automatic-enablement change (Story 6.1) never breaks a session outright.
+
+**Acceptance Criteria**:
+- Given a model/request rejects the `ToolConfiguration` field, when that failure occurs, then chat-cli automatically retries the same request once without it, mirroring the existing cache-point retry pattern from #83. *(FR1.2)*
+- Given the retry-without-tools succeeds, when the response streams back to me, then I see a clear, one-line notice that tools were disabled for this session (not a silent change in behavior). *(FR1.3)*
+- Given tools were disabled this way, when I continue the conversation, then no further requests in that session re-attempt the `ToolConfiguration` (no repeated failed round-trips). *(FR1.2, FR1.3)*
+
+**INVEST**: Independent of Story 6.1's happy path but depends on it existing; testable with a mocked Converse call that rejects the tool field on the first attempt and succeeds on retry.
+
+---
+
+## Epic 7 — New Built-in Tools (FR2-FR4, [#86](https://github.com/chat-cli/chat-cli/issues/86))
+
+### Story 7.1 — Model edits a local file
+**As** the chat-cli User, **I want** the model to be able to create or overwrite a file in my project when I've approved it, **so that** it can act like a lightweight coding assistant instead of only describing what I should change myself.
+
+**Acceptance Criteria**:
+- Given the model requests `write_file` with a path and content, when the path resolves within the working directory (via `utils.ValidateLocalPath`), then, after approval (Epic 8), the file is created or overwritten with that content. *(FR2.1, FR2.2)*
+- Given the model requests a path outside the working directory, when chat-cli validates it, then it refuses and returns an error result to the model, the same as `read_file`'s existing traversal protection. *(FR2.1, NFR1)*
+- Given a `write_file` call has not yet been approved, when chat-cli processes it, then no write happens until the confirmation gate (Epic 8) resolves. *(FR2.3)*
+
+**INVEST**: Small, depends on Epic 8's gate existing but is separately testable (path validation and file-write logic can be tested independently of the approval UI).
+
+### Story 7.2 — Model runs a shell command
+**As** the chat-cli User, **I want** the model to be able to run a shell command when I've approved it, **so that** it can do things like run tests, install a dependency, or check tool versions without me leaving the conversation.
+
+**Acceptance Criteria**:
+- Given the model requests `run_shell` with a command string, when it's approved (Epic 8), then chat-cli executes it via the shell in chat-cli's own working directory and returns combined, size-capped stdout+stderr to the model. *(FR3.1)*
+- Given the command runs longer than the fixed timeout, when that timeout elapses, then chat-cli terminates it and returns a clear timeout result to the model rather than hanging the session. *(FR3.1, NFR2)*
+- Given a `run_shell` call has not yet been approved, when chat-cli processes it, then no command executes until the confirmation gate (Epic 8) resolves. *(FR3.2)*
+
+**INVEST**: Small, mirrors Story 7.1's shape (a destructive tool gated by Epic 8) but independently testable (command execution/timeout/truncation logic vs. approval flow).
+
+### Story 7.3 — Model inspects the working tree diff
+**As** the chat-cli User, **I want** the model to be able to see `git diff` output, **so that** it can reason about my current uncommitted changes without me manually pasting them in.
+
+**Acceptance Criteria**:
+- Given the model requests `git_diff` with no argument, when chat-cli runs it, then it returns the plain `git diff` output for the current working directory. *(FR4.1)*
+- Given the model requests `git_diff` with a path or ref argument, when chat-cli runs it, then it returns `git diff <arg>` output instead. *(FR4.1)*
+- Given the working directory isn't inside a git repository, when `git_diff` is requested, then chat-cli returns a clear error result to the model, not a fatal CLI crash. *(FR4.3)*
+- Given `git_diff` is read-only, when the model requests it, then it executes immediately with no confirmation gate. *(FR4.2)*
+
+**INVEST**: Small, fully independent of Epic 8 (no gate involved) - the simplest story in this initiative.
+
+---
+
+## Epic 8 — Confirmation and Sticky Approval (FR5-FR7, [#86](https://github.com/chat-cli/chat-cli/issues/86))
+
+### Story 8.1 — First-time confirmation for a destructive call
+**As** the chat-cli User, **I want** to see exactly what a destructive tool call will do before it happens, **so that** I stay in control of file writes and shell commands.
+
+**Acceptance Criteria**:
+- Given the model requests `write_file`, when no existing approval matches, then I'm shown the target path and the content that will be written, and asked to decide before anything happens. *(FR5.1)*
+- Given the model requests `run_shell`, when no existing approval matches, then I'm shown the exact command string and asked to decide before anything runs. *(FR5.1)*
+- Given I'm shown the prompt, when I respond, then my options are exactly: approve once, approve for this session, approve always, or deny. *(FR5.2)*
+
+**INVEST**: Independent of Stories 8.2/8.3 (this is the "no prior approval exists" path); testable by asserting the prompt content and that execution blocks until a decision is made.
+
+### Story 8.2 — Sticky approval is remembered and reused
+**As** the chat-cli User, **I want** an "always" or "this session" approval to actually skip future prompts for matching calls, **so that** I'm not re-asked the same thing repeatedly.
+
+**Acceptance Criteria**:
+- Given I approved a `run_shell` call "for this session," when the model later requests another `run_shell` call with the same base command, then it executes without a new prompt, for the remainder of that session only. *(FR5.2, FR6.1, FR6.3, FR7.2)*
+- Given I approved a `write_file` call "always," when the model later requests another `write_file` call under the same directory (in a later `chat` session, same repository), then it executes without a new prompt. *(FR5.2, FR6.2, FR6.3, FR7.1)*
+- Given an "always" approval was granted in one repository, when I run `chat-cli` from a different, unrelated repository, then that approval does not apply there - the gate prompts again. *(FR7.1)*
+
+**INVEST**: Depends on Story 8.1's gate existing, but independently testable against the pattern-matching and storage logic directly (no need to drive the actual prompt UI to test whether a stored pattern matches).
+
+### Story 8.3 — Denying a destructive call
+**As** the chat-cli User, **I want** to be able to say no to a specific destructive call, **so that** the model can't force an action I don't want.
+
+**Acceptance Criteria**:
+- Given I'm shown the confirmation prompt, when I choose deny, then the action does not execute, and the model receives an error `ToolResultBlock` indicating I declined, not a fatal error. *(FR5.3)*
+- Given I denied one call, when the model tries the exact same or a similar call again later in the conversation, then I'm prompted again (a denial is not itself sticky). *(FR5.2, FR5.3)*
+
+**INVEST**: Small, independent - the "unhappy path" companion to Story 8.1.
+
+---
+
+## Traceability Summary (Initiative 3, #86)
+
+| Story | Epic | FR/NFR IDs | Issue |
+|---|---|---|---|
+| 6.1 | Automatic Enablement | FR1.1, FR1.4 | #86 |
+| 6.2 | Graceful Degradation | FR1.2, FR1.3 | #86 |
+| 7.1 | `write_file` | FR2.1-FR2.3, NFR1 | #86 |
+| 7.2 | `run_shell` | FR3.1-FR3.2, NFR2 | #86 |
+| 7.3 | `git_diff` | FR4.1-FR4.3 | #86 |
+| 8.1 | First-time confirmation | FR5.1-FR5.2 | #86 |
+| 8.2 | Sticky approval reuse | FR5.2, FR6.1-FR6.3, FR7.1-FR7.2 | #86 |
+| 8.3 | Denial | FR5.2-FR5.3 | #86 |
+
+NFR3 (revised backward compatibility - intentional default-behavior change), NFR4 (TDD/coverage), NFR5 (usability of the confirmation prompt) apply across all 8 stories in this initiative.

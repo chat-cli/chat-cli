@@ -8,7 +8,7 @@
 - **Granularity**: The approval-tier scenarios (once/session/always/deny/auto-disable) are broken into their own stories rather than folded as acceptance-criteria bullets under one giant "confirmation" story, given the User Stories Assessment's specific reasoning for executing this stage at all (making each branch of that decision tree independently testable).
 
 ## Steps
-- [ ] Extend `aidlc-docs/inception/user-stories/personas.md` with this initiative's goals/pain-points (same file, additive - not a new persona)
-- [ ] Generate `aidlc-docs/inception/user-stories/stories.md` additions: Epic 6 (Automatic Tool-Use Enablement, FR1), Epic 7 (write_file/run_shell/git_diff, FR2-4), Epic 8 (Confirmation and Sticky Approval, FR5-7)
-- [ ] Verify every FR (FR1.1-FR7.2) is traceable to at least one story's acceptance criteria
-- [ ] Verify each story is independently testable per INVEST
+- [x] Extend `aidlc-docs/inception/user-stories/personas.md` with this initiative's goals/pain-points (same file, additive - not a new persona)
+- [x] Generate `aidlc-docs/inception/user-stories/stories.md` additions: Epic 6 (Automatic Tool-Use Enablement, FR1), Epic 7 (write_file/run_shell/git_diff, FR2-4), Epic 8 (Confirmation and Sticky Approval, FR5-7)
+- [x] Verify every FR (FR1.1-FR7.2) is traceable to at least one story's acceptance criteria
+- [x] Verify each story is independently testable per INVEST

@@ -252,3 +252,7 @@ a verified ancestor of the merge commit before reset).
   - Artifacts: aidlc-docs/inception/requirements/builtin-tools-{questions,clarification-questions,requirements}.md
   - FR1-FR7 + NFR1-NFR5 documented. Notably revises Initiative 1's NFR1 (backward compatibility) by design - tool use becomes always-on with automatic graceful degradation, per explicit user direction
   - **Recommending User Stories EXECUTE (not skip)** this time - real UX/acceptance-criteria value given the new confirmation-gate/approval-tier interaction flows, unlike Initiative 2's simple flag/config plumbing
+- [x] User Stories - Completed 2026-07-08, awaiting user approval
+  - Assessment: aidlc-docs/inception/plans/builtin-tools-user-stories-assessment.md (EXECUTE)
+  - Plan: aidlc-docs/inception/plans/builtin-tools-story-generation-plan.md
+  - Artifacts: extended aidlc-docs/inception/user-stories/{personas.md,stories.md} in place (same persona, 3 new epics: 6 Automatic Enablement, 7 New Tools, 8 Confirmation/Sticky Approval; 8 stories total, full FR1-FR7 traceability)
