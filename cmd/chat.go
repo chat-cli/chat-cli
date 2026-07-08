@@ -99,6 +99,15 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		thinkingEffort, err := flagCmd.PersistentFlags().GetString("thinking-effort")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+		thinkingEffort, err = normalizeThinkingEffort(thinkingEffort)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// Get configuration values with precedence order (flag -> config -> default)
 		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
@@ -187,7 +196,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			InferenceConfig:              &conf,
 			RequestMetadata:              metadata,
 			System:                       withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
-			AdditionalModelRequestFields: buildReasoningConfig(thinkingEnabled, thinkingBudget),
+			AdditionalModelRequestFields: buildReasoningConfig(modelIdString, thinkingEnabled, thinkingBudget, thinkingEffort),
 		}
 
 		// Tool registry is empty (and therefore inert - ToolConfiguration()

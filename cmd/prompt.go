@@ -100,6 +100,15 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		thinkingEffort, err := cmd.PersistentFlags().GetString("thinking-effort")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+		thinkingEffort, err = normalizeThinkingEffort(thinkingEffort)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// Get configuration values with precedence order (flag -> config -> default)
 		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
@@ -213,7 +222,7 @@ var promptCmd = &cobra.Command{
 				ModelId:                      &modelIdString,
 				InferenceConfig:              &conf,
 				System:                       withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
-				AdditionalModelRequestFields: buildReasoningConfig(thinkingEnabled, thinkingBudget),
+				AdditionalModelRequestFields: buildReasoningConfig(modelIdString, thinkingEnabled, thinkingBudget, thinkingEffort),
 			}
 			converseInput.Messages = append(converseInput.Messages, userMsg)
 
@@ -241,7 +250,7 @@ var promptCmd = &cobra.Command{
 				ModelId:                      &modelIdString,
 				InferenceConfig:              &conf,
 				System:                       withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
-				AdditionalModelRequestFields: buildReasoningConfig(thinkingEnabled, thinkingBudget),
+				AdditionalModelRequestFields: buildReasoningConfig(modelIdString, thinkingEnabled, thinkingBudget, thinkingEffort),
 			}
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
 
@@ -285,7 +294,8 @@ func init() {
 	promptCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 	promptCmd.PersistentFlags().String("system", "", "set a system prompt")
 	promptCmd.PersistentFlags().Bool("thinking", false, "enable extended thinking / reasoning mode")
-	promptCmd.PersistentFlags().Int32("thinking-budget", 1024, "token budget for extended thinking (requires --thinking)")
+	promptCmd.PersistentFlags().Int32("thinking-budget", 1024, "token budget for extended thinking on legacy models (requires --thinking)")
+	promptCmd.PersistentFlags().String("thinking-effort", defaultThinkingEffort, "reasoning effort for adaptive models: low, medium, or high (requires --thinking)")
 
 	promptCmd.PersistentFlags().StringP("image", "i", "", "path to image")
 	promptCmd.PersistentFlags().StringP("document", "d", "", "path to a document (pdf, csv, doc, docx, xls, xlsx, html, txt, md)")
