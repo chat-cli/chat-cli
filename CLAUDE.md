@@ -1,10 +1,20 @@
----
-inclusion: always
----
+# CLAUDE.md
 
-# Chat-CLI Project Guide
+This file provides guidance to Claude Code when working with code in this repository.
 
-This steering document provides comprehensive guidance for working with the chat-cli codebase, a Go-based CLI application for interacting with Amazon Bedrock LLMs.
+## AI-DLC
+
+When the user invokes AI-DLC, read and follow
+`.aidlc/aidlc-rules/aws-aidlc-rules/core-workflow.md` to start the workflow.
+
+## Work Tracking
+
+**Always use GitHub issues to track ideas and document work in this repo.**
+
+- New ideas, features, and bugs get a GitHub issue before work starts, even for small items.
+- Use the issue to document decisions, progress, and open questions as the work happens, not just at the end.
+- Link pull requests to the issue they address (e.g. `Closes #123`) so the issue reflects the outcome.
+- If work surfaces a new idea or follow-up that's out of scope for the current task, open a new issue for it rather than letting it get lost.
 
 ## Project Overview
 
@@ -68,10 +78,10 @@ go run main.go <command> <args> <flags>
 **CRITICAL: Always follow Test-Driven Development (TDD)**
 
 Before implementing any feature:
-1. Write tests first that define expected behavior
-2. Run tests and watch them fail
-3. Write minimal code to make tests pass
-4. Run full test suite to verify
+1. Write tests first that define the expected behavior
+2. Run the test and watch it fail for the right reason
+3. Write minimal code to make the test pass
+4. Run the full test suite to verify nothing else broke
 5. Refactor while keeping tests green
 
 **Test Commands:**
@@ -91,6 +101,12 @@ make cli && go test -tags=integration -v
 # Run linting
 make lint
 ```
+
+**Test Guidelines:**
+- Keep tests focused and test one thing at a time
+- Use descriptive test names that explain what is being tested
+- Follow Go testing conventions and use the `testing` package
+- Place tests in `*_test.go` files alongside the code they test
 
 **Coverage Goals:**
 - New functions: 80%+ coverage
@@ -286,4 +302,3 @@ Users need:
 - Use `--help` flag on any command
 - Check `docs/` directory for detailed documentation
 - Review test files for usage examples
-- See `CLAUDE.md` for AI assistant guidance
