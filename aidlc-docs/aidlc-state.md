@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: INCEPTION - Units Generation (Generation complete, awaiting final approval)
+- **Current Stage**: CONSTRUCTION - Unit 1 (System Prompt Support, #81) - Code Generation
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -33,7 +33,7 @@
 - [x] Workflow Planning - Completed 2026-07-08 (approved by user)
 - [x] Application Design - Completed 2026-07-08 (approved by user)
   - **Artifacts Location**: aidlc-docs/inception/application-design/
-- [x] Units Generation - Plan approved, artifacts generated 2026-07-08, awaiting final approval
+- [x] Units Generation - Completed 2026-07-08 (approved by user) - INCEPTION PHASE COMPLETE
   - **Artifacts Location**: aidlc-docs/inception/application-design/unit-of-work*.md
 
 ## Units of Work (finalized)
@@ -43,13 +43,14 @@
 4. Unit 4 - Native Document Input (#84) - soft-depends on Unit 2 (shared ValidateLocalPath helper)
 5. Unit 5 - Extended Thinking / Reasoning Mode (#85) - no dependencies
 
-### Construction Phase (per-unit, pending Units Generation)
-- [ ] Functional Design - PENDING per-unit
-- [ ] NFR Requirements - PENDING per-unit
-- [ ] NFR Design - PENDING per-unit
-- [ ] Infrastructure Design - SKIP (no infrastructure in this project)
-- [ ] Code Generation - EXECUTE (ALWAYS, per-unit)
-- [ ] Build and Test - EXECUTE (ALWAYS, after all units)
+### Construction Phase - Unit 1 (System Prompt Support, #81)
+- [x] Functional Design - SKIP (simple flag/config plumbing, no new business logic)
+- [x] NFR Requirements - SKIP (no new security/performance concerns beyond cross-cutting NFRs already in requirements.md)
+- [x] NFR Design - SKIP (follows from NFR Requirements skip)
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [ ] Code Generation - Part 1 Planning complete, awaiting plan approval
+  - Plan: aidlc-docs/construction/plans/unit-1-system-prompt-code-generation-plan.md
+- [ ] Build and Test - Pending all 5 units
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)

@@ -159,3 +159,17 @@
 **Context**: Units Generation stage (Generation), INCEPTION phase
 
 ---
+
+## Units Generation Approval - INCEPTION Phase Complete
+**Timestamp**: 2026-07-08T00:55:00Z
+**User Input**: "ok lets start building"
+**AI Response**: "Approval recorded (implicit approve-and-continue). INCEPTION phase complete for issues #81-#85. Entering CONSTRUCTION PHASE, starting with Unit 1 (System Prompt Support, #81). Assessed per-unit conditional stages for Unit 1 per core-workflow.md: Functional Design SKIP (simple flag/config plumbing, no new business logic), NFR Requirements/Design SKIP (no new security/performance concerns beyond what's already covered by cross-cutting NFRs in requirements.md), Infrastructure Design SKIP (already decided globally). Proceeding directly to Code Generation for Unit 1."
+**Context**: CONSTRUCTION PHASE begins, Unit 1
+
+---
+
+## Unit 1 Code Generation - Planning
+**Timestamp**: 2026-07-08T00:58:00Z
+**User Input**: (n/a - executing per approved unit-of-work)
+**AI Response**: "Downloaded and inspected the AWS SDK v2 bedrockruntime module locally to confirm exact type names (ConverseInput.System/ConverseStreamInput.System are []types.SystemContentBlock, SystemContentBlockMemberText{Value string}) before writing the plan, rather than guessing. Reviewed existing cmd_test.go pattern (metadata/flag assertions only, no AWS mocking) and config_test.go (GetConfigValue already generically tested for any string key). Created unit-1-system-prompt-code-generation-plan.md: 11 TDD-ordered steps (failing test then implementation, per CLAUDE.md) covering config key support, a new testable buildSystemContentBlocks() helper, flag registration on root+prompt, wiring into chat.go and prompt.go (both streaming and no-stream paths), full test/lint run, and documentation. Presenting for approval before generation begins."
+**Context**: Unit 1 Code Generation (Planning), CONSTRUCTION phase
