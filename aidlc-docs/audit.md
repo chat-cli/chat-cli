@@ -634,3 +634,17 @@
 **Context**: CONSTRUCTION PHASE, Unit 6 - NFR complete, awaiting approval before Code Generation
 
 ---
+## Unit 6 NFR - Approval
+**Timestamp**: 2026-07-08T17:58:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: NFR approved for Unit 6; Code Generation Part 1 (Planning) begins
+
+---
+
+## Unit 6 Code Generation Plan Created
+**Timestamp**: 2026-07-08T18:05:00Z
+**AI Response**: Created a 14-step TDD-ordered plan. Key finding during planning (not assumed, verified against real cmd/toolloop.go source): Registry.Dispatch has exactly one call site (runChatTurnWithTools in cmd/toolloop.go), which has 4 of its own call sites (2 in chat.go, 2 in toolturn_test.go) - changing Dispatch's signature requires threading a gate through all of them to keep the tree compiling, since --tools/registry wiring isn't removed until Unit 8. Decided to construct a real InteractivePermissionGate now (Step 13) rather than a stub, so every intermediate commit stays fully correct, not just compiling - it's inert in practice until Unit 7 adds destructive tools.
+**Context**: CONSTRUCTION PHASE, Unit 6 - Code Generation Part 1 (Planning) complete, awaiting approval
+
+---
