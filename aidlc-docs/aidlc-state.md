@@ -256,3 +256,6 @@ a verified ancestor of the merge commit before reset).
   - Assessment: aidlc-docs/inception/plans/builtin-tools-user-stories-assessment.md (EXECUTE)
   - Plan: aidlc-docs/inception/plans/builtin-tools-story-generation-plan.md
   - Artifacts: extended aidlc-docs/inception/user-stories/{personas.md,stories.md} in place (same persona, 3 new epics: 6 Automatic Enablement, 7 New Tools, 8 Confirmation/Sticky Approval; 8 stories total, full FR1-FR7 traceability)
+- [x] Workflow Planning - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/inception/plans/builtin-tools-execution-plan.md
+  - Risk: Medium-High (arbitrary shell exec, destructive writes). Application Design EXECUTE (new permission-engine architecture), Units Generation EXECUTE (multiple packages, new persisted state, complex pattern-matching - unlike Initiative 2's single natural unit). Per-unit Functional Design + NFR EXECUTE (Security now first-class). Infrastructure Design SKIP (unchanged global decision). Code Generation + Build and Test ALWAYS EXECUTE.
