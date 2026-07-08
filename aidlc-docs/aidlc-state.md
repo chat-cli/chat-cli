@@ -215,4 +215,9 @@ No PR opened (not requested by user). Recommended before merge: run the
   - Plan: aidlc-docs/construction/plans/agents-md-convention-code-generation-plan.md (all 14 steps complete)
   - Summary: aidlc-docs/construction/agents-md-convention/code/summary.md
   - cmd coverage 23.6% -> 31.8%, total 66.3% -> 67.8%, no regressions. All 7 integration tests pass. Manual smoke test confirmed discovery, --system suppression, and --no-context-file suppression all work end-to-end.
-- [ ] Build and Test - Pending final approval
+- [x] Build and Test - Completed 2026-07-08, awaiting final approval
+  - Artifacts: aidlc-docs/construction/build-and-test/agents-md-convention-summary.md
+  - Build success, all unit/integration tests pass, no coverage regression, manual smoke test against the compiled binary confirmed discovery/--system-suppression/--no-context-file-suppression all work end-to-end. No new real-credential-verification surface (feature never touches Bedrock directly - reuses Initiative 1's existing system-prompt/cache-point pipeline as-is).
+
+## Unit "agents-md-convention" Status: COMPLETE AND APPROVED (commit c1bb745)
+## INITIATIVE 2 STATUS: COMPLETE (pending final Build and Test approval)
