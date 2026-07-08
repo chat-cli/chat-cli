@@ -262,6 +262,22 @@
 **AI Response**: "Discovered the pinned github.com/aws/aws-sdk-go-v2/service/bedrockruntime version (v1.23.0, in go.mod) predates Bedrock prompt-caching support entirely - no CachePointBlock/ContentBlockMemberCachePoint/SystemContentBlockMemberCachePoint types exist at that version. Bisected and confirmed v1.28.0 is the earliest version with these types (v1.27.0 lacks them). Also checked ahead: v1.23.0 has zero reasoning-content types needed for Unit 5 (Extended Thinking, #85) either - that unit will hit the same wall. Scanned the changelog between v1.23.0 and latest (v1.55.0) for breaking changes relevant to our usage (GetFoundationModel, Converse/ConverseStream, ListFoundationModels) - found nothing concerning. Pausing Unit 3 construction to get explicit confirmation before bumping a core dependency, since it affects the whole codebase, not just this unit."
 **Context**: Unit 3, CONSTRUCTION phase - blocked pending dependency decision
 
+---
+
+## SDK Upgrade Decision
+**Timestamp**: 2026-07-08T02:25:00Z
+**User Input**: "Upgrade to latest now (v1.55.0)"
+**AI Response**: "Proceeding to bump github.com/aws/aws-sdk-go-v2/service/bedrockruntime (and whatever go get/go mod tidy pull along for compatibility) to latest, then running full build+test+lint+integration verification before resuming Unit 3."
+**Context**: Unit 3, CONSTRUCTION phase - unplanned prerequisite (SDK upgrade)
+
+---
+
+## SDK Upgrade Complete
+**Timestamp**: 2026-07-08T02:35:00Z
+**User Input**: (n/a - executing per confirmed decision)
+**AI Response**: "go get bumped bedrockruntime v1.23.0->v1.55.0, aws-sdk-go-v2 core v1.32.6->v1.42.1, smithy-go v1.22.1->v1.27.3, plus transitive deps. Side effect: go.mod's go directive moved 1.23.4->1.24 with an explicit toolchain go1.24.7 line (newer SDK needs newer toolchain). Updated README.md/CLAUDE.md Go version references to match. Verification: go build clean, make test all green, make lint clean, integration tests all pass. bedrock (control-plane) module left at v1.25.0, unaffected. Created aidlc-docs/construction/sdk-upgrade/summary.md. Resuming Unit 3 Functional Design."
+**Context**: Unit 3, CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)

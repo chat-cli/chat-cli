@@ -35,7 +35,7 @@ Notes:
 
 ### Build from source
 
-You will need [Go](https://go.dev) v1.22.1 installed on your system. You can type `go version` to ensure you have the correct version installed.
+You will need [Go](https://go.dev) v1.24+ installed on your system. You can type `go version` to ensure you have the correct version installed.
 
 To build the project from source, clone this repository to your local machine and use [Make](https://www.gnu.org/software/make/manual/make.html) to build the binary.
 

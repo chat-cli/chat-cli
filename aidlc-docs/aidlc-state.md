@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - Code Generation complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 3 (Prompt Caching, #83) - SDK upgrade prerequisite complete, resuming Functional Design
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -69,8 +69,23 @@
   - **Decision made**: --tools opt-in flag (default false), confirmed with user before generation
 - [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass; cmd coverage 8.0%->18.7%, new tools package 90%)
 
-## Unit 2 Status: CODE COMPLETE, AWAITING REVIEW
-Next: Unit 3 (Prompt Caching, #83) once Unit 2 is approved.
+## Unit 2 Status: COMPLETE AND APPROVED (commit ad327a0)
+
+## Unplanned Prerequisite: AWS SDK Upgrade (COMPLETE)
+Discovered while starting Unit 3 that the pinned bedrockruntime SDK (v1.23.0) predates
+prompt-caching support (needs v1.28.0+) and also lacks reasoning-content types needed by
+Unit 5. User confirmed upgrading to latest (v1.55.0) now. Done - see
+aidlc-docs/construction/sdk-upgrade/summary.md. go.mod's `go` directive moved 1.23.4 -> 1.24
+(toolchain go1.24.7) as a side effect; README.md/CLAUDE.md updated to match. Full
+build+test+lint+integration verification passed with no regressions.
+
+### Construction Phase - Unit 3 (Prompt Caching, #83)
+- [ ] Functional Design - Resuming next (light pass: retry-on-cache-rejection algorithm)
+- [ ] NFR Requirements - Likely SKIP (no new security surface; performance is the feature itself)
+- [ ] NFR Design - Pending NFR Requirements
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [ ] Code Generation - Not started
+- [ ] Build and Test - Pending all 5 units
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)

@@ -21,7 +21,7 @@ When the user invokes AI-DLC, read and follow
 Chat-CLI is a terminal-based program built with Go and Cobra that provides an interface to Amazon Bedrock LLMs. It supports interactive chat sessions, one-shot prompts, image generation, and persistent configuration management.
 
 **Key Technologies:**
-- Go 1.23.4+
+- Go 1.24+
 - Cobra (CLI framework)
 - Viper (configuration management)
 - SQLite (chat history persistence)
