@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 4 (Native Document Input, #84) - starting Functional Design
+- **Current Stage**: CONSTRUCTION - Unit 4 (Native Document Input, #84) - Functional Design + NFR complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -93,9 +93,12 @@ build+test+lint+integration verification passed with no regressions.
 ## Unit 3 Status: COMPLETE AND APPROVED (commit e315d18)
 
 ### Construction Phase - Unit 4 (Native Document Input, #84)
-- [ ] Functional Design - Starting (format validation, content-block construction)
-- [ ] NFR Requirements - Likely EXECUTE (security: path-confined file reads, same category as Unit 2)
-- [ ] NFR Design - Pending NFR Requirements
+- [x] Functional Design - Complete 2026-07-08, awaiting approval
+  - Artifacts: aidlc-docs/construction/unit-4-document-input/functional-design/
+- [x] NFR Requirements - Complete 2026-07-08, awaiting approval (combined with NFR Design - SEC-1 reuses Unit 2's ValidateLocalPath as-is, only SEC-2 (name sanitization) is new)
+  - Artifacts: aidlc-docs/construction/unit-4-document-input/nfr-requirements/
+- [x] NFR Design - Complete 2026-07-08, awaiting approval (combined presentation)
+  - Artifacts: aidlc-docs/construction/unit-4-document-input/nfr-design/
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
 - [ ] Code Generation - Not started
 - [ ] Build and Test - Pending all 5 units

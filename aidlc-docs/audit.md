@@ -318,6 +318,14 @@
 **AI Response**: "Approval recorded. Unit 3 (Prompt Caching, #83) complete and merged (commit e315d18). Confirming: every stage this session has been committed and pushed individually (reverse engineering, requirements, stories, workflow planning, application design, units generation, and each unit's functional design/NFR/code generation) - will keep following that practice, no change needed. Beginning Unit 4 (Native Document Input, #84). Per execution-plan.md's preliminary flags, this unit likely needs both Functional Design (format validation, content-block construction) and NFR Requirements/Design (security - path-confined file reads, same category as Unit 2's read_file tool)."
 **Context**: CONSTRUCTION PHASE, Unit 4 begins
 
+---
+
+## Unit 4 Functional Design + NFR (combined)
+**Timestamp**: 2026-07-08T03:10:00Z
+**User Input**: (n/a - executing per per-unit assessment)
+**AI Response**: "Verified DocumentBlock/DocumentSource/ContentBlockMemberDocument/DocumentFormat directly against the SDK. Found DocumentBlock.Name has a hard character restriction (raw filenames like 'report.pdf' are invalid - the period isn't allowed) and the SDK's own docs flag unsanitized names as a prompt-injection vector - designed sanitizeDocumentName to address both. Confirmed bedrock's ModelModality enum has no DOCUMENT value (same pattern as tool use and caching - no pre-flight capability check exists). Decided NOT to retry-without-document on error (unlike Unit 3's caching) since a document is requested content, not an optional optimization - errors surface clearly instead. Decided no client-side file-size check, consistent with ReadImage's existing precedent. NFR Requirements+Design combined into one light document since SEC-1 (path safety) is fully satisfied by reusing Unit 2's utils.ValidateLocalPath as-is - no fresh security design needed, only SEC-2 (name sanitization) is new. Presenting both for one combined approval."
+**Context**: Unit 4 Functional Design + NFR, CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)
