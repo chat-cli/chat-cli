@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: INCEPTION - Application Design (awaiting approval)
+- **Current Stage**: INCEPTION - Units Generation (Planning, awaiting plan approval)
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -31,9 +31,9 @@
 - [x] Requirements Analysis - Completed 2026-07-08 (approved by user)
 - [x] User Stories - Completed 2026-07-08 (approved by user)
 - [x] Workflow Planning - Completed 2026-07-08 (approved by user)
-- [x] Application Design - Artifacts generated 2026-07-08, awaiting approval
+- [x] Application Design - Completed 2026-07-08 (approved by user)
   - **Artifacts Location**: aidlc-docs/inception/application-design/
-- [ ] Units Generation - EXECUTE (planned, not started)
+- [ ] Units Generation - Plan created 2026-07-08, awaiting plan approval
 
 ### Construction Phase (per-unit, pending Units Generation)
 - [ ] Functional Design - PENDING per-unit
