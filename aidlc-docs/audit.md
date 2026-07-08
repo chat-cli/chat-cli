@@ -586,3 +586,17 @@
 **Context**: Workflow plan created with 6 stages to execute (Application Design, Units Generation, per-unit Functional Design+NFR, Code Generation, Build and Test) out of 7 possible
 
 ---
+## Workflow Planning - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:14:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: Execution plan approved for #86; Application Design begins
+
+---
+
+## Application Design Complete (Initiative 3)
+**Timestamp**: 2026-07-08T17:25:00Z
+**AI Response**: Designed directly (verified against current tools/tool.go, tools/registry.go source) rather than another Q&A round, given how much was already resolved across two Requirements Analysis rounds. Key decisions: extend the Tool interface with RequiresConfirmation/ConfirmationSummary rather than a separate registry-side lookup table; new PermissionGate interface + ApprovalStore (tools package, pure logic) + InteractivePermissionGate (cmd package, owns terminal I/O) mirroring the existing tools/cmd split from Unit 2; Registry.Dispatch signature extended to accept a PermissionGate. Found and resolved a real import-cycle risk: ApprovalStore needs #88's git-boundary-detection logic, but tools cannot import cmd - resolved by extracting utils.FindGitBoundary and refactoring cmd/projectcontext.go to use it, the one change to already-shipped Initiative 2 code in this initiative.
+**Context**: INCEPTION PHASE, Initiative 3 - Application Design complete, awaiting approval before Units Generation
+
+---

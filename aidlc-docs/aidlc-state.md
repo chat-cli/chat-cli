@@ -259,3 +259,6 @@ a verified ancestor of the merge commit before reset).
 - [x] Workflow Planning - Completed 2026-07-08, awaiting user approval
   - Artifacts: aidlc-docs/inception/plans/builtin-tools-execution-plan.md
   - Risk: Medium-High (arbitrary shell exec, destructive writes). Application Design EXECUTE (new permission-engine architecture), Units Generation EXECUTE (multiple packages, new persisted state, complex pattern-matching - unlike Initiative 2's single natural unit). Per-unit Functional Design + NFR EXECUTE (Security now first-class). Infrastructure Design SKIP (unchanged global decision). Code Generation + Build and Test ALWAYS EXECUTE.
+- [x] Application Design - Completed 2026-07-08, awaiting user approval
+  - Artifacts: Initiative 3 sections appended to aidlc-docs/inception/application-design/{components,component-methods,services,component-dependency,application-design}.md
+  - Key design: extended `Tool` interface (RequiresConfirmation/ConfirmationSummary), 3 new tools, new `PermissionGate`/`ApprovalStore` (tools package) + `InteractivePermissionGate` (cmd package), `utils.FindGitBoundary` extracted from #88's private `findGitBoundary` to avoid a tools->cmd import cycle (the one change to already-shipped Initiative 2 code in this initiative, flagged explicitly)
