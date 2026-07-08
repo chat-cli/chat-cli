@@ -65,3 +65,10 @@ func TestReadFileTool_Execute(t *testing.T) {
 		}
 	})
 }
+
+func TestReadFileTool_RequiresConfirmation(t *testing.T) {
+	tool := NewReadFileTool()
+	if tool.RequiresConfirmation() {
+		t.Error("expected read_file to not require confirmation - it's read-only")
+	}
+}

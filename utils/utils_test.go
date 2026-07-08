@@ -430,3 +430,43 @@ func TestStringPrompt(t *testing.T) {
 	// we'll leave this as an integration test candidate
 	t.Skip("StringPrompt requires stdin interaction - should be tested in integration tests")
 }
+
+func TestFindGitBoundary(t *testing.T) {
+	t.Run("matches at dir's own .git", func(t *testing.T) {
+		root := t.TempDir()
+		if err := os.Mkdir(filepath.Join(root, ".git"), 0750); err != nil {
+			t.Fatalf("failed to create .git dir: %v", err)
+		}
+
+		if got := FindGitBoundary(root); got != root {
+			t.Errorf("expected %s, got %s", root, got)
+		}
+	})
+
+	t.Run("matches at a nested parent's .git", func(t *testing.T) {
+		root := t.TempDir()
+		if err := os.Mkdir(filepath.Join(root, ".git"), 0750); err != nil {
+			t.Fatalf("failed to create .git dir: %v", err)
+		}
+		sub := filepath.Join(root, "a", "b", "c")
+		if err := os.MkdirAll(sub, 0750); err != nil {
+			t.Fatalf("failed to create nested dir: %v", err)
+		}
+
+		if got := FindGitBoundary(sub); got != root {
+			t.Errorf("expected %s, got %s", root, got)
+		}
+	})
+
+	t.Run("no .git anywhere returns empty string", func(t *testing.T) {
+		root := t.TempDir()
+		sub := filepath.Join(root, "a", "b")
+		if err := os.MkdirAll(sub, 0750); err != nil {
+			t.Fatalf("failed to create nested dir: %v", err)
+		}
+
+		if got := FindGitBoundary(sub); got != "" {
+			t.Errorf("expected empty string, got %s", got)
+		}
+	})
+}

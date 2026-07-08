@@ -276,7 +276,12 @@ a verified ancestor of the merge commit before reset).
   - Artifacts: aidlc-docs/construction/unit-6-confirmation-engine/nfr-requirements/nfr-requirements-and-design.md
   - Security (dominant): Dispatch is the single choke point, fail-closed on every ambiguous state, per-repo scoping is a security boundary not just UX, 0600 file perms. Reliability: corrupted store degrades to empty (re-prompt), never fatal. Usability: informative prompts, stated truncation policy for large write_file content.
 - [x] Infrastructure Design - SKIP (no infrastructure in this project)
-- [x] Code Generation - Plan complete 2026-07-08, awaiting approval to begin generation
-  - Plan: aidlc-docs/construction/plans/unit-6-confirmation-engine-code-generation-plan.md (14 TDD-ordered steps)
-  - Key finding during planning: Registry.Dispatch has exactly one call site (cmd/toolloop.go's runChatTurnWithTools), which must have a gate threaded through all 4 of its own call sites to keep the tree compiling - Unit 6 constructs a real InteractivePermissionGate now (inert until Unit 7 adds destructive tools) rather than leaving intermediate commits broken
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-6-confirmation-engine-code-generation-plan.md (all 14 steps complete)
+  - Summary: aidlc-docs/construction/unit-6-confirmation-engine/code/summary.md
+  - cmd 31.8%->33.3%, tools 90.0%->84.1%, utils 51.8%->53.7%, total 67.8%->69.7%, no regressions. 7/7 integration tests pass. No user-visible behavior change yet (by design) - gate fully wired but inert until Unit 7.
+  - One caught-and-fixed deviation during implementation: persisted-entry format initially used the wrong (internal NUL-joined) key before being corrected to the documented human-readable "toolName:patternKey" format.
+
+## Unit 6 Status: COMPLETE, AWAITING APPROVAL
+
 - [ ] Build and Test - Pending all 3 units

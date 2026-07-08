@@ -240,6 +240,21 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			registry.Register(tools.NewReadFileTool())
 		}
 
+		// The permission gate is constructed unconditionally: it's inert
+		// until a registered tool actually requires confirmation (none do
+		// yet - read_file is read-only), but building it here means every
+		// unit that adds a destructive tool doesn't need to touch this
+		// wiring again.
+		var repoRoot string
+		if toolCwd, cwdErr := os.Getwd(); cwdErr == nil {
+			repoRoot = utils.FindGitBoundary(toolCwd)
+		}
+		approvalStore, approvalStoreErr := tools.NewApprovalStore(fm.ConfigPath, repoRoot)
+		if approvalStoreErr != nil {
+			log.Fatalf("unable to initialize tool approval store: %v", approvalStoreErr)
+		}
+		permissionGate := NewInteractivePermissionGate(approvalStore, os.Stdin, os.Stdout)
+
 		sendFn := func(ctx context.Context, in *bedrockruntime.ConverseStreamInput) (<-chan types.ConverseStreamOutput, error) {
 			out, streamErr := converseStreamWithFallbacks(ctx, svc, in)
 			if streamErr != nil {
@@ -371,11 +386,11 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 				return nil
 			}
 
-			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
+			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, permissionGate, onText, onReasoning)
 			if err != nil && hasSystemCachePoint(converseStreamInput.System) {
 				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
 				converseStreamInput.System = stripSystemCachePoints(converseStreamInput.System)
-				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
+				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, permissionGate, onText, onReasoning)
 			}
 
 			if err != nil {

@@ -166,6 +166,7 @@ func runChatTurnWithTools(
 	send converseStreamFunc,
 	input *bedrockruntime.ConverseStreamInput,
 	registry *tools.Registry,
+	gate tools.PermissionGate,
 	onText utils.StreamingOutputHandler,
 	onReasoning utils.StreamingOutputHandler,
 ) (string, error) {
@@ -202,7 +203,7 @@ func runChatTurnWithTools(
 
 		var resultContent []types.ContentBlock
 		for _, call := range toolCalls {
-			result := registry.Dispatch(ctx, call)
+			result := registry.Dispatch(ctx, call, gate)
 			resultContent = append(resultContent, &types.ContentBlockMemberToolResult{Value: result})
 		}
 		input.Messages = append(input.Messages, types.Message{

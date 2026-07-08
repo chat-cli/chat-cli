@@ -266,3 +266,29 @@ func LoadDocument() (string, error) {
 
 	return document, nil
 }
+
+// maxGitBoundaryWalkLevels bounds FindGitBoundary's upward search as a
+// defensive cap against a pathologically deep dir with no repo above it.
+const maxGitBoundaryWalkLevels = 64
+
+// FindGitBoundary walks upward from dir looking for the first ancestor
+// (inclusive) containing a .git entry, capped at maxGitBoundaryWalkLevels.
+// Returns "" if none is found. Shared by the project-context discovery
+// feature and the tool-use permission engine's per-repository approval
+// scoping - both need identical repo-root-detection behavior.
+func FindGitBoundary(dir string) string {
+	current := dir
+	for i := 0; i < maxGitBoundaryWalkLevels; i++ {
+		if _, err := os.Stat(filepath.Join(current, ".git")); err == nil {
+			return current
+		}
+
+		parent := filepath.Dir(current)
+		if parent == current {
+			// reached filesystem root
+			return ""
+		}
+		current = parent
+	}
+	return ""
+}
