@@ -200,5 +200,16 @@ No PR opened (not requested by user). Recommended before merge: run the
 - [x] Workflow Planning - Completed 2026-07-08, awaiting user approval
   - Artifacts: aidlc-docs/inception/plans/agents-md-convention-execution-plan.md
   - Risk: Low. Application Design SKIP, Units Generation SKIP (single unit, no new subsystem shape). Functional Design + NFR combined EXECUTE. Code Generation + Build and Test ALWAYS EXECUTE.
-- [ ] Application Design - SKIP (see execution plan rationale)
-- [ ] Units Generation - SKIP (see execution plan rationale, this initiative proceeds as a single implicit unit straight into Construction)
+- [x] Application Design - SKIP (see execution plan rationale)
+- [x] Units Generation - SKIP (see execution plan rationale, this initiative proceeds as a single implicit unit straight into Construction) - INCEPTION PHASE COMPLETE
+
+### Construction Phase - agents-md-convention (#88, single implicit unit)
+- [x] Functional Design - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/construction/agents-md-convention/functional-design/{business-logic-model,business-rules,domain-entities}.md
+  - Resolved FR1.2's walk-up rule into a concrete two-phase algorithm (Phase A: cheap `.git`-boundary stat-walk; Phase B: check candidates at cwd, then boundary dir only) - verified against actual cmd/chat.go:114, cmd/systemprompt.go, cmd/config.go source, not guessed
+- [x] NFR Requirements + Design - Completed 2026-07-08 (combined presentation, same pattern as Initiative 1 Units 2/4), awaiting user approval
+  - Artifacts: aidlc-docs/construction/agents-md-convention/nfr-requirements/nfr-requirements-and-design.md
+  - Security: bounded to 2 directories, no path-traversal surface (fixed filenames only, no user-supplied path). Reliability: filesystem failures degrade to "no match," never fatal.
+- [ ] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [ ] Code Generation - Pending approval of Functional Design + NFR
+- [ ] Build and Test - Pending Code Generation

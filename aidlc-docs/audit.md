@@ -467,3 +467,18 @@
 **Context**: Workflow plan created with 3 stages to execute (Functional Design+NFR, Code Generation, Build and Test) out of 7 possible Inception/Construction stages
 
 ---
+## Workflow Planning - Approval (Initiative 2)
+**Timestamp**: 2026-07-08T15:45:00Z
+**AI Prompt**: "Approve the plan and proceed to Functional Design + NFR?"
+**User Response**: "Approved"
+**Status**: Approved
+**Context**: Execution plan approved for #88; entering Construction phase directly (Application Design and Units Generation both skipped per plan)
+
+---
+
+## Functional Design + NFR Complete (Initiative 2)
+**Timestamp**: 2026-07-08T15:55:00Z
+**AI Response**: Verified design directly against current cmd/chat.go, cmd/systemprompt.go, cmd/config.go source rather than guessing. Resolved the walk-up algorithm into a concrete two-phase design (Phase A: cheap .git-boundary stat-walk, capped at 64 levels defensively; Phase B: check candidates at cwd then boundary dir only, never intermediate levels). Documented 16 business rules covering matching, content handling, config parsing, and the notice. Combined NFR (Security + Reliability only applicable) into one document per Units 2/4 precedent - security posture relies on fixed known filenames within 2 known directories rather than ValidateLocalPath-style traversal defense, since there's no user-supplied path in this feature.
+**Context**: CONSTRUCTION PHASE, agents-md-convention unit - Functional Design + NFR complete, awaiting approval before Code Generation
+
+---
