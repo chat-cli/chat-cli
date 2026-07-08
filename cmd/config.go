@@ -29,13 +29,14 @@ var supportedConfigKeys = map[string]bool{
 	"custom-arn":    true,
 	"model-id":      true,
 	"system-prompt": true,
+	"context-files": true,
 }
 
 // configSetCmd represents the config set command
 var configSetCmd = &cobra.Command{
 	Use:   "set <key> <value>",
 	Short: "Set a configuration value",
-	Long:  `Set a configuration value. Supported keys: custom-arn, model-id, system-prompt`,
+	Long:  `Set a configuration value. Supported keys: custom-arn, model-id, system-prompt, context-files`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Initialize configuration
@@ -54,7 +55,7 @@ var configSetCmd = &cobra.Command{
 		// Validate supported keys
 		if !supportedConfigKeys[key] {
 			fmt.Printf("Error: unsupported configuration key '%s'\n", key)
-			fmt.Println("Supported keys: custom-arn, model-id, system-prompt")
+			fmt.Println("Supported keys: custom-arn, model-id, system-prompt, context-files")
 			os.Exit(1)
 		}
 
@@ -75,7 +76,7 @@ var configSetCmd = &cobra.Command{
 var configUnsetCmd = &cobra.Command{
 	Use:   "unset <key>",
 	Short: "Unset a configuration value",
-	Long:  `Unset (remove) a configuration value. Supported keys: custom-arn, model-id, system-prompt`,
+	Long:  `Unset (remove) a configuration value. Supported keys: custom-arn, model-id, system-prompt, context-files`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Initialize configuration
@@ -93,7 +94,7 @@ var configUnsetCmd = &cobra.Command{
 		// Validate supported keys
 		if !supportedConfigKeys[key] {
 			fmt.Printf("Error: unsupported configuration key '%s'\n", key)
-			fmt.Println("Supported keys: custom-arn, model-id, system-prompt")
+			fmt.Println("Supported keys: custom-arn, model-id, system-prompt, context-files")
 			os.Exit(1)
 		}
 
@@ -156,7 +157,7 @@ var configListCmd = &cobra.Command{
 		fmt.Println("Current configuration:")
 
 		// Define the keys we care about
-		configKeys := []string{"custom-arn", "model-id", "system-prompt"}
+		configKeys := []string{"custom-arn", "model-id", "system-prompt", "context-files"}
 
 		hasConfig := false
 		for _, key := range configKeys {

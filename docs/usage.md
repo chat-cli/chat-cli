@@ -127,6 +127,31 @@ chat-cli --system "You are a terse, no-nonsense assistant."
 
 Like `prompt`, this falls back to the persisted `system-prompt` config value, then to no system prompt at all.
 
+### Project Context
+
+If you don't set `--system` or a `system-prompt` config value, `chat` automatically looks for a project-context file and uses it as the system prompt — no flag needed. It checks, in order, `AGENTS.md`, `CLAUDE.md`, then `.github/copilot-instructions.md`, first in your current directory, then (if not found there) at your repository root. The first match wins; files aren't merged together.
+
+When a file is used, you'll see a one-line notice at the start of the session:
+
+```
+Using project context: AGENTS.md
+```
+
+To customize which filenames are checked (and in what order), set the `context-files` config value to a comma-separated list:
+
+```shell
+chat-cli config set context-files "AGENTS.md,CLAUDE.md"
+```
+
+To disable discovery entirely for a session, pass `--no-context-file`, or set `context-files` to an empty string to disable it by default:
+
+```shell
+chat-cli --no-context-file
+chat-cli config set context-files ""
+```
+
+An explicit `--system` flag or configured `system-prompt` always takes full precedence — the project-context file is only ever considered when neither is set. Content over 32KB is truncated with a warning. This is currently `chat`-only; `prompt` isn't affected.
+
 ### Tool Use
 
 Pass `--tools` to let the model call tools mid-conversation:

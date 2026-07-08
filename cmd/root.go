@@ -50,6 +50,7 @@ func init() {
 	rootCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 	rootCmd.PersistentFlags().String("chat-id", "", "pass a valid chat-id to load a previous conversation")
 	rootCmd.PersistentFlags().String("system", "", "set a system prompt")
+	rootCmd.PersistentFlags().Bool("no-context-file", false, "disable automatic project-context file discovery (AGENTS.md/CLAUDE.md/etc., chat only)")
 	rootCmd.PersistentFlags().Bool("tools", false, "enable tool use (chat only)")
 	rootCmd.PersistentFlags().Bool("thinking", false, "enable extended thinking / reasoning mode")
 	rootCmd.PersistentFlags().Int32("thinking-budget", 1024, "token budget for extended thinking on legacy models (requires --thinking)")

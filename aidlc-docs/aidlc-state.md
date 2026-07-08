@@ -210,6 +210,9 @@ No PR opened (not requested by user). Recommended before merge: run the
 - [x] NFR Requirements + Design - Completed 2026-07-08 (combined presentation, same pattern as Initiative 1 Units 2/4), awaiting user approval
   - Artifacts: aidlc-docs/construction/agents-md-convention/nfr-requirements/nfr-requirements-and-design.md
   - Security: bounded to 2 directories, no path-traversal surface (fixed filenames only, no user-supplied path). Reliability: filesystem failures degrade to "no match," never fatal.
-- [ ] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [ ] Code Generation - Pending approval of Functional Design + NFR
-- [ ] Build and Test - Pending Code Generation
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/agents-md-convention-code-generation-plan.md (all 14 steps complete)
+  - Summary: aidlc-docs/construction/agents-md-convention/code/summary.md
+  - cmd coverage 23.6% -> 31.8%, total 66.3% -> 67.8%, no regressions. All 7 integration tests pass. Manual smoke test confirmed discovery, --system suppression, and --no-context-file suppression all work end-to-end.
+- [ ] Build and Test - Pending final approval

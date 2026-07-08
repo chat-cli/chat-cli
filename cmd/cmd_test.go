@@ -144,6 +144,14 @@ func TestConfigCommandSupportsSystemPrompt(t *testing.T) {
 	}
 }
 
+func TestConfigCommandSupportsContextFiles(t *testing.T) {
+	// #88 (universal AGENTS.md convention): "context-files" must be a
+	// supported config key, same as "system-prompt".
+	if !supportedConfigKeys["context-files"] {
+		t.Error("Expected 'context-files' to be a supported config key")
+	}
+}
+
 func TestVersionCommand(t *testing.T) {
 	// Test that version command exists
 	if versionCmd.Use != "version" {
