@@ -15,7 +15,9 @@ D) Not sure yet — I'd like suggestions based on what the reverse-engineering r
 
 E) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: A (answered conversationally - see below)
+
+**Resolution (2026-07-08, conversational)**: User asked for a brainstorm session, which surfaced 4 idea groups (issues #81-96 filed in GitHub for all of them). User chose to start with group 1, "Catch up to current Bedrock/Claude capabilities" — 5 new user-facing features: system prompt support (#81), tool use/function calling (#82), prompt caching (#83), native document input (#84), extended thinking (#85). Groups 2-4 (agentic tools, UX modernization, technical debt) are logged as issues for later.
 
 ## Question 2
 Do you already have a specific idea in mind?
@@ -26,7 +28,7 @@ B) No — please propose a shortlist of candidate ideas based on the codebase re
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: B → then A (suggestions were proposed conversationally; user picked group 1, see #81-#85)
 
 ## Question 3
 How much should we take on in this round?
@@ -39,7 +41,7 @@ C) A larger initiative spanning multiple components
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: C - five related capability upgrades (#81-#85) spanning cmd/chat.go, cmd/prompt.go, cmd/image.go, and utils
 
 ## Question 4
 Are there any constraints I should design around (backward compatibility with existing `chat-cli` flags/config, specific AWS regions, timeline, must avoid new dependencies, etc.)? If none, say "none."
@@ -48,4 +50,4 @@ A) None — no special constraints
 
 X) Other (please describe after [Answer]: tag below)
 
-[Answer]:
+[Answer]: A - none explicitly stated; implicit constraints from CLAUDE.md apply: TDD required, don't break backward compatibility with existing flags/config, maintain/improve test coverage

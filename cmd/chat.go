@@ -19,6 +19,7 @@ import (
 	"github.com/chat-cli/chat-cli/db"
 	"github.com/chat-cli/chat-cli/factory"
 	"github.com/chat-cli/chat-cli/repository"
+	"github.com/chat-cli/chat-cli/tools"
 	"github.com/chat-cli/chat-cli/utils"
 	uuid "github.com/satori/go.uuid" //nolint:goimports // false positive from CI version diff
 	"github.com/spf13/cobra"
@@ -78,9 +79,39 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		systemFlag, err := flagCmd.PersistentFlags().GetString("system")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		toolsEnabled, err := flagCmd.PersistentFlags().GetBool("tools")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		thinkingEnabled, err := flagCmd.PersistentFlags().GetBool("thinking")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		thinkingBudget, err := flagCmd.PersistentFlags().GetInt32("thinking-budget")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
+		thinkingEffort, err := flagCmd.PersistentFlags().GetString("thinking-effort")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+		thinkingEffort, err = normalizeThinkingEffort(thinkingEffort)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// Get configuration values with precedence order (flag -> config -> default)
-		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
+		modelId := fm.GetConfigValue("model-id", modelIdFlag, DefaultModelID).(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
+		systemPrompt := fm.GetConfigValue("system-prompt", systemFlag, "").(string)
 
 		// Ensure custom-arn takes precedence over model-id when both are set
 		// If custom-arn is set (from any source), use it; otherwise use model-id
@@ -96,12 +127,12 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		temperature, err := flagCmd.PersistentFlags().GetFloat32("temperature")
+		temperature, err := optionalFloat32Flag(flagCmd.PersistentFlags(), "temperature")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		topP, err := flagCmd.PersistentFlags().GetFloat32("topP")
+		topP, err := optionalFloat32Flag(flagCmd.PersistentFlags(), "topP")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
 		}
@@ -119,8 +150,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		var modelIdString string
 
-		if customArn == "" {
-			// Using model-id, need to validate with Bedrock
+		if customArn == "" && !isInferenceProfileID(finalModelId) {
+			// Using a foundation model-id, validate with Bedrock
 			bedrockSvc := bedrock.NewFromConfig(cfg)
 
 			// get foundation model details
@@ -143,17 +174,13 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 			modelIdString = *model.ModelDetails.ModelId
 		} else {
-			// Using custom-arn, skip validation and use directly
+			// Inference profile or custom ARN — pass through to Converse directly
 			modelIdString = finalModelId
 		}
 
 		svc := bedrockruntime.NewFromConfig(cfg)
 
-		conf := types.InferenceConfiguration{
-			MaxTokens:   &maxTokens,
-			TopP:        &topP,
-			Temperature: &temperature,
-		}
+		conf := buildInferenceConfiguration(maxTokens, temperature, topP)
 
 		if chatId == "" {
 			chatSessionId := uuid.NewV4()
@@ -165,9 +192,28 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		}
 
 		converseStreamInput := &bedrockruntime.ConverseStreamInput{
-			ModelId:         aws.String(modelIdString),
-			InferenceConfig: &conf,
-			RequestMetadata: metadata,
+			ModelId:                      aws.String(modelIdString),
+			InferenceConfig:              &conf,
+			RequestMetadata:              metadata,
+			System:                       withSystemCachePoint(buildSystemContentBlocks(systemPrompt)),
+			AdditionalModelRequestFields: buildReasoningConfig(modelIdString, thinkingEnabled, thinkingBudget, thinkingEffort),
+		}
+
+		// Tool registry is empty (and therefore inert - ToolConfiguration()
+		// returns nil, request shape unchanged) unless --tools is set, since
+		// Bedrock has no way to report whether a given model supports tool
+		// use and we don't want to break chat for models that don't.
+		registry := tools.NewRegistry()
+		if toolsEnabled {
+			registry.Register(tools.NewReadFileTool())
+		}
+
+		sendFn := func(ctx context.Context, in *bedrockruntime.ConverseStreamInput) (<-chan types.ConverseStreamOutput, error) {
+			out, streamErr := converseStreamWithFallbacks(ctx, svc, in)
+			if streamErr != nil {
+				return nil, streamErr
+			}
+			return out.GetStream().Events(), nil
 		}
 
 		// initial prompt
@@ -260,12 +306,6 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 			converseStreamInput.Messages = append(converseStreamInput.Messages, userMsg)
 
-			output, err := svc.ConverseStream(context.Background(), converseStreamInput)
-
-			if err != nil {
-				log.Fatal(err)
-			}
-
 			// Use the repository without knowing the underlying database type
 			chat := &repository.Chat{
 				ChatId:  chatId,
@@ -280,19 +320,35 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			// Add an extra line between user message and assistant response
 			fmt.Print("\n\n* ")
 
-			var out string
-
-			assistantMsg, err := utils.ProcessStreamingOutput(output, func(ctx context.Context, part string) error {
+			reasoningActive := false
+			onText := func(ctx context.Context, part string) error {
+				if reasoningActive {
+					fmt.Print("\033[0m\n\n")
+					reasoningActive = false
+				}
 				fmt.Print(part)
-				out += part
 				return nil
-			})
+			}
+
+			onReasoning := func(ctx context.Context, part string) error {
+				if !reasoningActive {
+					fmt.Print("\033[90m[thinking] ")
+					reasoningActive = true
+				}
+				fmt.Print(part)
+				return nil
+			}
+
+			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
+			if err != nil && hasSystemCachePoint(converseStreamInput.System) {
+				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
+				converseStreamInput.System = stripSystemCachePoints(converseStreamInput.System)
+				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
+			}
 
 			if err != nil {
 				log.Fatal("streaming output processing error: ", err)
 			}
-
-			converseStreamInput.Messages = append(converseStreamInput.Messages, assistantMsg)
 
 			chat = &repository.Chat{
 				ChatId:  chatId,

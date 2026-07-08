@@ -17,7 +17,10 @@ import (
 
 type StreamingOutputHandler func(ctx context.Context, part string) error
 
-func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler StreamingOutputHandler) (types.Message, error) {
+// ProcessStreamingOutput drains a Bedrock ConverseStream, invoking handler
+// for each text delta and reasoningHandler for each reasoning-content delta
+// (pass a no-op handler if the caller doesn't support reasoning mode).
+func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler, reasoningHandler StreamingOutputHandler) (types.Message, error) {
 
 	var combinedResult string
 
@@ -31,11 +34,24 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 
 		case *types.ConverseStreamOutputMemberContentBlockDelta:
 
-			textResponse := v.Value.Delta.(*types.ContentBlockDeltaMemberText)
-			if err := handler(context.Background(), textResponse.Value); err != nil {
-				return msg, fmt.Errorf("handler error: %w", err)
+			switch delta := v.Value.Delta.(type) {
+			case *types.ContentBlockDeltaMemberText:
+				if err := handler(context.Background(), delta.Value); err != nil {
+					return msg, fmt.Errorf("handler error: %w", err)
+				}
+				combinedResult += delta.Value
+
+			case *types.ContentBlockDeltaMemberReasoningContent:
+				if textDelta, ok := delta.Value.(*types.ReasoningContentBlockDeltaMemberText); ok {
+					if err := reasoningHandler(context.Background(), textDelta.Value); err != nil {
+						return msg, fmt.Errorf("handler error: %w", err)
+					}
+				}
+				// Signature and redacted-content deltas aren't rendered as
+				// visible text; prompt is one-shot so there's no next turn
+				// to preserve them for (Functional Design Decision 3,
+				// unit-5-extended-thinking).
 			}
-			combinedResult += textResponse.Value
 
 		case *types.UnknownUnionMember:
 			fmt.Println("unknown tag:", v.Tag)
@@ -51,12 +67,14 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 	return msg, nil
 }
 
-func ReadImage(filename string) (data []byte, imageType string, err error) {
-
-	// Define a base directory for allowed images
+// ValidateLocalPath confines filename resolution to the current working
+// directory, returning the validated absolute path or an error if filename
+// escapes it or doesn't exist. Used by the read_file tool so the model
+// cannot read arbitrary paths on the host.
+func ValidateLocalPath(filename string) (string, error) {
 	baseDir, err := os.Getwd()
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to get working directory: %w", err)
+		return "", fmt.Errorf("unable to get working directory: %w", err)
 	}
 
 	// Clean the filename and create the full path
@@ -66,12 +84,70 @@ func ReadImage(filename string) (data []byte, imageType string, err error) {
 	// Ensure the full path is within the base directory
 	relPath, err := filepath.Rel(baseDir, fullPath)
 	if err != nil || strings.HasPrefix(relPath, "..") || strings.HasPrefix(relPath, string(filepath.Separator)) {
-		return nil, "", fmt.Errorf("access denied: %s is outside of the allowed directory", filename)
+		return "", fmt.Errorf("access denied: %s is outside of the allowed directory", filename)
 	}
 
 	// Check if the file exists
 	if _, statErr := os.Stat(fullPath); os.IsNotExist(statErr) {
-		return nil, "", fmt.Errorf("file does not exist: %s", filename)
+		return "", fmt.Errorf("file does not exist: %s", filename)
+	}
+
+	return fullPath, nil
+}
+
+// resolveUserPath resolves a user-supplied path for --document and --image.
+// Unlike ValidateLocalPath, it allows absolute paths and expands a leading ~,
+// while still blocking relative path traversal outside the working directory.
+func resolveUserPath(filename string) (string, error) {
+	if filename == "" {
+		return "", fmt.Errorf("file does not exist: %s", filename)
+	}
+
+	expanded := filename
+	if strings.HasPrefix(filename, "~/") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("unable to resolve home directory: %w", err)
+		}
+		expanded = filepath.Join(home, filename[2:])
+	} else if filename == "~" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("unable to resolve home directory: %w", err)
+		}
+		expanded = home
+	}
+
+	var fullPath string
+	if filepath.IsAbs(expanded) {
+		fullPath = filepath.Clean(expanded)
+	} else {
+		baseDir, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("unable to get working directory: %w", err)
+		}
+
+		cleanFilename := filepath.Clean(expanded)
+		fullPath = filepath.Join(baseDir, cleanFilename)
+
+		relPath, err := filepath.Rel(baseDir, fullPath)
+		if err != nil || strings.HasPrefix(relPath, "..") {
+			return "", fmt.Errorf("access denied: %s is outside of the allowed directory", filename)
+		}
+	}
+
+	if _, statErr := os.Stat(fullPath); os.IsNotExist(statErr) {
+		return "", fmt.Errorf("file does not exist: %s", filename)
+	}
+
+	return fullPath, nil
+}
+
+func ReadImage(filename string) (data []byte, imageType string, err error) {
+
+	fullPath, err := resolveUserPath(filename)
+	if err != nil {
+		return nil, "", err
 	}
 
 	// Read the file
@@ -104,6 +180,35 @@ func ReadImage(filename string) (data []byte, imageType string, err error) {
 	}
 
 	return data, imageType, nil
+}
+
+// ReadDocument reads a local document file for use as a Bedrock document
+// content block, mirroring ReadImage's shape. Supported formats match
+// Bedrock's DocumentFormat: pdf, csv, doc, docx, xls, xlsx, html, txt, md.
+func ReadDocument(filename string) (data []byte, format string, err error) {
+	fullPath, err := resolveUserPath(filename)
+	if err != nil {
+		return nil, "", err
+	}
+
+	data, err = os.ReadFile(fullPath) // #nosec G304 - path is validated above
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to read file: %w", err)
+	}
+
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext != "" {
+		ext = ext[1:] // Remove the leading dot
+	}
+
+	switch ext {
+	case "pdf", "csv", "doc", "docx", "xls", "xlsx", "html", "txt", "md":
+		format = ext
+	default:
+		return nil, "", fmt.Errorf("unsupported document type: %s", ext)
+	}
+
+	return data, format, nil
 }
 
 func StringPrompt(label string) string {

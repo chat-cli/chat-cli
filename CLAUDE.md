@@ -21,7 +21,7 @@ When the user invokes AI-DLC, read and follow
 Chat-CLI is a terminal-based program built with Go and Cobra that provides an interface to Amazon Bedrock LLMs. It supports interactive chat sessions, one-shot prompts, image generation, and persistent configuration management.
 
 **Key Technologies:**
-- Go 1.23.4+
+- Go 1.24+
 - Cobra (CLI framework)
 - Viper (configuration management)
 - SQLite (chat history persistence)
@@ -56,7 +56,7 @@ The codebase follows a layered architecture:
 1. `--custom-arn` flag (highest)
 2. `--model-id` flag
 3. Config file values
-4. Default: `anthropic.claude-3-5-sonnet-20240620-v1:0`
+4. Default: `us.anthropic.claude-sonnet-5`
 
 ## Development Workflow
 
@@ -291,7 +291,7 @@ Users need:
 
 ## Quick Reference
 
-**Default Model:** `anthropic.claude-3-5-sonnet-20240620-v1:0`
+**Default Model:** `us.anthropic.claude-sonnet-5`
 **Default Region:** `us-east-1`
 **Config Location:** OS-specific (managed by Viper)
 **Database:** SQLite in user's config directory

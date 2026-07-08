@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: INCEPTION - Requirements Analysis (PAUSED by user)
+- **Current Stage**: INITIATIVE COMPLETE - all units (#81-#85) approved, Build and Test approved. Operations phase remains a placeholder (no deployment/monitoring workflow planned). No PR created yet (not requested).
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -28,13 +28,145 @@
 ## Stage Progress
 - [x] Workspace Detection - Completed 2026-07-08
 - [x] Reverse Engineering - Completed 2026-07-08 (approved by user)
-- [ ] Requirements Analysis - PAUSED 2026-07-08 (clarifying questions issued, not yet answered)
-- [ ] Workflow Planning
+- [x] Requirements Analysis - Completed 2026-07-08 (approved by user)
+- [x] User Stories - Completed 2026-07-08 (approved by user)
+- [x] Workflow Planning - Completed 2026-07-08 (approved by user)
+- [x] Application Design - Completed 2026-07-08 (approved by user)
+  - **Artifacts Location**: aidlc-docs/inception/application-design/
+- [x] Units Generation - Completed 2026-07-08 (approved by user) - INCEPTION PHASE COMPLETE
+  - **Artifacts Location**: aidlc-docs/inception/application-design/unit-of-work*.md
 
-## Resume Instructions
-Session paused at the user's request before answering the clarifying
-questions below. To resume:
-1. Read `aidlc-docs/inception/reverse-engineering/` artifacts (already generated - business overview,
-   architecture, code structure, API docs, component inventory, tech stack, dependencies, code quality)
-2. Read and answer `aidlc-docs/inception/requirements/requirement-verification-questions.md`
-3. Continue Requirements Analysis Step 7 (generate requirements.md) once answers are provided
+## Units of Work (finalized)
+1. Unit 1 - System Prompt Support (#81) - no dependencies
+2. Unit 2 - Tool Use / Function Calling (#82) - soft-depends on Unit 1
+3. Unit 3 - Prompt Caching (#83) - soft-depends on Unit 1
+4. Unit 4 - Native Document Input (#84) - soft-depends on Unit 2 (shared ValidateLocalPath helper)
+5. Unit 5 - Extended Thinking / Reasoning Mode (#85) - no dependencies
+
+### Construction Phase - Unit 1 (System Prompt Support, #81)
+- [x] Functional Design - SKIP (simple flag/config plumbing, no new business logic)
+- [x] NFR Requirements - SKIP (no new security/performance concerns beyond cross-cutting NFRs already in requirements.md)
+- [x] NFR Design - SKIP (follows from NFR Requirements skip)
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [x] Code Generation - Completed 2026-07-08 (approved by user, commit 4901a88)
+  - Plan: aidlc-docs/construction/plans/unit-1-system-prompt-code-generation-plan.md
+  - Summary: aidlc-docs/construction/unit-1-system-prompt/code/summary.md
+- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass)
+
+## Unit 1 Status: COMPLETE AND APPROVED
+
+### Construction Phase - Unit 2 (Tool Use / Function Calling, #82)
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
+  - Artifacts: aidlc-docs/construction/unit-2-tool-use/functional-design/
+- [x] NFR Requirements - Completed 2026-07-08 (approved by user, combined with NFR Design)
+  - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-requirements/
+- [x] NFR Design - Completed 2026-07-08 (approved by user, combined presentation)
+  - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-design/
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-2-tool-use-code-generation-plan.md
+  - Summary: aidlc-docs/construction/unit-2-tool-use/code/summary.md
+  - **Decision made**: --tools opt-in flag (default false), confirmed with user before generation
+- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass; cmd coverage 8.0%->18.7%, new tools package 90%)
+
+## Unit 2 Status: COMPLETE AND APPROVED (commit ad327a0)
+
+## Unplanned Prerequisite: AWS SDK Upgrade (COMPLETE)
+Discovered while starting Unit 3 that the pinned bedrockruntime SDK (v1.23.0) predates
+prompt-caching support (needs v1.28.0+) and also lacks reasoning-content types needed by
+Unit 5. User confirmed upgrading to latest (v1.55.0) now. Done - see
+aidlc-docs/construction/sdk-upgrade/summary.md. go.mod's `go` directive moved 1.23.4 -> 1.24
+(toolchain go1.24.7) as a side effect; README.md/CLAUDE.md updated to match. Full
+build+test+lint+integration verification passed with no regressions.
+
+### Construction Phase - Unit 3 (Prompt Caching, #83)
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
+  - Artifacts: aidlc-docs/construction/unit-3-prompt-caching/functional-design/
+- [x] NFR Requirements - SKIP (no new security surface, reliability concern already fully specified as a business rule)
+- [x] NFR Design - SKIP (follows from NFR Requirements skip)
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-3-prompt-caching-code-generation-plan.md
+  - Summary: aidlc-docs/construction/unit-3-prompt-caching/code/summary.md
+- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass; cmd coverage 18.7%->22.0%)
+
+## Unit 3 Status: COMPLETE AND APPROVED (commit e315d18)
+
+### Construction Phase - Unit 4 (Native Document Input, #84)
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
+  - Artifacts: aidlc-docs/construction/unit-4-document-input/functional-design/
+- [x] NFR Requirements - Completed 2026-07-08 (approved by user, combined with NFR Design)
+  - Artifacts: aidlc-docs/construction/unit-4-document-input/nfr-requirements/
+- [x] NFR Design - Completed 2026-07-08 (approved by user, combined presentation)
+  - Artifacts: aidlc-docs/construction/unit-4-document-input/nfr-design/
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-4-document-input-code-generation-plan.md
+  - Summary: aidlc-docs/construction/unit-4-document-input/code/summary.md
+- [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass; utils coverage 44.7%->49.3%)
+
+## Unit 4 Status: COMPLETE AND APPROVED (commit 6edbcce)
+
+### Construction Phase - Unit 5 (Extended Thinking, #85) - FINAL UNIT
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
+  - Artifacts: aidlc-docs/construction/unit-5-extended-thinking/functional-design/
+  - **IMPORTANT CAVEAT**: the request-side JSON shape for enabling reasoning (AdditionalModelRequestFields) is UNVERIFIED - it's an untyped free-form field, assumed shape based on training knowledge not a live source. Highest-risk assumption in the initiative; flagged prominently to user.
+- [x] NFR Requirements - SKIP (no new security surface; request-shape risk is functional, not security)
+- [x] NFR Design - SKIP (follows from NFR Requirements skip)
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-5-extended-thinking-code-generation-plan.md
+  - Summary: aidlc-docs/construction/unit-5-extended-thinking/code/summary.md
+  - **CAVEAT CARRIED FORWARD**: reasoning_config request shape is unverified, top item to test with real credentials
+- [x] Build and Test - Completed 2026-07-08, awaiting final approval
+  - Artifacts: aidlc-docs/construction/build-and-test/
+  - Fresh full test suite: all green, no regressions
+  - 3 cross-unit composition scenarios executed manually, all passed (no panics, clean expected failures at the AWS-credentials boundary)
+  - Consolidated risk list: 5 items need real-credential verification, ranked by priority (Unit 5's reasoning_config shape highest)
+
+## Unit 5 Status: COMPLETE AND APPROVED (commit a2b0b63)
+
+## ALL 5 UNITS COMPLETE: #81, #82, #83, #84, #85
+## BUILD AND TEST: COMPLETE AND APPROVED
+## INITIATIVE STATUS: COMPLETE
+
+All commits on branch claude/ai-dlc-documentation-rl4e5s, pushed to origin.
+No PR opened (not requested by user). Recommended before merge: run the
+5 real-credential verification items in build-and-test-summary.md.
+
+### Operations Phase
+- [ ] Operations - PLACEHOLDER (not in scope)
+
+## Recommended Unit Sequence (from execution-plan.md, to be finalized in Units Generation)
+1. System Prompt (#81) - foundational
+2. Tool Use (#82) - highest complexity
+3. Prompt Caching (#83) - depends on System Prompt
+4. Document Input (#84) - independent
+5. Extended Thinking (#85) - independent
+
+## GitHub Issues Filed (brainstorm session, 2026-07-08)
+**Group 1 - Catch up to current Bedrock/Claude capabilities (IN SCOPE for current Requirements Analysis)**
+- #81 Add system prompt support to chat and prompt commands
+- #82 Add tool use / function calling support (Bedrock Converse API)
+- #83 Add prompt caching support (cachePoint)
+- #84 Add native document input (PDF/CSV/DOCX) via Converse document content blocks
+- #85 Add extended thinking / reasoning mode support
+
+**Group 2 - Agentic coding tool direction (logged, not started)**
+- #86 Add built-in agent tools (file read/write, shell exec, git diff)
+- #87 Add MCP client support
+- #88 Support a project-context file convention (e.g. CHATCLI.md)
+
+**Group 3 - UX modernization (logged, not started)**
+- #89 Render markdown and code blocks in chat/prompt output
+- #90 Add slash commands to the interactive chat loop
+
+**Group 4 - Technical debt / fix what's there (logged, not started)**
+- #91 models list ignores --region flag (bug)
+- #92 Deduplicate model-validation logic across chat/prompt/image commands
+- #93 Repository[T] interface mismatch with ChatRepository
+- #94 Replace unmaintained github.com/satori/go.uuid dependency
+- #95 Repo housekeeping (.goreleaser.yaml.backup, README Go version drift)
+- #96 Add CI workflow to enforce lint/test on PRs
+
+**Related pre-existing open issues surfaced during triage**: #58 (file attachments, relates to #84), #46 (document in chat mode), #41 (token counts, overlaps future UX idea - not re-filed), #65 (models placeholder output, relates to #91), #21 (concept of modules, relates to #81)

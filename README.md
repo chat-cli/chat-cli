@@ -35,7 +35,7 @@ Notes:
 
 ### Build from source
 
-You will need [Go](https://go.dev) v1.22.1 installed on your system. You can type `go version` to ensure you have the correct version installed.
+You will need [Go](https://go.dev) v1.24+ installed on your system. You can type `go version` to ensure you have the correct version installed.
 
 To build the project from source, clone this repository to your local machine and use [Make](https://www.gnu.org/software/make/manual/make.html) to build the binary.
 
@@ -79,7 +79,7 @@ You can manage persistent configuration settings using the `config` command. Thi
 
 ```shell
 # Set a default model ID
-chat-cli config set model-id "anthropic.claude-3-5-sonnet-20240620-v1:0"
+chat-cli config set model-id "us.anthropic.claude-sonnet-5"
 
 # Set a custom ARN for marketplace or cross-region models
 chat-cli config set custom-arn "arn:aws:bedrock:us-west-2::foundation-model/custom-model"
@@ -106,7 +106,7 @@ The configuration system follows a clear precedence order:
 
 1. **Command line flags** (highest priority) - Values specified with `--model-id` or `--custom-arn`
 2. **Configuration file** - Values set with `chat-cli config set`
-3. **Built-in defaults** (lowest priority) - `anthropic.claude-3-5-sonnet-20240620-v1:0` for model-id
+3. **Built-in defaults** (lowest priority) - `us.anthropic.claude-sonnet-5` for model-id
 
 **Important:** When both `model-id` and `custom-arn` are set, `custom-arn` takes precedence over `model-id`. This allows you to override the default model with a custom marketplace or cross-region model.
 
@@ -114,6 +114,55 @@ The configuration system follows a clear precedence order:
 
 - `model-id`: The default model identifier to use for chat and prompt commands
 - `custom-arn`: A custom ARN from Bedrock marketplace or for cross-region inference
+- `system-prompt`: The default system prompt to use for chat and prompt commands
+
+## System Prompt
+
+You can give the model a system prompt with the `--system` flag, on either `prompt` or `chat`:
+
+```shell
+    chat-cli prompt "How are you today?" --system "You are a terse, no-nonsense assistant."
+```
+
+```shell
+    chat-cli --system "You are a terse, no-nonsense assistant."
+```
+
+For `chat`, the system prompt is set once at the start of the session and stays fixed for the rest of that conversation.
+
+You can also set a default system prompt so you don't have to pass `--system` every time:
+
+```shell
+    chat-cli config set system-prompt "You are a terse, no-nonsense assistant."
+```
+
+The same precedence rules as `model-id`/`custom-arn` apply: `--system` flag, then the persisted config value, then no system prompt at all.
+
+## Tool Use
+
+You can let the model call tools mid-conversation with the `--tools` flag:
+
+```shell
+    chat-cli --tools
+```
+
+Tool use is off by default. Bedrock has no way to report whether a given model supports it, so enabling it unconditionally would risk breaking `chat` for models that don't — `--tools` opts in explicitly instead. With it set, one built-in tool is available: `read_file`, which lets the model read files within your current working directory (and only that directory). An unrecognized tool request or a failed tool call is reported back to the model as part of the conversation, not treated as a fatal error.
+
+## Prompt Caching
+
+chat-cli automatically caches your system prompt (if set) and any piped-in document, on models that support it, so repeated requests don't reprocess the same content every time. There's no flag for this — it kicks in automatically whenever there's a system prompt or document to cache. If the model doesn't support caching, the request is retried once without it and everything still works, just without the caching benefit.
+
+## Extended Thinking
+
+On models that support extended thinking / reasoning mode, use `--thinking` (both `chat` and `prompt`) to see the model's reasoning, printed dimmed and prefixed with `[thinking]`, separate from its final answer:
+
+```shell
+    chat-cli prompt "What's 17 * 24?" --thinking
+```
+
+Extended thinking needs a token budget — `--thinking-budget` (default `1024`) — which must fit within `--max-tokens` (default `500`), so raise `--max-tokens` when using `--thinking`. `--thinking` is off by default and has no effect unless set.
+
+> **Note**: the request format for enabling extended thinking is model-provider-specific and isn't part of Bedrock's typed API — if `--thinking` doesn't work for a given model, that's the most likely reason.
 
 ## Prompt
 
@@ -239,6 +288,16 @@ Some LLMs support uploading an image. Images can be either png or jpg and must b
 ```
 
 Please note this only works with supported models.
+
+## Document Attachments
+
+Some LLMs support document input directly — PDF, CSV, DOC/DOCX, XLS/XLSX, HTML, TXT, or MD. To attach a document do the following:
+
+```shell
+    chat-cli prompt "summarize this" --document report.pdf
+```
+
+`--document` is independent of `--image` — you can use both together if the model supports both. Please note this only works with supported models.
 
 ## Image
 

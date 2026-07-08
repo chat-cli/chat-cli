@@ -23,11 +23,19 @@ var configCmd = &cobra.Command{
 	Long:  `Manage configuration settings for chat-cli. You can set, unset, and list configuration values.`,
 }
 
+// supportedConfigKeys is the single source of truth for which keys the
+// config set/unset commands accept.
+var supportedConfigKeys = map[string]bool{
+	"custom-arn":    true,
+	"model-id":      true,
+	"system-prompt": true,
+}
+
 // configSetCmd represents the config set command
 var configSetCmd = &cobra.Command{
 	Use:   "set <key> <value>",
 	Short: "Set a configuration value",
-	Long:  `Set a configuration value. Supported keys: custom-arn, model-id`,
+	Long:  `Set a configuration value. Supported keys: custom-arn, model-id, system-prompt`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Initialize configuration
@@ -44,14 +52,9 @@ var configSetCmd = &cobra.Command{
 		value := args[1]
 
 		// Validate supported keys
-		supportedKeys := map[string]bool{
-			"custom-arn": true,
-			"model-id":   true,
-		}
-
-		if !supportedKeys[key] {
+		if !supportedConfigKeys[key] {
 			fmt.Printf("Error: unsupported configuration key '%s'\n", key)
-			fmt.Println("Supported keys: custom-arn, model-id")
+			fmt.Println("Supported keys: custom-arn, model-id, system-prompt")
 			os.Exit(1)
 		}
 
@@ -72,7 +75,7 @@ var configSetCmd = &cobra.Command{
 var configUnsetCmd = &cobra.Command{
 	Use:   "unset <key>",
 	Short: "Unset a configuration value",
-	Long:  `Unset (remove) a configuration value. Supported keys: custom-arn, model-id`,
+	Long:  `Unset (remove) a configuration value. Supported keys: custom-arn, model-id, system-prompt`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Initialize configuration
@@ -88,14 +91,9 @@ var configUnsetCmd = &cobra.Command{
 		key := args[0]
 
 		// Validate supported keys
-		supportedKeys := map[string]bool{
-			"custom-arn": true,
-			"model-id":   true,
-		}
-
-		if !supportedKeys[key] {
+		if !supportedConfigKeys[key] {
 			fmt.Printf("Error: unsupported configuration key '%s'\n", key)
-			fmt.Println("Supported keys: custom-arn, model-id")
+			fmt.Println("Supported keys: custom-arn, model-id, system-prompt")
 			os.Exit(1)
 		}
 
@@ -158,7 +156,7 @@ var configListCmd = &cobra.Command{
 		fmt.Println("Current configuration:")
 
 		// Define the keys we care about
-		configKeys := []string{"custom-arn", "model-id"}
+		configKeys := []string{"custom-arn", "model-id", "system-prompt"}
 
 		hasConfig := false
 		for _, key := range configKeys {

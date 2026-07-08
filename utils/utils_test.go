@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -217,6 +218,208 @@ func TestProcessStreamingOutput(t *testing.T) {
 		actual := strings.Join(receivedParts, "")
 		if actual != expected {
 			t.Errorf("expected %q, got %q", expected, actual)
+		}
+	})
+}
+
+func TestReadDocument(t *testing.T) {
+	tempDir := t.TempDir()
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("Failed to change back to original directory: %v", err)
+		}
+	}()
+
+	testFiles := map[string][]byte{
+		"test.pdf":  []byte("fake pdf data"),
+		"test.csv":  []byte("a,b,c"),
+		"test.doc":  []byte("fake doc data"),
+		"test.docx": []byte("fake docx data"),
+		"test.xls":  []byte("fake xls data"),
+		"test.xlsx": []byte("fake xlsx data"),
+		"test.html": []byte("<html></html>"),
+		"test.txt":  []byte("plain text"),
+		"test.md":   []byte("# heading"),
+		"test.exe":  []byte("not a document"),
+	}
+	for filename, content := range testFiles {
+		if err := os.WriteFile(filename, content, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	tests := []struct {
+		name         string
+		filename     string
+		expectError  bool
+		expectedType string
+	}{
+		{name: "valid PDF file", filename: "test.pdf", expectedType: "pdf"},
+		{name: "valid CSV file", filename: "test.csv", expectedType: "csv"},
+		{name: "valid DOC file", filename: "test.doc", expectedType: "doc"},
+		{name: "valid DOCX file", filename: "test.docx", expectedType: "docx"},
+		{name: "valid XLS file", filename: "test.xls", expectedType: "xls"},
+		{name: "valid XLSX file", filename: "test.xlsx", expectedType: "xlsx"},
+		{name: "valid HTML file", filename: "test.html", expectedType: "html"},
+		{name: "valid TXT file", filename: "test.txt", expectedType: "txt"},
+		{name: "valid MD file", filename: "test.md", expectedType: "md"},
+		{name: "unsupported file type", filename: "test.exe", expectError: true},
+		{name: "non-existent file", filename: "nonexistent.pdf", expectError: true},
+		{name: "path traversal attempt", filename: "../../../etc/passwd", expectError: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, format, err := ReadDocument(tt.filename)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("expected an error but got none")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if format != tt.expectedType {
+				t.Errorf("expected format %q, got %q", tt.expectedType, format)
+			}
+			if len(data) == 0 {
+				t.Error("expected non-empty file data")
+			}
+		})
+	}
+}
+
+func TestValidateLocalPath(t *testing.T) {
+	tempDir := t.TempDir()
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("Failed to change back to original directory: %v", err)
+		}
+	}()
+
+	if err := os.WriteFile("in-bounds.txt", []byte("hello"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name        string
+		filename    string
+		expectError bool
+	}{
+		{
+			name:        "valid in-bounds path",
+			filename:    "in-bounds.txt",
+			expectError: false,
+		},
+		{
+			name:        "path traversal attempt",
+			filename:    "../../../etc/passwd",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fullPath, err := ValidateLocalPath(tt.filename)
+
+			if tt.expectError && err == nil {
+				t.Errorf("expected error but got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if !tt.expectError && fullPath == "" {
+				t.Error("expected a non-empty validated path")
+			}
+		})
+	}
+}
+
+func TestResolveUserPath(t *testing.T) {
+	tempDir := t.TempDir()
+	docPath := filepath.Join(tempDir, "doc.pdf")
+	if err := os.WriteFile(docPath, []byte("fake pdf"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("Failed to change back to original directory: %v", err)
+		}
+	}()
+
+	t.Run("relative path in working directory", func(t *testing.T) {
+		got, err := resolveUserPath("doc.pdf")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		gotEval, _ := filepath.EvalSymlinks(got)
+		wantEval, _ := filepath.EvalSymlinks(docPath)
+		if gotEval != wantEval {
+			t.Fatalf("expected %q, got %q", wantEval, gotEval)
+		}
+	})
+
+	t.Run("absolute path", func(t *testing.T) {
+		got, err := resolveUserPath(docPath)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != docPath {
+			t.Fatalf("expected %q, got %q", docPath, got)
+		}
+	})
+
+	t.Run("tilde path under home", func(t *testing.T) {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		homeDoc := filepath.Join(home, "chat-cli-resolve-user-path-test.pdf")
+		if err := os.WriteFile(homeDoc, []byte("fake pdf"), 0644); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Remove(homeDoc) })
+
+		got, err := resolveUserPath("~/chat-cli-resolve-user-path-test.pdf")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != homeDoc {
+			t.Fatalf("expected %q, got %q", homeDoc, got)
+		}
+	})
+
+	t.Run("relative path traversal is blocked", func(t *testing.T) {
+		if _, err := resolveUserPath("../../../etc/passwd"); err == nil {
+			t.Fatal("expected path traversal to be rejected")
 		}
 	})
 }
