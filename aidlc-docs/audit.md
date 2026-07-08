@@ -205,3 +205,19 @@
 **User Input**: (n/a - Functional Design executing per per-unit assessment)
 **AI Response**: "Downloaded and inspected the bedrockruntime SDK's tool-use types directly rather than guessing (corrected Application Design's placeholder ToolConfig name to the real ToolConfiguration/Tool/ToolMemberToolSpec/ToolInputSchemaMemberJson types). Documented the real streaming protocol: tool-use arrives as indexed ContentBlockStart/Delta/Stop events requiring accumulation, not a single event like text. Made 2 key design decisions: (1) only the final text response + original prompt persist to SQLite per turn, intermediate tool exchanges stay in-memory only for that session (avoids replaying invalid tool-call state on --chat-id resume); (2) capped consecutive tool round-trips per turn at 10 as a new reliability safeguard not explicit in the original stories, flagged for review. Generated business-logic-model.md, business-rules.md (7 rules), domain-entities.md. Presenting for approval before NFR Requirements/Design."
 **Context**: Unit 2 Functional Design, CONSTRUCTION phase
+
+---
+
+## Unit 2 Functional Design Approval
+**Timestamp**: 2026-07-08T01:30:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "Approval recorded. Proceeding to NFR Requirements. Given this unit's NFR profile is narrow (Security is the only applicable category for a solo-user CLI - no scalability/availability/performance concerns), combining NFR Requirements and NFR Design into one presentation with one approval gate rather than two separate ones, and stating this calibration explicitly rather than doing it silently."
+**Context**: Unit 2 Functional Design approval, CONSTRUCTION phase
+
+---
+
+## Unit 2 NFR Requirements + NFR Design (combined)
+**Timestamp**: 2026-07-08T01:32:00Z
+**User Input**: (n/a - executing per stated calibration)
+**AI Response**: "Generated nfr-requirements.md (Security is the only applicable category: 4 requirements SEC-1..SEC-4 covering path traversal, unknown-tool rejection, untrusted-input handling, and no tool-output-as-instructions; Reliability REL-1 formalizes the round-trip cap; Scalability/Performance/Availability marked N/A with rationale for a single-user local CLI), tech-stack-decisions.md (no new dependencies), nfr-design-patterns.md (shared path validation choke point, fail-closed dispatch without panic recovery, bounded-loop pattern; explicitly did NOT apply circuit breaker/caching/rate limiting, with rationale), logical-components.md (no infra components needed). Presenting combined for one approval before Code Generation."
+**Context**: Unit 2 NFR Requirements + NFR Design, CONSTRUCTION phase

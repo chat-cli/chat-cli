@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - Functional Design complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - NFR Requirements+Design complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -56,10 +56,12 @@
 ## Unit 1 Status: COMPLETE AND APPROVED
 
 ### Construction Phase - Unit 2 (Tool Use / Function Calling, #82)
-- [x] Functional Design - Complete 2026-07-08, awaiting approval
+- [x] Functional Design - Completed 2026-07-08 (approved by user)
   - Artifacts: aidlc-docs/construction/unit-2-tool-use/functional-design/
-- [ ] NFR Requirements - Next (EXECUTE: security-sensitive file access via read_file tool)
-- [ ] NFR Design - Pending NFR Requirements
+- [x] NFR Requirements - Complete 2026-07-08, awaiting approval (combined with NFR Design - narrow NFR profile, Security-only)
+  - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-requirements/
+- [x] NFR Design - Complete 2026-07-08, awaiting approval (combined presentation)
+  - Artifacts: aidlc-docs/construction/unit-2-tool-use/nfr-design/
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
 - [ ] Code Generation - Not started
 - [ ] Build and Test - Pending all 5 units
