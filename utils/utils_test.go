@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -351,6 +352,76 @@ func TestValidateLocalPath(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestResolveUserPath(t *testing.T) {
+	tempDir := t.TempDir()
+	docPath := filepath.Join(tempDir, "doc.pdf")
+	if err := os.WriteFile(docPath, []byte("fake pdf"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	originalWd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(tempDir); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := os.Chdir(originalWd); err != nil {
+			t.Errorf("Failed to change back to original directory: %v", err)
+		}
+	}()
+
+	t.Run("relative path in working directory", func(t *testing.T) {
+		got, err := resolveUserPath("doc.pdf")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		gotEval, _ := filepath.EvalSymlinks(got)
+		wantEval, _ := filepath.EvalSymlinks(docPath)
+		if gotEval != wantEval {
+			t.Fatalf("expected %q, got %q", wantEval, gotEval)
+		}
+	})
+
+	t.Run("absolute path", func(t *testing.T) {
+		got, err := resolveUserPath(docPath)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != docPath {
+			t.Fatalf("expected %q, got %q", docPath, got)
+		}
+	})
+
+	t.Run("tilde path under home", func(t *testing.T) {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		homeDoc := filepath.Join(home, "chat-cli-resolve-user-path-test.pdf")
+		if err := os.WriteFile(homeDoc, []byte("fake pdf"), 0644); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Remove(homeDoc) })
+
+		got, err := resolveUserPath("~/chat-cli-resolve-user-path-test.pdf")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if got != homeDoc {
+			t.Fatalf("expected %q, got %q", homeDoc, got)
+		}
+	})
+
+	t.Run("relative path traversal is blocked", func(t *testing.T) {
+		if _, err := resolveUserPath("../../../etc/passwd"); err == nil {
+			t.Fatal("expected path traversal to be rejected")
+		}
+	})
 }
 
 func TestStringPrompt(t *testing.T) {

@@ -69,8 +69,8 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 
 // ValidateLocalPath confines filename resolution to the current working
 // directory, returning the validated absolute path or an error if filename
-// escapes it or doesn't exist. Shared by ReadImage, ReadDocument, and the
-// read_file tool so path-traversal protection lives in exactly one place.
+// escapes it or doesn't exist. Used by the read_file tool so the model
+// cannot read arbitrary paths on the host.
 func ValidateLocalPath(filename string) (string, error) {
 	baseDir, err := os.Getwd()
 	if err != nil {
@@ -95,9 +95,57 @@ func ValidateLocalPath(filename string) (string, error) {
 	return fullPath, nil
 }
 
+// resolveUserPath resolves a user-supplied path for --document and --image.
+// Unlike ValidateLocalPath, it allows absolute paths and expands a leading ~,
+// while still blocking relative path traversal outside the working directory.
+func resolveUserPath(filename string) (string, error) {
+	if filename == "" {
+		return "", fmt.Errorf("file does not exist: %s", filename)
+	}
+
+	expanded := filename
+	if strings.HasPrefix(filename, "~/") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("unable to resolve home directory: %w", err)
+		}
+		expanded = filepath.Join(home, filename[2:])
+	} else if filename == "~" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("unable to resolve home directory: %w", err)
+		}
+		expanded = home
+	}
+
+	var fullPath string
+	if filepath.IsAbs(expanded) {
+		fullPath = filepath.Clean(expanded)
+	} else {
+		baseDir, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("unable to get working directory: %w", err)
+		}
+
+		cleanFilename := filepath.Clean(expanded)
+		fullPath = filepath.Join(baseDir, cleanFilename)
+
+		relPath, err := filepath.Rel(baseDir, fullPath)
+		if err != nil || strings.HasPrefix(relPath, "..") {
+			return "", fmt.Errorf("access denied: %s is outside of the allowed directory", filename)
+		}
+	}
+
+	if _, statErr := os.Stat(fullPath); os.IsNotExist(statErr) {
+		return "", fmt.Errorf("file does not exist: %s", filename)
+	}
+
+	return fullPath, nil
+}
+
 func ReadImage(filename string) (data []byte, imageType string, err error) {
 
-	fullPath, err := ValidateLocalPath(filename)
+	fullPath, err := resolveUserPath(filename)
 	if err != nil {
 		return nil, "", err
 	}
@@ -138,7 +186,7 @@ func ReadImage(filename string) (data []byte, imageType string, err error) {
 // content block, mirroring ReadImage's shape. Supported formats match
 // Bedrock's DocumentFormat: pdf, csv, doc, docx, xls, xlsx, html, txt, md.
 func ReadDocument(filename string) (data []byte, format string, err error) {
-	fullPath, err := ValidateLocalPath(filename)
+	fullPath, err := resolveUserPath(filename)
 	if err != nil {
 		return nil, "", err
 	}
