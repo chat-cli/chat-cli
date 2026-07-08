@@ -1,6 +1,7 @@
 name: Tag Release
 
-# Bumps semver, runs tests, and pushes a v* tag. The Release workflow runs on tag push.
+# Bumps semver, runs tests, tags, publishes with GoReleaser, then pushes the tag.
+# GoReleaser runs here because tag pushes made with GITHUB_TOKEN do not trigger other workflows.
 on:
   workflow_dispatch:
     inputs:
@@ -55,9 +56,21 @@ jobs:
           echo "next=$next" >> "$GITHUB_OUTPUT"
           echo "Next tag: $next (after $latest)"
 
-      - name: Create and push tag
+      - name: Create tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag "${{ steps.next.outputs.next }}"
-          git push origin "${{ steps.next.outputs.next }}"
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+
+      - name: Push tag
+        run: git push origin "${{ steps.next.outputs.next }}"

@@ -23,8 +23,8 @@ Releases are **tag-driven**, not automatic on every merge to `main`.
 1. Merge changes to `main` and confirm CI is green.
 2. Open **Actions → Tag Release → Run workflow**.
 3. Choose bump level: `patch`, `minor`, or `major`.
-4. The workflow runs tests, creates a `v*` tag, and pushes it.
-5. The **Release** workflow runs automatically on the new tag and invokes GoReleaser.
+4. The workflow runs tests, tags locally, publishes with GoReleaser, then pushes the `v*` tag.
+5. Manual tag pushes (Option B) still trigger the separate **Release** workflow.
 
 ### Option B — Manual tag
 
