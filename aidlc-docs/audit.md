@@ -350,6 +350,22 @@
 **AI Response**: "Executed all 10 steps in TDD order. Created cmd/documentinput.go (sanitizeDocumentName, buildDocumentContentBlock, both 100% covered) and utils.ReadDocument (mirrors ReadImage exactly, reuses ValidateLocalPath). Wired --document/-d flag into prompt.go, independent of --image. Verification: make test all green, make lint clean, integration tests all pass, coverage utils 44.7%->49.3%, total 64.7%->66.2%. Could not verify an actual document-input request against real Bedrock (no AWS credentials) - noted in summary.md. Updated README.md/docs/usage.md. Presenting for approval before Unit 5 (final unit)."
 **Context**: Unit 4 Code Generation (Generation), CONSTRUCTION phase
 
+---
+
+## Unit 4 Approval - Unit 5 Begins (Final Unit)
+**Timestamp**: 2026-07-08T03:35:00Z
+**User Input**: "Approve and continue"
+**AI Response**: "Approval recorded. Unit 4 (Document Input, #84) complete and merged (commit 6edbcce). Beginning Unit 5 (Extended Thinking, #85), the final unit. Rather than assuming this is trivial flag plumbing per execution-plan.md's preliminary flag, researching the actual reasoning-content SDK types first, since Units 2-4 all surfaced real design decisions once actually investigated."
+**Context**: CONSTRUCTION PHASE, Unit 5 begins
+
+---
+
+## Unit 5 Functional Design
+**Timestamp**: 2026-07-08T03:40:00Z
+**User Input**: (n/a - Functional Design executing per per-unit assessment)
+**AI Response**: "Verified response-side reasoning types (ContentBlockMemberReasoningContent, ReasoningTextBlock with Text+Signature, streaming delta variants) directly against the SDK. Discovered AdditionalModelRequestFields (the request-side field for enabling reasoning) is untyped/free-form (document.Interface) - unlike every other unit, its exact JSON shape can't be confirmed by static SDK inspection. Documented the assumed shape ({\"reasoning_config\":{\"type\":\"enabled\",\"budget_tokens\":n}}) as unverified, based on training knowledge not a live source, and flagged it as the single highest-risk assumption in the initiative. Also found the SDK requires preserving the reasoning block's signature across multi-turn conversation history (same category as Unit 2's tool-use requirement) - designed to extend Unit 2's existing accumulateStream rather than duplicate it. Added a --thinking-budget flag alongside --thinking given the max-tokens interaction. Presenting for approval, prominently flagging the unverified request shape."
+**Context**: Unit 5 Functional Design, CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)
