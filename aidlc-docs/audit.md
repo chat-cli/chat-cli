@@ -428,3 +428,105 @@
 **User Input**: "Approve and continue"
 **AI Response**: "Approval recorded. This completes the entire Bedrock capability catch-up initiative: INCEPTION (reverse engineering, requirements, user stories, workflow planning, application design, units generation) and CONSTRUCTION (5 units + SDK upgrade prerequisite + build and test) are both done for issues #81-#85. Operations phase remains a placeholder per core-workflow.md - no deployment/monitoring workflow exists or is planned for this project, so there is no further AI-DLC stage to execute. All work is committed and pushed to claude/ai-dlc-documentation-rl4e5s. No PR has been created (not requested) - issues #81-#85 remain open until a PR referencing 'Closes #XX' is merged to the default branch."
 **Context**: INITIATIVE COMPLETE - all INCEPTION and CONSTRUCTION phases done for issues #81-#85
+
+---
+
+## Initiative 1 Epilogue: PR Created, Merged, Issue Cleanup
+**Timestamp**: 2026-07-08T15:10:00Z
+**Events**: PR #97 opened and merged (closing #81-#85). Separately PRs #99/#100/#101 merged to main (release automation, closing #98, unrelated to this initiative). GitHub issue tracker cleanup performed: #96 closed (resolved by #99's ci.yml), #95 closed (resolved - backup file gone, README fixed). Verified #91/#92/#93/#94/#58/#46 still genuinely open on main.
+**Context**: Post-initiative housekeeping, not an AI-DLC stage
+
+---
+
+## Initiative 2 Kickoff: Universal AGENTS.md Convention (#88 redefined)
+**Timestamp**: 2026-07-08T15:20:00Z
+**User Input**: Brainstormed Group 2 (agentic direction) issues #86/#87/#88; chose to redefine #88 from a chat-cli-specific CHATCLI.md idea to a universal AGENTS.md-first convention with fallback to CLAUDE.md/Cursor rules/Copilot instructions/README.md, discussed precedence-not-merge policy, configurable file list, git-root walk-up, size guard, and prompt-cache synergy with #83. User said "Sounds good" to proceed.
+**AI Response**: Updated GitHub issue #88 title/body with the new design. Started AI-DLC for this initiative. Workspace Detection: brownfield, existing aidlc-state.md found, Initiative 1 marked complete. Reverse engineering artifacts stale relative to current main but re-run judged disproportionate to this narrow feature's scope - proceeding directly to Requirements Analysis. Branch claude/ai-dlc-documentation-rl4e5s reset to latest origin/main (d1619d2) since Initiative 1's PR (#97) already merged - starting Initiative 2 fresh per merged-branch restart protocol.
+**Context**: INCEPTION PHASE, Initiative 2 - Workspace Detection complete, entering Requirements Analysis
+
+---
+## Initiative 2 Requirements Analysis Complete
+**Timestamp**: 2026-07-08T15:35:00Z
+**User Input**: Answered clarifying questions directly in chat: "1. Just chat 2. Automatic 3. Overuse wins 4. Skip cursor for now 5. Don't know. Use best judgement"
+**AI Response**: Recorded answers into agents-md-convention-questions.md for the audit trail (interpreting "Overuse wins" as "override wins" - explicit --system/config system-prompt takes precedence entirely; interpreting "use best judgement" on walk-up scope as walk up to the nearest .git boundary, the safest default balancing usefulness against scanning unrelated ancestor directories). Wrote agents-md-convention-requirements.md with FR1-FR6/NFR1-NFR5, incorporating all 5 decisions plus assumptions on the filename precedence list, config key shape, size guard (32KB), disable mechanism, and cache-point synergy reuse from #83.
+**Context**: INCEPTION PHASE, Initiative 2 - Requirements Analysis complete, awaiting approval
+
+---
+## Requirements Analysis - Approval (Initiative 2)
+**Timestamp**: 2026-07-08T15:40:00Z
+**AI Prompt**: "Approve requirements and proceed to Workflow Planning?"
+**User Response**: "Approve and continue"
+**Status**: Approved (User Stories stage not requested, proceeding as recommended skip)
+**Context**: Requirements approved for #88 (universal AGENTS.md convention); Workflow Planning begins next
+
+---
+
+## Workflow Planning Complete (Initiative 2)
+**Timestamp**: 2026-07-08T15:42:00Z
+**AI Response**: Created execution plan for the AGENTS.md convention feature. Risk assessed Low - isolated, reversible, no infra/data-model/API-contract changes, reuses Initiative 1's system-prompt and cache-point plumbing entirely as-is. Recommends skipping Application Design and Units Generation (single unit, no new subsystem shape, same pattern as Initiative 1's Unit 1). Recommends executing a combined Functional Design + NFR stage (real walk-up/precedence algorithm design plus Security/Reliability NFRs), then Code Generation and Build and Test as always.
+**Context**: Workflow plan created with 3 stages to execute (Functional Design+NFR, Code Generation, Build and Test) out of 7 possible Inception/Construction stages
+
+---
+## Workflow Planning - Approval (Initiative 2)
+**Timestamp**: 2026-07-08T15:45:00Z
+**AI Prompt**: "Approve the plan and proceed to Functional Design + NFR?"
+**User Response**: "Approved"
+**Status**: Approved
+**Context**: Execution plan approved for #88; entering Construction phase directly (Application Design and Units Generation both skipped per plan)
+
+---
+
+## Functional Design + NFR Complete (Initiative 2)
+**Timestamp**: 2026-07-08T15:55:00Z
+**AI Response**: Verified design directly against current cmd/chat.go, cmd/systemprompt.go, cmd/config.go source rather than guessing. Resolved the walk-up algorithm into a concrete two-phase design (Phase A: cheap .git-boundary stat-walk, capped at 64 levels defensively; Phase B: check candidates at cwd then boundary dir only, never intermediate levels). Documented 16 business rules covering matching, content handling, config parsing, and the notice. Combined NFR (Security + Reliability only applicable) into one document per Units 2/4 precedent - security posture relies on fixed known filenames within 2 known directories rather than ValidateLocalPath-style traversal defense, since there's no user-supplied path in this feature.
+**Context**: CONSTRUCTION PHASE, agents-md-convention unit - Functional Design + NFR complete, awaiting approval before Code Generation
+
+---
+## Functional Design + NFR - Approval (Initiative 2)
+**Timestamp**: 2026-07-08T15:58:00Z
+**AI Prompt**: "Approve functional design and proceed to Code Generation?"
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: Functional Design + NFR approved for #88; Code Generation Part 1 (Planning) begins next
+
+---
+
+## Code Generation Plan Created (Initiative 2)
+**Timestamp**: 2026-07-08T16:00:00Z
+**AI Response**: Created a 14-step TDD-ordered plan: 4 pure/near-pure functions in a new cmd/projectcontext.go (resolveContextFilenames, findProjectContextFile, loadProjectContext, resolveAndLoadProjectContext), each preceded by a failing-tests step using t.TempDir() fixtures (no filesystem mocking needed, simpler than Initiative 1's SDK-channel testing); config key wiring (context-files); flag wiring (--no-context-file); chat.go call site; docs; full verification pass.
+**Context**: CONSTRUCTION PHASE, agents-md-convention unit - Code Generation Part 1 (Planning) complete, awaiting approval
+
+---
+## Code Generation Plan - Approval (Initiative 2)
+**Timestamp**: 2026-07-08T16:02:00Z
+**AI Prompt**: "Approve the code generation plan and begin generation?"
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: 14-step plan approved for #88; Code Generation Part 2 (Generation) begins next
+
+---
+
+## Code Generation Complete (Initiative 2)
+**Timestamp**: 2026-07-08T16:20:00Z
+**AI Response**: Executed all 14 steps TDD-ordered (red confirmed via go vet/go test before each implementation). Created cmd/projectcontext.go (7 functions) + cmd/projectcontext_test.go (4 test functions, 19 subtests, t.TempDir() fixtures, no SDK mocking needed). Wired context-files into cmd/config.go, --no-context-file into cmd/root.go, and the discovery call site into cmd/chat.go immediately after the existing systemPrompt resolution. Updated README.md/docs/usage.md. One minor deviation from functional-design.md during implementation: findProjectContextFile gained a third return value (matchedCandidate) to support BR8's skip-and-retry composition in resolveAndLoadProjectContext - documented in code/summary.md. Full verification: make test/lint/test-coverage all pass (cmd 23.6%->31.8%, total 66.3%->67.8%, no regressions), make cli + integration tests 7/7 pass, manual smoke test from a nested subdirectory confirmed the .git-boundary walk-up, --system suppression, and --no-context-file suppression all work end-to-end against the real built binary.
+**Context**: CONSTRUCTION PHASE, agents-md-convention unit - Code Generation complete, awaiting approval before Build and Test
+
+---
+## Code Generation - Approval (Initiative 2)
+**Timestamp**: 2026-07-08T16:22:00Z
+**AI Prompt**: "Approve code generation and proceed to Build and Test?"
+**User Response**: "Approved"
+**Status**: Approved
+**Context**: Code generation approved for #88 (commit c1bb745, pushed); Build and Test begins next
+
+---
+
+## Build and Test Complete (Initiative 2)
+**Timestamp**: 2026-07-08T16:25:00Z
+**Build Status**: Success
+**Test Status**: Pass (unit + integration + manual smoke test against the compiled binary; performance/contract N/A)
+**Files Generated**: aidlc-docs/construction/build-and-test/agents-md-convention-summary.md
+**AI Response**: Consolidated the verification already performed during Code Generation Step 14 into the dedicated Build and Test record: make test/lint/test-coverage all pass with no regressions (cmd 23.6%->31.8%, total 66.3%->67.8%), 7/7 integration tests pass, and a manual smoke test against the actual compiled binary (not just unit-test fixtures) confirmed the full chat.go wiring works - discovery from a nested subdirectory correctly walks up to the git boundary, --system suppresses discovery, --no-context-file suppresses discovery. No new real-credential-verification surface since this feature never touches Bedrock directly.
+**Context**: CONSTRUCTION PHASE, agents-md-convention unit - Build and Test complete, awaiting final approval
+
+---

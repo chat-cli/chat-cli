@@ -170,3 +170,54 @@ No PR opened (not requested by user). Recommended before merge: run the
 - #96 Add CI workflow to enforce lint/test on PRs
 
 **Related pre-existing open issues surfaced during triage**: #58 (file attachments, relates to #84), #46 (document in chat mode), #41 (token counts, overlaps future UX idea - not re-filed), #65 (models placeholder output, relates to #91), #21 (concept of modules, relates to #81)
+
+---
+
+# INITIATIVE 1 EPILOGUE (post-completion events, outside AI-DLC stages)
+
+- PR #97 opened for branch `claude/ai-dlc-documentation-rl4e5s` -> `main`, closing #81-#85. Merged 2026-07-08T15:07:16Z.
+- Separately, PRs #99/#100/#101 (release automation, CI workflow, Homebrew deploy key) merged to `main`, closing #98. Not part of this AI-DLC initiative's scope.
+- GitHub issue cleanup performed in conversation (not an AI-DLC stage, just tracker hygiene): #96 closed as resolved by #99's `ci.yml`; #95 closed as resolved (backup file gone, README Go version fixed). #91, #92, #93, #94, #58, #46 verified still open/unresolved on `main` and left open.
+- Branch `claude/ai-dlc-documentation-rl4e5s` reset to latest `origin/main` (`d1619d2`) to start Initiative 2 fresh, per merged-branch restart protocol - old commit history for Initiative 1 is fully captured in `main` via PR #97.
+
+---
+
+# INITIATIVE 2: Universal Project-Context File Convention (#88, redefined)
+
+## Project Information
+- **Start Date**: 2026-07-08 (same day, continued session)
+- **Trigger**: User requested Phase 2 discussion; picked #88 (project-context file), redefined scope from a chat-cli-specific `CHATCLI.md` to a universal `AGENTS.md`-first convention with fallback to other tools' conventions (`CLAUDE.md`, Cursor rules, Copilot instructions), per brainstorm discussion in this conversation.
+- **Issue #88 updated** on GitHub with the new design (title + body rewritten) before starting this initiative.
+
+## Stage Progress
+- [x] Workspace Detection - Brownfield confirmed, existing `aidlc-docs/aidlc-state.md` found (Initiative 1, complete)
+  - **Reverse engineering artifacts exist but are STALE** relative to current `main` (Initiative 1 added `tools/` package, `cmd/systemprompt.go`, `cmd/promptcache.go`, `cmd/documentinput.go`, `cmd/reasoning.go`, `cmd/toolloop.go`, SDK upgrade to v1.55.0; separately `main` gained CI/release automation). **Decision**: do NOT re-run full Reverse Engineering for this narrow, additive feature - scope is well understood from this session's own recent work (system prompt + config precedence pattern directly reused). Full RE re-run would be disproportionate to a single-feature initiative. Proceeding directly to Requirements Analysis with current-state knowledge loaded ad hoc from `cmd/systemprompt.go`, `cmd/config.go`, `cmd/promptcache.go`.
+- [x] Requirements Analysis - Completed 2026-07-08, awaiting user approval
+  - Clarifying questions answered by user (chat-only scope, automatic activation, explicit-system-wins precedence, Cursor dropped from scope, walk-up-to-.git left to AI judgment)
+  - Artifacts: aidlc-docs/inception/requirements/agents-md-convention-questions.md, aidlc-docs/inception/requirements/agents-md-convention-requirements.md
+  - FR1-FR6 + NFR1-NFR5 documented; Out of Scope section captures prompt-command support, Cursor's real .mdc convention, and README.md-as-default as explicit non-goals for this pass
+- [x] User Stories - SKIPPED (approved by user via "Approve and continue" without requesting the stage be added)
+- [x] Workflow Planning - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/inception/plans/agents-md-convention-execution-plan.md
+  - Risk: Low. Application Design SKIP, Units Generation SKIP (single unit, no new subsystem shape). Functional Design + NFR combined EXECUTE. Code Generation + Build and Test ALWAYS EXECUTE.
+- [x] Application Design - SKIP (see execution plan rationale)
+- [x] Units Generation - SKIP (see execution plan rationale, this initiative proceeds as a single implicit unit straight into Construction) - INCEPTION PHASE COMPLETE
+
+### Construction Phase - agents-md-convention (#88, single implicit unit)
+- [x] Functional Design - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/construction/agents-md-convention/functional-design/{business-logic-model,business-rules,domain-entities}.md
+  - Resolved FR1.2's walk-up rule into a concrete two-phase algorithm (Phase A: cheap `.git`-boundary stat-walk; Phase B: check candidates at cwd, then boundary dir only) - verified against actual cmd/chat.go:114, cmd/systemprompt.go, cmd/config.go source, not guessed
+- [x] NFR Requirements + Design - Completed 2026-07-08 (combined presentation, same pattern as Initiative 1 Units 2/4), awaiting user approval
+  - Artifacts: aidlc-docs/construction/agents-md-convention/nfr-requirements/nfr-requirements-and-design.md
+  - Security: bounded to 2 directories, no path-traversal surface (fixed filenames only, no user-supplied path). Reliability: filesystem failures degrade to "no match," never fatal.
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/agents-md-convention-code-generation-plan.md (all 14 steps complete)
+  - Summary: aidlc-docs/construction/agents-md-convention/code/summary.md
+  - cmd coverage 23.6% -> 31.8%, total 66.3% -> 67.8%, no regressions. All 7 integration tests pass. Manual smoke test confirmed discovery, --system suppression, and --no-context-file suppression all work end-to-end.
+- [x] Build and Test - Completed 2026-07-08, awaiting final approval
+  - Artifacts: aidlc-docs/construction/build-and-test/agents-md-convention-summary.md
+  - Build success, all unit/integration tests pass, no coverage regression, manual smoke test against the compiled binary confirmed discovery/--system-suppression/--no-context-file-suppression all work end-to-end. No new real-credential-verification surface (feature never touches Bedrock directly - reuses Initiative 1's existing system-prompt/cache-point pipeline as-is).
+
+## Unit "agents-md-convention" Status: COMPLETE AND APPROVED (commit c1bb745)
+## INITIATIVE 2 STATUS: COMPLETE (pending final Build and Test approval)

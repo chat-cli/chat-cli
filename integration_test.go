@@ -149,6 +149,7 @@ func TestCLIFlagsExist(t *testing.T) {
 		"--region",
 		"--model-id",
 		"--custom-arn",
+		"--no-context-file",
 	}
 
 	for _, flag := range expectedFlags {

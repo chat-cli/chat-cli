@@ -115,6 +115,7 @@ The configuration system follows a clear precedence order:
 - `model-id`: The default model identifier to use for chat and prompt commands
 - `custom-arn`: A custom ARN from Bedrock marketplace or for cross-region inference
 - `system-prompt`: The default system prompt to use for chat and prompt commands
+- `context-files`: Comma-separated list of project-context filenames to look for, overriding the default `AGENTS.md,CLAUDE.md,.github/copilot-instructions.md` list (see [Project Context](#project-context))
 
 ## System Prompt
 
@@ -137,6 +138,23 @@ You can also set a default system prompt so you don't have to pass `--system` ev
 ```
 
 The same precedence rules as `model-id`/`custom-arn` apply: `--system` flag, then the persisted config value, then no system prompt at all.
+
+## Project Context
+
+If neither `--system` nor `system-prompt` is set, `chat` automatically looks for a project-context file and uses it as the system prompt - no flag needed. It checks, in order, `AGENTS.md`, `CLAUDE.md`, then `.github/copilot-instructions.md`, first in your current directory and then (if not found there) at your repository root. The first match wins - files aren't merged.
+
+```shell
+    chat-cli
+    # Using project context: AGENTS.md
+```
+
+Customize the filenames checked (and their order) via the `context-files` config value:
+
+```shell
+    chat-cli config set context-files "AGENTS.md,CLAUDE.md"
+```
+
+Disable discovery for one session with `--no-context-file`, or by default with `chat-cli config set context-files ""`. Content over 32KB is truncated with a warning. This is `chat`-only for now; `prompt` isn't affected.
 
 ## Tool Use
 

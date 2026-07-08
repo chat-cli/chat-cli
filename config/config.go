@@ -155,3 +155,8 @@ func (fm *FileManager) GetConfigValue(key string, flagValue, defaultValue interf
 	// Return default value
 	return defaultValue
 }
+
+// IsConfigSet reports whether key is explicitly set in the configuration file.
+func (fm *FileManager) IsConfigSet(key string) bool {
+	return viper.IsSet(key)
+}
