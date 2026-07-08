@@ -94,6 +94,16 @@ chat-cli prompt "How are you today?" --system "You are a terse, no-nonsense assi
 
 If no `--system` flag is given, the persisted `system-prompt` config value (if any, see [Config](#config)) is used instead. If neither is set, no system prompt is sent — behavior is unchanged from before this feature existed.
 
+### Document Attachments
+
+Use `--document`/`-d` to attach a document — PDF, CSV, DOC/DOCX, XLS/XLSX, HTML, TXT, or MD:
+
+```shell
+chat-cli prompt "summarize this" --document report.pdf
+```
+
+This is independent of `--image` — you can use both in the same invocation if the model supports both. The document's filename is sanitized before being sent to the model (Bedrock only allows certain characters in a document name, and recommends against passing raw filenames through unchanged).
+
 (chat)=
 ## Chat
 

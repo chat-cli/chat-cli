@@ -118,6 +118,35 @@ func ReadImage(filename string) (data []byte, imageType string, err error) {
 	return data, imageType, nil
 }
 
+// ReadDocument reads a local document file for use as a Bedrock document
+// content block, mirroring ReadImage's shape. Supported formats match
+// Bedrock's DocumentFormat: pdf, csv, doc, docx, xls, xlsx, html, txt, md.
+func ReadDocument(filename string) (data []byte, format string, err error) {
+	fullPath, err := ValidateLocalPath(filename)
+	if err != nil {
+		return nil, "", err
+	}
+
+	data, err = os.ReadFile(fullPath) // #nosec G304 - path is validated above
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to read file: %w", err)
+	}
+
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext != "" {
+		ext = ext[1:] // Remove the leading dot
+	}
+
+	switch ext {
+	case "pdf", "csv", "doc", "docx", "xls", "xlsx", "html", "txt", "md":
+		format = ext
+	default:
+		return nil, "", fmt.Errorf("unsupported document type: %s", ext)
+	}
+
+	return data, format, nil
+}
+
 func StringPrompt(label string) string {
 	// Check if we're in a TTY - if so, use the fancy bubble input
 	if isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd()) {

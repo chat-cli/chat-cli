@@ -334,6 +334,22 @@
 **AI Response**: "Approval recorded. Designing Code Generation plan: utils.ReadDocument mirrors utils.ReadImage's shape (validates via ValidateLocalPath, checks extension against the DocumentFormat allow-list); a new cmd/documentinput.go holds sanitizeDocumentName and the ContentBlockMemberDocument builder, mirroring how buildSystemContentBlocks/promptcache.go are cmd-level SDK-type-specific helpers separate from utils' file-IO layer."
 **Context**: Unit 4 Code Generation (Planning), CONSTRUCTION phase
 
+---
+
+## Unit 4 Code Generation Plan Approval
+**Timestamp**: 2026-07-08T03:20:00Z
+**User Input**: "Yes"
+**AI Response**: "Plan approved. Proceeding to Part 2 Generation, executing 10 steps in TDD order."
+**Context**: Unit 4 Code Generation (Planning) approval, CONSTRUCTION phase
+
+---
+
+## Unit 4 Code Generation - Complete
+**Timestamp**: 2026-07-08T03:30:00Z
+**User Input**: (n/a - continuation per approved plan)
+**AI Response**: "Executed all 10 steps in TDD order. Created cmd/documentinput.go (sanitizeDocumentName, buildDocumentContentBlock, both 100% covered) and utils.ReadDocument (mirrors ReadImage exactly, reuses ValidateLocalPath). Wired --document/-d flag into prompt.go, independent of --image. Verification: make test all green, make lint clean, integration tests all pass, coverage utils 44.7%->49.3%, total 64.7%->66.2%. Could not verify an actual document-input request against real Bedrock (no AWS credentials) - noted in summary.md. Updated README.md/docs/usage.md. Presenting for approval before Unit 5 (final unit)."
+**Context**: Unit 4 Code Generation (Generation), CONSTRUCTION phase
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)

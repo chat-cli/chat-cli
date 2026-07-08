@@ -277,6 +277,16 @@ Some LLMs support uploading an image. Images can be either png or jpg and must b
 
 Please note this only works with supported models.
 
+## Document Attachments
+
+Some LLMs support document input directly — PDF, CSV, DOC/DOCX, XLS/XLSX, HTML, TXT, or MD. To attach a document do the following:
+
+```shell
+    chat-cli prompt "summarize this" --document report.pdf
+```
+
+`--document` is independent of `--image` — you can use both together if the model supports both. Please note this only works with supported models.
+
 ## Image
 
 With the `image` command you can generate images with any supported Foundation Model. Simply follow the syntax below:

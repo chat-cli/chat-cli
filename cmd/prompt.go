@@ -68,6 +68,12 @@ var promptCmd = &cobra.Command{
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
+		// get feature flag for document attachment
+		documentPath, err := cmd.PersistentFlags().GetString("document")
+		if err != nil {
+			log.Fatalf("unable to get flag: %v", err)
+		}
+
 		// check if --no-stream is set
 		noStream, err := cmd.PersistentFlags().GetBool("no-stream")
 		if err != nil {
@@ -177,6 +183,16 @@ var promptCmd = &cobra.Command{
 
 		}
 
+		// attach a document if we have one (independent of --image, Rule 5)
+		if documentPath != "" {
+			docBytes, docFormat, docErr := utils.ReadDocument(documentPath)
+			if docErr != nil {
+				log.Fatalf("unable to read document: %v", docErr)
+			}
+
+			userMsg.Content = append(userMsg.Content, buildDocumentContentBlock(docBytes, docFormat, sanitizeDocumentName(documentPath)))
+		}
+
 		conf := types.InferenceConfiguration{
 			MaxTokens:   &maxTokens,
 			TopP:        &topP,
@@ -250,6 +266,7 @@ func init() {
 	promptCmd.PersistentFlags().String("system", "", "set a system prompt")
 
 	promptCmd.PersistentFlags().StringP("image", "i", "", "path to image")
+	promptCmd.PersistentFlags().StringP("document", "d", "", "path to a document (pdf, csv, doc, docx, xls, xlsx, html, txt, md)")
 	promptCmd.PersistentFlags().Bool("no-stream", false, "return the full response once it has completed")
 
 	promptCmd.PersistentFlags().Float32("temperature", 1.0, "temperature setting")
