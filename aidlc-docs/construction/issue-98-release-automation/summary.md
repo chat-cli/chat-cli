@@ -13,7 +13,7 @@
 - Plan: `aidlc-docs/inception/plans/issue-98-execution-plan.md`
 
 ## Manual Setup Required After Merge
-1. Add `HOMEBREW_TAP_GITHUB_TOKEN` secret (PAT with push to `chat-cli/homebrew-chat-cli`)
+1. Add `HOMEBREW_TAP_DEPLOY_KEY` secret (write deploy key on `chat-cli/homebrew-chat-cli`)
 2. Optionally enable branch protection requiring CI on `main`
 
 ## Verification

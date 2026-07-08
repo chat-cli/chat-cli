@@ -21,7 +21,7 @@ Single unit — DevOps / CI. No application logic changes beyond version ldflags
 5. Verify locally: `make test`, `make cli`, `goreleaser release --snapshot` (if goreleaser installed)
 
 ## Post-merge Setup (manual, documented)
-- Add repo secret `HOMEBREW_TAP_GITHUB_TOKEN` with push access to `homebrew-chat-cli`
+- Add repo secret `HOMEBREW_TAP_DEPLOY_KEY` (write deploy key on `homebrew-chat-cli`)
 - Optional: enable branch protection requiring CI on `main`
 
 ## Out of Scope

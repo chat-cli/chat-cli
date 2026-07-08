@@ -31,7 +31,7 @@ Brownfield DevOps change — no application feature changes. Automate CI and rel
 
 ### NFR1 — Secrets
 - `GITHUB_TOKEN` (default) for release assets in this repo.
-- `HOMEBREW_TAP_GITHUB_TOKEN` — PAT with push access to `chat-cli/homebrew-chat-cli`.
+- `HOMEBREW_TAP_DEPLOY_KEY` — SSH private key for a write deploy key on `chat-cli/homebrew-chat-cli`.
 
 ### NFR2 — No release on every main merge
 - Auto-releasing every merge produces too many versions; use explicit tag/dispatch instead.
