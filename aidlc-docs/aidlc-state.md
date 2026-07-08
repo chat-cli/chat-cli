@@ -265,3 +265,11 @@ a verified ancestor of the merge commit before reset).
 - [x] Units Generation - Completed 2026-07-08, awaiting user approval - INCEPTION PHASE (Initiative 3) COMPLETE pending this approval
   - Artifacts: Initiative 3 sections appended to unit-of-work.md, unit-of-work-dependency.md, unit-of-work-story-map.md
   - 3 units: Unit 6 (Confirmation and Sticky Approval Engine, foundational), Unit 7 (New Built-in Tools, HARD dependency on Unit 6 - literally won't compile without it), Unit 8 (Automatic Tool-Use Enablement, soft dependency on 6+7). Build order: 6 -> 7 -> 8. All 8 stories assigned, 0 orphaned.
+
+## INCEPTION PHASE (Initiative 3) COMPLETE - entering CONSTRUCTION
+
+### Construction Phase - Unit 6 (Confirmation and Sticky Approval Engine, #86)
+- [x] Functional Design - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/construction/unit-6-confirmation-engine/functional-design/{business-logic-model,business-rules,domain-entities}.md
+  - Key decisions: NOT reusing utils.StringPrompt (wrong shape - bubbletea widget for free text vs. a discrete choice); ConfirmationSummary parse failure = denial-equivalent (never reaches gate); pattern keys are base-command (run_shell) / repo-relative directory (write_file); persisted store at <ConfigPath>/tool-approvals.yaml, 0600 perms, keyed by absolute repo root; InteractivePermissionGate takes injectable io.Reader/io.Writer for testability; "always" not offered outside a git repo (BR10)
+- [ ] NFR Requirements + Design - Pending

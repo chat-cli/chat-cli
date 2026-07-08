@@ -614,3 +614,17 @@
 **Context**: INCEPTION PHASE COMPLETE for Initiative 3, awaiting approval to enter CONSTRUCTION PHASE
 
 ---
+## Units Generation - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:37:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: Units approved for #86; CONSTRUCTION phase begins, Unit 6 first per build order
+
+---
+
+## Unit 6 Functional Design Complete
+**Timestamp**: 2026-07-08T17:48:00Z
+**AI Response**: Designed the confirmation gate directly (verified against real tools/registry.go, utils/utils.go, config/config.go source). Deliberately did not reuse utils.StringPrompt (bubbletea free-text widget, wrong shape for a discrete once/session/always/deny choice, harder to test) - designed a minimal injectable-reader/writer prompt instead. Made ConfirmationSummary parse failure fail-closed as a denial before the gate is ever consulted. Designed the persisted approval store (YAML, <ConfigPath>/tool-approvals.yaml, 0600, keyed by absolute repo root) and pattern-key derivation rules (base command for run_shell, repo-relative directory for write_file). 15 business rules documented, including the not-in-a-repo edge case (BR10: "always" not offered outside a git repo).
+**Context**: CONSTRUCTION PHASE, Unit 6 - Functional Design complete, awaiting approval before NFR Requirements + Design
+
+---
