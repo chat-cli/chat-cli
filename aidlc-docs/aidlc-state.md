@@ -285,6 +285,9 @@ a verified ancestor of the merge commit before reset).
 ## Unit 6 Status: COMPLETE AND APPROVED (commit 2e04ef0)
 
 ### Construction Phase - Unit 7 (New Built-in Tools, #86)
-- [ ] Functional Design + NFR - Pending
+- [x] Functional Design + NFR - Completed 2026-07-08, awaiting user approval (combined presentation - lower novelty than Unit 6, applies its established pattern to 3 mechanical tools rather than introducing new architecture)
+  - Artifacts: aidlc-docs/construction/unit-7-new-tools/functional-design/{business-logic-model,business-rules,domain-entities}.md, aidlc-docs/construction/unit-7-new-tools/nfr-requirements/nfr-requirements-and-design.md
+  - Key finding: utils.ValidateLocalPath requires the target file to already exist (existence check baked in) - wrong for write_file's create-new-file case. Resolved additively: new utils.ValidateLocalPathForWrite (confinement-only) sharing a private confineToWorkingDir helper with the unchanged, existing ValidateLocalPath - zero regression risk to Units 2/4's already-shipped call sites.
+  - run_shell: 30s timeout, 32KB truncated combined output, non-zero exit code reported in output text (not a Go error) so the model sees command failures as normal operation, not tool bugs.
 - [ ] Code Generation - Pending
 - [ ] Build and Test - Pending all 3 units

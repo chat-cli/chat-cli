@@ -669,3 +669,9 @@
 **Context**: Unit 6 (Confirmation and Sticky Approval Engine) approved and complete; Unit 7 (New Built-in Tools) begins next per build order
 
 ---
+## Unit 7 Functional Design + NFR Complete
+**Timestamp**: 2026-07-08T18:45:00Z
+**AI Response**: Combined presentation (lower novelty than Unit 6 - applies its established gate pattern to 3 mechanical tools rather than introducing new architecture). Found and resolved a real gap during design: utils.ValidateLocalPath requires the target file to already exist, which is wrong for write_file's create-new-file requirement (FR2.2). Resolved additively - a new ValidateLocalPathForWrite (confinement-only) shares a private confineToWorkingDir helper with the unchanged existing ValidateLocalPath, zero regression risk to Units 2/4. Designed run_shell's exit-code handling deliberately: non-zero exit is normal tool output (visible to the model), not a Go error, distinct from timeout/start-failure which are real errors. git_diff passes its optional arg as a single exec.Command argument (not shell-concatenated) for both security and reliability.
+**Context**: CONSTRUCTION PHASE, Unit 7 - Functional Design + NFR complete, awaiting approval before Code Generation
+
+---
