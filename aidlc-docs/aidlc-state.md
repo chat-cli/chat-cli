@@ -220,4 +220,31 @@ No PR opened (not requested by user). Recommended before merge: run the
   - Build success, all unit/integration tests pass, no coverage regression, manual smoke test against the compiled binary confirmed discovery/--system-suppression/--no-context-file-suppression all work end-to-end. No new real-credential-verification surface (feature never touches Bedrock directly - reuses Initiative 1's existing system-prompt/cache-point pipeline as-is).
 
 ## Unit "agents-md-convention" Status: COMPLETE AND APPROVED (commit c1bb745)
-## INITIATIVE 2 STATUS: COMPLETE (pending final Build and Test approval)
+## INITIATIVE 2 STATUS: COMPLETE - PR #102 merged (commit 955130f on main), #88 closed
+
+### Initiative 2 Epilogue
+User tested the merged code and pushed one follow-up fix commit (768c9f1, with Cursor)
+before/at merge time: fixed a real bug where `resolveContextFilenames` couldn't
+distinguish "context-files config key unset" from "explicitly set to empty string" -
+both looked like the same empty input, so the documented disable-via-empty-config
+mechanism (FR5.2/BR12) silently didn't work. Fixed via a new `FileManager.IsConfigSet`
+plus a `configSet bool` parameter. Also improved notice/warning messages to show
+cwd-relative paths instead of full absolute paths, and hardened symlink handling.
+Branch `claude/ai-dlc-documentation-rl4e5s` reset to latest `origin/main` (955130f)
+to start Initiative 3 fresh; remote branch had been auto-deleted after merge, recreated
+via a plain push after `git remote prune origin` (confirmed safe: old branch head was
+a verified ancestor of the merge commit before reset).
+
+---
+
+# INITIATIVE 3: Built-in Agent Tools (#86)
+
+## Project Information
+- **Start Date**: 2026-07-08 (same day, continued session)
+- **Trigger**: User picked #86 next from the Group 2 (agentic direction) backlog after Initiative 2 (#88) merged.
+- **Scope per issue #86**: "Once tool use is supported [done, #82], add a small first-party toolset — read file [already done, #82], write file, run a shell command, git diff — so chat-cli chat can act as a lightweight, Bedrock-native coding assistant directly in the terminal... Needs careful scoping around confirmation prompts before destructive actions (file writes, shell exec)."
+- **Risk profile note**: Higher than Initiatives 1-2 - `run_shell` is arbitrary command execution, `write_file` is a destructive filesystem action. This will need real Security NFR treatment, not a skip, and likely a fuller Inception treatment (User Stories, possibly Application Design) given the confirmation-flow UX design surface.
+
+## Stage Progress
+- [x] Workspace Detection - Brownfield confirmed, reusing existing `aidlc-docs/aidlc-state.md` context (no re-run of Reverse Engineering - same rationale as Initiative 2, narrow addition to an already-understood `tools/` subsystem from Initiative 1 Unit 2)
+- [ ] Requirements Analysis - IN PROGRESS, clarifying questions issued
