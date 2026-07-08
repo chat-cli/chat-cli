@@ -247,4 +247,8 @@ a verified ancestor of the merge commit before reset).
 
 ## Stage Progress
 - [x] Workspace Detection - Brownfield confirmed, reusing existing `aidlc-docs/aidlc-state.md` context (no re-run of Reverse Engineering - same rationale as Initiative 2, narrow addition to an already-understood `tools/` subsystem from Initiative 1 Unit 2)
-- [ ] Requirements Analysis - IN PROGRESS, clarifying questions issued
+- [x] Requirements Analysis - Completed 2026-07-08, awaiting user approval
+  - Two rounds of clarifying questions (initial 7 + a follow-up round of 4 after the user's freeform answer revealed a bigger scope than originally asked - automatic tool-use enablement replacing the `--tools` opt-in flag from Initiative 1, plus a new pattern-based sticky-approval permission engine)
+  - Artifacts: aidlc-docs/inception/requirements/builtin-tools-{questions,clarification-questions,requirements}.md
+  - FR1-FR7 + NFR1-NFR5 documented. Notably revises Initiative 1's NFR1 (backward compatibility) by design - tool use becomes always-on with automatic graceful degradation, per explicit user direction
+  - **Recommending User Stories EXECUTE (not skip)** this time - real UX/acceptance-criteria value given the new confirmation-gate/approval-tier interaction flows, unlike Initiative 2's simple flag/config plumbing

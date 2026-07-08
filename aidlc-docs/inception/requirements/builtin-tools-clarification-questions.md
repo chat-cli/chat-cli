@@ -19,7 +19,7 @@ B) Only `write_file`/`run_shell` - `read_file`/`git_diff` stay silent since they
 
 C) Other (please describe after [Answer]: tag below)
 
-[Answer]: 
+[Answer]: B (destructive only - write_file/run_shell; read_file/git_diff stay silent)
 
 ## Question 2
 What should the pattern granularity actually be for each tool, when you choose "allow going forward" rather than "just this once"?
@@ -30,7 +30,7 @@ B) `run_shell`: pattern matches on the **full command prefix** you can edit at t
 
 C) Other (please describe after [Answer]: tag below)
 
-[Answer]: 
+[Answer]: A (coarse: base command for run_shell, directory for write_file)
 
 ## Question 3
 Should approved patterns persist across `chat` sessions (saved to config, so you're not re-approving `git *` every time you start a new session), or are they always session-only (reset every time `chat` starts, matching how a fresh terminal session normally works)?
@@ -41,7 +41,7 @@ B) Persisted - saved to the config file so approvals carry over between sessions
 
 C) Other (please describe after [Answer]: tag below)
 
-[Answer]: 
+[Answer]: Neither strictly A nor B as originally framed - user wants a 3-way choice offered at prompt time: once / this session / always (persisted). Recording as a new decision, not a pre-listed letter.
 
 ## Question 4
 Since `--tools` goes away as something you have to remember to pass, should there still be a flag to **disable** tool use entirely for someone who doesn't want it (mirroring `--no-context-file` from #88), or is tool use simply always-on with no opt-out?
@@ -52,4 +52,4 @@ B) Always-on, no opt-out flag in this pass
 
 C) Other (please describe after [Answer]: tag below)
 
-[Answer]: 
+[Answer]: Neither A nor B as originally framed - no --no-tools flag; instead, a model/request that rejects the tool-use field is detected and tools are automatically disabled for the rest of that request (same retry-without-tools pattern as prompt caching's retry-without-cache), with a visible notice to the user.

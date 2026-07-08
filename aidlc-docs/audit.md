@@ -545,3 +545,10 @@
 **Context**: INCEPTION PHASE, Initiative 3 - Workspace Detection complete, entering Requirements Analysis
 
 ---
+## Requirements Analysis Round 2 + Completion (Initiative 3)
+**Timestamp**: 2026-07-08T16:50:00Z
+**User Input**: Round 1 freeform summary ("tools should just work, no flags... all commands/tools should require a confirm with option to be sticky for the session... scopes should use a pattern like curl/*/*..."), then round-2 answers: "1. Destructive only 2. Coarse 3. User should be able to select - this session, always, once 4. No we don't need this.. the models that don't support tools should automatically turn off tools and let the user know"
+**AI Response**: Recognized the round-1 answer expanded scope beyond issue #86's literal text (revises Initiative 1's --tools opt-in design) and asked 4 targeted follow-ups rather than guessing given the security stakes. Wrote builtin-tools-requirements.md: FR1 automatic tool-use enablement with retry-without-tools-on-rejection (mirroring #83's cache retry pattern) and a user-visible notice; FR2-4 the three new tools (write_file, run_shell, git_diff); FR5-6 a destructive-only confirmation gate with three-tier (once/session/always) coarse pattern-based sticky approval (base-command for run_shell, directory for write_file); FR7 per-repository persisted storage for "always" approvals. Recommending User Stories EXECUTE (not skip) given real UX design value, departing from Initiative 2's skip.
+**Context**: INCEPTION PHASE, Initiative 3 - Requirements Analysis complete, awaiting approval
+
+---
