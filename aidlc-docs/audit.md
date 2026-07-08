@@ -246,6 +246,22 @@
 **AI Response**: "Executed all 22 steps in TDD order. Created tools/ package (tool.go, registry.go, readfile.go + tests, 90% coverage). Extracted utils.ValidateLocalPath from ReadImage as a pure refactor (TestReadImage passed unmodified). Created cmd/toolloop.go (accumulateStream, runChatTurnWithTools, finalizeToolCall) using pure-function extraction to make the streaming protocol testable without mocking SDK internals - constructed real Go channels of types.ConverseStreamOutput directly in tests. Wired --tools flag (default false) into root.go and chat.go per the confirmed opt-in decision. Verification: make test (all green), make lint (clean), integration tests (all 7 pass), coverage cmd 8.0%->18.7%, tools package 90.0%, total 52.6%->62.4%. Could not live-test an actual Bedrock tool-call round-trip (no AWS credentials in this environment) - noted explicitly in summary.md; the untested seam is a thin closure with no logic beyond forwarding to the SDK. Updated README.md/docs/usage.md. Presenting for approval before Unit 3."
 **Context**: Unit 2 Code Generation (Generation), CONSTRUCTION phase
 
+---
+
+## Unit 2 Approval - Unit 3 Begins
+**Timestamp**: 2026-07-08T02:15:00Z
+**User Input**: "Approve and continue"
+**AI Response**: "Approval recorded. Unit 2 (Tool Use, #82) complete and merged (commit ad327a0). Beginning Unit 3 (Prompt Caching, #83). Assessing per-unit stages: the retry-on-cache-rejection algorithm (FR3.3) is real but small business logic, warranting a light Functional Design pass focused on verifying how Bedrock actually signals a cache-point rejection (SDK/API research) rather than the heavier treatment Unit 2 needed. NFR Requirements/Design likely SKIP - no new security surface, and performance is the feature itself (already fully specified in FR3), not a separate NFR concern needing its own pass."
+**Context**: CONSTRUCTION PHASE, Unit 3 begins
+
+---
+
+## Unit 3 - Blocker Discovered
+**Timestamp**: 2026-07-08T02:20:00Z
+**User Input**: (n/a - AI-initiated risk discovery during SDK research for Functional Design)
+**AI Response**: "Discovered the pinned github.com/aws/aws-sdk-go-v2/service/bedrockruntime version (v1.23.0, in go.mod) predates Bedrock prompt-caching support entirely - no CachePointBlock/ContentBlockMemberCachePoint/SystemContentBlockMemberCachePoint types exist at that version. Bisected and confirmed v1.28.0 is the earliest version with these types (v1.27.0 lacks them). Also checked ahead: v1.23.0 has zero reasoning-content types needed for Unit 5 (Extended Thinking, #85) either - that unit will hit the same wall. Scanned the changelog between v1.23.0 and latest (v1.55.0) for breaking changes relevant to our usage (GetFoundationModel, Converse/ConverseStream, ListFoundationModels) - found nothing concerning. Pausing Unit 3 construction to get explicit confirmation before bumping a core dependency, since it affects the whole codebase, not just this unit."
+**Context**: Unit 3, CONSTRUCTION phase - blocked pending dependency decision
+
 ## Unit 2 Code Generation Plan - Decision Flagged
 **Timestamp**: 2026-07-08T01:45:00Z
 **User Input**: (n/a - AI-initiated risk discovery during planning)
