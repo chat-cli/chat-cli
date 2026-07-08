@@ -189,3 +189,19 @@
 **User Input**: (n/a - continuation per approved plan)
 **AI Response**: "Executed all 11 steps in TDD order (red-green cycle confirmed for each new behavior via go test before/after implementation). Created cmd/systemprompt.go + cmd/systemprompt_test.go. Modified cmd/config.go (extracted duplicated supportedKeys maps into one package-level supportedConfigKeys var as a refinement - reduces duplication per the spirit of #92), cmd/root.go, cmd/prompt.go, cmd/chat.go, cmd/cmd_test.go, README.md, docs/usage.md. Verification: make test (all green, no regressions), make lint (clean), make cli + go test -tags=integration -v (all 7 integration tests pass), coverage cmd 7.4% to 8.0% (no regression). golangci-lint could not run due to a pre-existing binary/config version mismatch unrelated to this change (reinforces #96). Manual smoke test confirmed --system flag and config set/list/unset system-prompt work correctly end-to-end. Created unit summary doc. Presenting for approval before Unit 2."
 **Context**: Unit 1 Code Generation (Generation), CONSTRUCTION phase
+
+---
+
+## Unit 1 Approval - Unit 2 Begins
+**Timestamp**: 2026-07-08T01:20:00Z
+**User Input**: "Continue to Next Stage"
+**AI Response**: "Approval recorded. Unit 1 (System Prompt Support, #81) complete and merged into working tree (commit 4901a88). Beginning Unit 2 (Tool Use / Function Calling, #82). Per execution-plan.md's preliminary flags, assessing Functional Design and NFR Requirements/Design as likely EXECUTE for this unit given new business logic (tool dispatch/error-result contract) and security-sensitive file access (the built-in read_file tool)."
+**Context**: CONSTRUCTION PHASE, Unit 2 begins
+
+---
+
+## Unit 2 Functional Design
+**Timestamp**: 2026-07-08T01:25:00Z
+**User Input**: (n/a - Functional Design executing per per-unit assessment)
+**AI Response**: "Downloaded and inspected the bedrockruntime SDK's tool-use types directly rather than guessing (corrected Application Design's placeholder ToolConfig name to the real ToolConfiguration/Tool/ToolMemberToolSpec/ToolInputSchemaMemberJson types). Documented the real streaming protocol: tool-use arrives as indexed ContentBlockStart/Delta/Stop events requiring accumulation, not a single event like text. Made 2 key design decisions: (1) only the final text response + original prompt persist to SQLite per turn, intermediate tool exchanges stay in-memory only for that session (avoids replaying invalid tool-call state on --chat-id resume); (2) capped consecutive tool round-trips per turn at 10 as a new reliability safeguard not explicit in the original stories, flagged for review. Generated business-logic-model.md, business-rules.md (7 rules), domain-entities.md. Presenting for approval before NFR Requirements/Design."
+**Context**: Unit 2 Functional Design, CONSTRUCTION phase

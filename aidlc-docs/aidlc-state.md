@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-07-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 1 (System Prompt Support, #81) - Code Generation complete, awaiting approval
+- **Current Stage**: CONSTRUCTION - Unit 2 (Tool Use / Function Calling, #82) - Functional Design complete, awaiting approval
 
 ## Workspace State
 - **Existing Code**: Yes
@@ -48,13 +48,21 @@
 - [x] NFR Requirements - SKIP (no new security/performance concerns beyond cross-cutting NFRs already in requirements.md)
 - [x] NFR Design - SKIP (follows from NFR Requirements skip)
 - [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
-- [x] Code Generation - Complete 2026-07-08, awaiting user review/approval
+- [x] Code Generation - Completed 2026-07-08 (approved by user, commit 4901a88)
   - Plan: aidlc-docs/construction/plans/unit-1-system-prompt-code-generation-plan.md
   - Summary: aidlc-docs/construction/unit-1-system-prompt/code/summary.md
 - [ ] Build and Test - Pending all 5 units (this unit individually verified: make test/lint/coverage + integration tests all pass)
 
-## Unit 1 Status: CODE COMPLETE, AWAITING REVIEW
-Next: Unit 2 (Tool Use / Function Calling, #82) once Unit 1 is approved.
+## Unit 1 Status: COMPLETE AND APPROVED
+
+### Construction Phase - Unit 2 (Tool Use / Function Calling, #82)
+- [x] Functional Design - Complete 2026-07-08, awaiting approval
+  - Artifacts: aidlc-docs/construction/unit-2-tool-use/functional-design/
+- [ ] NFR Requirements - Next (EXECUTE: security-sensitive file access via read_file tool)
+- [ ] NFR Design - Pending NFR Requirements
+- [x] Infrastructure Design - SKIP (no infrastructure in this project, decided globally)
+- [ ] Code Generation - Not started
+- [ ] Build and Test - Pending all 5 units
 
 ### Operations Phase
 - [ ] Operations - PLACEHOLDER (not in scope)
