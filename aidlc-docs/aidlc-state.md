@@ -196,7 +196,9 @@ No PR opened (not requested by user). Recommended before merge: run the
   - Clarifying questions answered by user (chat-only scope, automatic activation, explicit-system-wins precedence, Cursor dropped from scope, walk-up-to-.git left to AI judgment)
   - Artifacts: aidlc-docs/inception/requirements/agents-md-convention-questions.md, aidlc-docs/inception/requirements/agents-md-convention-requirements.md
   - FR1-FR6 + NFR1-NFR5 documented; Out of Scope section captures prompt-command support, Cursor's real .mdc convention, and README.md-as-default as explicit non-goals for this pass
-- [ ] User Stories - RECOMMENDED SKIP (single cohesive feature, one persona already established in Initiative 1, requirements already concrete with FR-level acceptance detail) - offered as an option in completion message per core-workflow.md
-- [ ] Workflow Planning - TBD
-- [ ] Application Design - TBD (likely lightweight - single unit)
-- [ ] Units Generation - TBD (likely SKIP - naturally one unit of work, no parallelization benefit)
+- [x] User Stories - SKIPPED (approved by user via "Approve and continue" without requesting the stage be added)
+- [x] Workflow Planning - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/inception/plans/agents-md-convention-execution-plan.md
+  - Risk: Low. Application Design SKIP, Units Generation SKIP (single unit, no new subsystem shape). Functional Design + NFR combined EXECUTE. Code Generation + Build and Test ALWAYS EXECUTE.
+- [ ] Application Design - SKIP (see execution plan rationale)
+- [ ] Units Generation - SKIP (see execution plan rationale, this initiative proceeds as a single implicit unit straight into Construction)
