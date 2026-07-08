@@ -109,7 +109,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 		}
 
 		// Get configuration values with precedence order (flag -> config -> default)
-		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
+		modelId := fm.GetConfigValue("model-id", modelIdFlag, DefaultModelID).(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
 		systemPrompt := fm.GetConfigValue("system-prompt", systemFlag, "").(string)
 
@@ -150,8 +150,8 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 		var modelIdString string
 
-		if customArn == "" {
-			// Using model-id, need to validate with Bedrock
+		if customArn == "" && !isInferenceProfileID(finalModelId) {
+			// Using a foundation model-id, validate with Bedrock
 			bedrockSvc := bedrock.NewFromConfig(cfg)
 
 			// get foundation model details
@@ -174,7 +174,7 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 
 			modelIdString = *model.ModelDetails.ModelId
 		} else {
-			// Using custom-arn, skip validation and use directly
+			// Inference profile or custom ARN — pass through to Converse directly
 			modelIdString = finalModelId
 		}
 

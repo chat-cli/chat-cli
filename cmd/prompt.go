@@ -110,7 +110,7 @@ var promptCmd = &cobra.Command{
 		}
 
 		// Get configuration values with precedence order (flag -> config -> default)
-		modelId := fm.GetConfigValue("model-id", modelIdFlag, "anthropic.claude-3-5-sonnet-20240620-v1:0").(string)
+		modelId := fm.GetConfigValue("model-id", modelIdFlag, DefaultModelID).(string)
 		customArn := fm.GetConfigValue("custom-arn", customArnFlag, "").(string)
 		systemPrompt := fm.GetConfigValue("system-prompt", systemFlag, "").(string)
 
@@ -127,8 +127,8 @@ var promptCmd = &cobra.Command{
 
 		bedrockSvc := bedrock.NewFromConfig(cfg)
 
-		if customArn == "" {
-			// Using model-id, need to validate with Bedrock
+		if customArn == "" && !isInferenceProfileID(finalModelId) {
+			// Using a foundation model-id, validate with Bedrock
 			model, modelErr := bedrockSvc.GetFoundationModel(context.TODO(), &bedrock.GetFoundationModelInput{
 				ModelIdentifier: &finalModelId,
 			})
@@ -153,7 +153,7 @@ var promptCmd = &cobra.Command{
 
 			modelIdString = *model.ModelDetails.ModelId
 		} else {
-			// Using custom-arn, skip validation and use directly
+			// Inference profile or custom ARN — pass through to Converse directly
 			modelIdString = finalModelId
 		}
 
@@ -290,7 +290,7 @@ var promptCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(promptCmd)
-	promptCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
+	promptCmd.PersistentFlags().StringP("model-id", "m", DefaultModelID, "set the model id or inference profile id")
 	promptCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 	promptCmd.PersistentFlags().String("system", "", "set a system prompt")
 	promptCmd.PersistentFlags().Bool("thinking", false, "enable extended thinking / reasoning mode")

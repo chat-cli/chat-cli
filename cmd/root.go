@@ -46,7 +46,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("region", "r", "us-east-1", "set the AWS region")
 
 	// Add chat-specific flags to root command so they work when running chat-cli directly
-	rootCmd.PersistentFlags().StringP("model-id", "m", "anthropic.claude-3-5-sonnet-20240620-v1:0", "set the model id")
+	rootCmd.PersistentFlags().StringP("model-id", "m", DefaultModelID, "set the model id or inference profile id")
 	rootCmd.PersistentFlags().String("custom-arn", "", "pass a custom arn from bedrock marketplace or cross-region inference")
 	rootCmd.PersistentFlags().String("chat-id", "", "pass a valid chat-id to load a previous conversation")
 	rootCmd.PersistentFlags().String("system", "", "set a system prompt")

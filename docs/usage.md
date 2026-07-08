@@ -13,7 +13,7 @@ Use the `config set` command to store default values:
 
 ```shell
 # Set a default model ID
-chat-cli config set model-id "anthropic.claude-3-5-sonnet-20240620-v1:0"
+chat-cli config set model-id "us.anthropic.claude-sonnet-5"
 
 # Set a custom ARN for marketplace or cross-region models  
 chat-cli config set custom-arn "arn:aws:bedrock:us-west-2::foundation-model/custom-model"
@@ -30,7 +30,7 @@ chat-cli config list
 Example output:
 ```
 Current configuration:
-  model-id = anthropic.claude-3-5-sonnet-20240620-v1:0
+  model-id = us.anthropic.claude-sonnet-5
   custom-arn = arn:aws:bedrock:us-west-2::foundation-model/custom-model
 ```
 
@@ -56,7 +56,7 @@ The configuration system uses a clear precedence hierarchy to determine which va
    - Used when no command line flag is provided
 
 3. **Built-in defaults** (lowest priority)
-   - Default model: `anthropic.claude-3-5-sonnet-20240620-v1:0`
+   - Default model: `us.anthropic.claude-sonnet-5`
    - Used when no configuration or flags are set
 
 ### Custom ARN Priority
@@ -71,7 +71,7 @@ When both `model-id` and `custom-arn` are configured, `custom-arn` takes precede
 
 | Setting | Description | Example |
 |---------|-------------|---------|
-| `model-id` | Default model identifier for Bedrock foundation models | `anthropic.claude-3-5-sonnet-20240620-v1:0` |
+| `model-id` | Default model identifier or inference profile id for Bedrock | `us.anthropic.claude-sonnet-5` |
 | `custom-arn` | Custom ARN for marketplace or cross-region inference | `arn:aws:bedrock:us-west-2::foundation-model/custom-model` |
 | `system-prompt` | Default system prompt used by `chat` and `prompt` | `You are a terse, no-nonsense assistant.` |
 

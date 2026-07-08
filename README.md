@@ -79,7 +79,7 @@ You can manage persistent configuration settings using the `config` command. Thi
 
 ```shell
 # Set a default model ID
-chat-cli config set model-id "anthropic.claude-3-5-sonnet-20240620-v1:0"
+chat-cli config set model-id "us.anthropic.claude-sonnet-5"
 
 # Set a custom ARN for marketplace or cross-region models
 chat-cli config set custom-arn "arn:aws:bedrock:us-west-2::foundation-model/custom-model"
@@ -106,7 +106,7 @@ The configuration system follows a clear precedence order:
 
 1. **Command line flags** (highest priority) - Values specified with `--model-id` or `--custom-arn`
 2. **Configuration file** - Values set with `chat-cli config set`
-3. **Built-in defaults** (lowest priority) - `anthropic.claude-3-5-sonnet-20240620-v1:0` for model-id
+3. **Built-in defaults** (lowest priority) - `us.anthropic.claude-sonnet-5` for model-id
 
 **Important:** When both `model-id` and `custom-arn` are set, `custom-arn` takes precedence over `model-id`. This allows you to override the default model with a custom marketplace or cross-region model.
 

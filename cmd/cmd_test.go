@@ -37,7 +37,7 @@ func TestRootCommand(t *testing.T) {
 	if flag == nil {
 		t.Error("Expected 'model-id' flag to exist")
 	} else {
-		expectedDefault := "anthropic.claude-3-5-sonnet-20240620-v1:0"
+		expectedDefault := DefaultModelID
 		if flag.DefValue != expectedDefault {
 			t.Errorf("Expected default model-id '%s', got '%s'", expectedDefault, flag.DefValue)
 		}
