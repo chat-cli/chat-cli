@@ -703,3 +703,11 @@
 **Context**: CONSTRUCTION PHASE - all 3 units complete, awaiting approval before initiative-wide Build and Test
 
 ---
+## Unit 8 - Approval; Initiative 3 Build and Test Complete
+**Timestamp**: 2026-07-08T19:40:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**AI Response**: Ran a fresh full verification pass across all 3 units together (make test/lint/coverage all green, no regressions across the whole initiative). Executed 4 cross-unit composition scenarios: combining Initiative 1's --system/--thinking with always-on tools; combining Initiative 2's --no-context-file with Initiative 3's always-on tools; the confirmation gate's full end-to-end behavior via real components (once/deny/session-reuse/read-only-tools-never-touch-the-gate); confirmed --tools is fully gone. Consolidated the real-credential verification list with this initiative's new unverified assumption (isToolUseUnsupportedError's heuristic, same risk category as Unit 5's reasoning_config from Initiative 1).
+**Context**: Build and Test stage, CONSTRUCTION phase - final stage of Initiative 3
+
+---

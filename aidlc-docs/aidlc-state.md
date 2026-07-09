@@ -309,6 +309,12 @@ a verified ancestor of the merge commit before reset).
   - --tools flag fully removed (verified via chat-cli --help). Registry always contains all 4 tools unconditionally, verified via a real-components scratch driver.
   - cmd 33.1%->33.5%, total 71.2%->70.9% (negligible dip, new fallback branch untested per established unmockable-client precedent), no other regressions. 7/7 integration tests pass.
 
-## Unit 8 Status: COMPLETE, AWAITING APPROVAL - ALL 3 UNITS OF INITIATIVE 3 CODE-COMPLETE
+## Unit 8 Status: COMPLETE AND APPROVED (commit 9ba9005)
 
-- [ ] Build and Test - Pending all 3 units
+- [x] Build and Test - Completed 2026-07-08, awaiting final approval
+  - Artifacts: aidlc-docs/construction/build-and-test/builtin-tools-summary.md
+  - Fresh full test suite: all green, no regressions (total 67.8%->70.9% across the initiative)
+  - 4 cross-unit composition scenarios executed: --system+--thinking+always-on-tools combined, #88's --no-context-file+#86's always-on-tools combined, confirmation gate full end-to-end via real components (once/deny/session-reuse/gate-never-consulted-for-read-only), --tools fully removed (verified via --help)
+  - Consolidated real-credential verification list: isToolUseUnsupportedError heuristic (same risk category as Unit 5's reasoning_config), an actual tool-call round-trip for the 3 new tools, real-terminal confirmation-prompt UX inspection
+
+## Unit 8 / INITIATIVE 3 BUILD AND TEST: COMPLETE AND APPROVED (pending final sign-off)
