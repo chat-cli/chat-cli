@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/spf13/viper"
@@ -325,6 +326,54 @@ func TestInitializeViper(t *testing.T) {
 	configPath := filepath.Join(fm.ConfigPath, fm.ConfigFile)
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		t.Errorf("config file was not created: %s", configPath)
+	}
+
+	viper.Reset()
+}
+
+// TestInitializeViper_MigratesLegacySqlite3Driver covers configs written by
+// chat-cli versions before v0.5.3, which persisted db_driver: sqlite3 (the
+// name of the old CGO mattn/go-sqlite3 driver). Since that driver was
+// replaced by the pure-Go modernc.org/sqlite driver under the identifier
+// "sqlite", an un-migrated config makes factory.CreateDatabase fail with
+// "unsupported database driver: sqlite3" on every upgrade.
+func TestInitializeViper_MigratesLegacySqlite3Driver(t *testing.T) {
+	tempDir := t.TempDir()
+
+	// Simulate a config file written by a pre-v0.5.3 install.
+	legacyConfig := "db_driver: sqlite3\nenvironment: testing\n"
+	configPath := filepath.Join(tempDir, "config.yaml")
+	if err := os.WriteFile(configPath, []byte(legacyConfig), 0600); err != nil {
+		t.Fatalf("failed to write legacy config: %v", err)
+	}
+
+	fm := &FileManager{
+		AppName:     "test-app",
+		ConfigFile:  "config.yaml",
+		DBFile:      "data.db",
+		Environment: "testing",
+		ConfigPath:  tempDir,
+		DataPath:    tempDir,
+	}
+
+	viper.Reset()
+
+	if err := fm.InitializeViper(); err != nil {
+		t.Fatalf("InitializeViper failed: %v", err)
+	}
+
+	if driver := fm.GetDBDriver(); driver != "sqlite" {
+		t.Errorf("expected legacy %q driver to be migrated to %q, got %q", "sqlite3", "sqlite", driver)
+	}
+
+	// The file on disk should be rewritten too, so the fix is permanent
+	// rather than needing to migrate in memory on every run.
+	rewritten, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("failed to read config file back: %v", err)
+	}
+	if strings.Contains(string(rewritten), "sqlite3") {
+		t.Errorf("expected config file to no longer contain %q, got: %s", "sqlite3", rewritten)
 	}
 
 	viper.Reset()

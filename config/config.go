@@ -104,7 +104,25 @@ func (fm *FileManager) InitializeViper() error {
 		return err
 	}
 
-	return viper.ReadInConfig()
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
+
+	return fm.migrateLegacyDBDriver()
+}
+
+// migrateLegacyDBDriver rewrites config files persisted by chat-cli
+// versions before v0.5.3, which wrote db_driver: sqlite3 (the name of the
+// old CGO mattn/go-sqlite3 driver). That driver was replaced by the
+// pure-Go modernc.org/sqlite driver under the identifier "sqlite", so an
+// un-migrated config makes factory.CreateDatabase fail with "unsupported
+// database driver: sqlite3" after upgrading.
+func (fm *FileManager) migrateLegacyDBDriver() error {
+	if viper.GetString("db_driver") != "sqlite3" {
+		return nil
+	}
+	viper.Set("db_driver", "sqlite")
+	return viper.WriteConfig()
 }
 
 // GetDBPath returns the full path to the SQLite database file
