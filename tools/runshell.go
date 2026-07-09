@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/document"
@@ -83,7 +82,7 @@ func (t *RunShellTool) Execute(ctx context.Context, input json.RawMessage) (stri
 	// shell itself - killing only the shell leaves such children running
 	// and holding the output pipe open, which would otherwise block
 	// CombinedOutput() below well past the intended timeout.
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	setProcessGroup(cmd)
 
 	type result struct {
 		output []byte
@@ -97,9 +96,7 @@ func (t *RunShellTool) Execute(ctx context.Context, input json.RawMessage) (stri
 
 	select {
 	case <-runCtx.Done():
-		if cmd.Process != nil {
-			_ = syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-		}
+		killProcessGroup(cmd)
 		<-done // wait for the goroutine to unblock now that the group is dead
 		return "", fmt.Errorf("command timed out after %s", timeout)
 
