@@ -303,5 +303,12 @@ a verified ancestor of the merge commit before reset).
   - Artifacts: aidlc-docs/construction/unit-8-automatic-enablement/functional-design/business-logic-model.md, aidlc-docs/construction/unit-8-automatic-enablement/nfr-requirements/nfr-requirements-and-design.md
   - Key finding: "disabled for the rest of the session" (FR1.2) falls out for free from the existing mutable converseStreamInput struct - no new session-state tracking needed. The FR1.3 user notice reuses the existing log.Printf convention already used by the cache/sampling-params fallbacks.
   - **CAVEAT (same category as Unit 5's reasoning_config)**: isToolUseUnsupportedError's exact string-matching heuristic is UNVERIFIED against real Bedrock error text - added to the real-credential verification list.
-- [ ] Code Generation - Pending
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-8-automatic-enablement-code-generation-plan.md (all 5 steps complete)
+  - Summary: aidlc-docs/construction/unit-8-automatic-enablement/code/summary.md
+  - --tools flag fully removed (verified via chat-cli --help). Registry always contains all 4 tools unconditionally, verified via a real-components scratch driver.
+  - cmd 33.1%->33.5%, total 71.2%->70.9% (negligible dip, new fallback branch untested per established unmockable-client precedent), no other regressions. 7/7 integration tests pass.
+
+## Unit 8 Status: COMPLETE, AWAITING APPROVAL - ALL 3 UNITS OF INITIATIVE 3 CODE-COMPLETE
+
 - [ ] Build and Test - Pending all 3 units

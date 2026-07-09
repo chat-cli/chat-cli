@@ -697,3 +697,9 @@
 **Context**: CONSTRUCTION PHASE, Unit 8 (final unit) - Functional Design + NFR complete, awaiting approval before Code Generation
 
 ---
+## Unit 8 Code Generation Complete - ALL 3 UNITS OF INITIATIVE 3 CODE-COMPLETE
+**Timestamp**: 2026-07-08T19:30:00Z
+**AI Response**: Executed all 5 steps TDD-ordered. isToolUseUnsupportedError unit-tested directly (mirroring the existing isDeprecatedSamplingParamsError precedent); the new retry branch inside converseStreamWithFallbacks itself was not separately unit-tested, matching the established precedent that this function's other two fallback stages (cache points, sampling params) also have no direct tests since they call the real unmockable bedrockruntime.Client. Removed --tools entirely (verified via chat-cli --help). Manually verified via a real-components scratch driver that the registry always contains all 4 tools with no flag needed. Full verification green, no regressions. This completes Unit 6 -> Unit 7 -> Unit 8, all 3 units of Initiative 3 (#86) code-complete.
+**Context**: CONSTRUCTION PHASE - all 3 units complete, awaiting approval before initiative-wide Build and Test
+
+---

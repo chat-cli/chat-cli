@@ -65,6 +65,24 @@ func isDeprecatedSamplingParamsError(err error) bool {
 	return strings.Contains(msg, "temperature") || strings.Contains(msg, "top_p") || strings.Contains(msg, "topp")
 }
 
+// isToolUseUnsupportedError reports whether err looks like Bedrock rejecting
+// a request because the model/request doesn't support tool use. UNVERIFIED
+// against real Bedrock error text (no live credentials available) - a
+// best-effort heuristic in the same spirit as isDeprecatedSamplingParamsError,
+// flagged for real-credential verification (see build-and-test-summary.md).
+func isToolUseUnsupportedError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	msg := strings.ToLower(err.Error())
+	if !strings.Contains(msg, "tool") {
+		return false
+	}
+
+	return strings.Contains(msg, "not supported") || strings.Contains(msg, "does not support") || strings.Contains(msg, "unsupported")
+}
+
 func converseWithFallbacks(ctx context.Context, svc *bedrockruntime.Client, input *bedrockruntime.ConverseInput) (*bedrockruntime.ConverseOutput, error) {
 	output, err := svc.Converse(ctx, input)
 	if err == nil {
@@ -104,6 +122,15 @@ func converseStreamWithFallbacks(ctx context.Context, svc *bedrockruntime.Client
 		if len(input.Messages) > 0 {
 			input.Messages[0].Content = stripContentCachePoints(input.Messages[0].Content)
 		}
+		output, err = svc.ConverseStream(ctx, input)
+		if err == nil {
+			return output, nil
+		}
+	}
+
+	if input.ToolConfig != nil && isToolUseUnsupportedError(err) {
+		log.Printf("tool use not supported for this model, retrying without tools: %v", err)
+		input.ToolConfig = nil
 		output, err = svc.ConverseStream(ctx, input)
 		if err == nil {
 			return output, nil

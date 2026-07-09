@@ -84,11 +84,6 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		toolsEnabled, err := flagCmd.PersistentFlags().GetBool("tools")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
 		thinkingEnabled, err := flagCmd.PersistentFlags().GetBool("thinking")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
@@ -231,17 +226,14 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			AdditionalModelRequestFields: buildReasoningConfig(modelIdString, thinkingEnabled, thinkingBudget, thinkingEffort),
 		}
 
-		// Tool registry is empty (and therefore inert - ToolConfiguration()
-		// returns nil, request shape unchanged) unless --tools is set, since
-		// Bedrock has no way to report whether a given model supports tool
-		// use and we don't want to break chat for models that don't.
+		// Tool use is always available - if a model/request rejects the
+		// ToolConfiguration field, converseStreamWithFallbacks retries once
+		// without it and this session continues with tools disabled.
 		registry := tools.NewRegistry()
-		if toolsEnabled {
-			registry.Register(tools.NewReadFileTool())
-			registry.Register(tools.NewWriteFileTool())
-			registry.Register(tools.NewRunShellTool())
-			registry.Register(tools.NewGitDiffTool())
-		}
+		registry.Register(tools.NewReadFileTool())
+		registry.Register(tools.NewWriteFileTool())
+		registry.Register(tools.NewRunShellTool())
+		registry.Register(tools.NewGitDiffTool())
 
 		// The permission gate is constructed unconditionally: it's inert
 		// unless a registered tool actually requires confirmation.
