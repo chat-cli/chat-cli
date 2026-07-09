@@ -84,11 +84,6 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			log.Fatalf("unable to get flag: %v", err)
 		}
 
-		toolsEnabled, err := flagCmd.PersistentFlags().GetBool("tools")
-		if err != nil {
-			log.Fatalf("unable to get flag: %v", err)
-		}
-
 		thinkingEnabled, err := flagCmd.PersistentFlags().GetBool("thinking")
 		if err != nil {
 			log.Fatalf("unable to get flag: %v", err)
@@ -231,14 +226,27 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 			AdditionalModelRequestFields: buildReasoningConfig(modelIdString, thinkingEnabled, thinkingBudget, thinkingEffort),
 		}
 
-		// Tool registry is empty (and therefore inert - ToolConfiguration()
-		// returns nil, request shape unchanged) unless --tools is set, since
-		// Bedrock has no way to report whether a given model supports tool
-		// use and we don't want to break chat for models that don't.
+		// Tool use is always available - if a model/request rejects the
+		// ToolConfiguration field, converseStreamWithFallbacks retries once
+		// without it and this session continues with tools disabled.
 		registry := tools.NewRegistry()
-		if toolsEnabled {
-			registry.Register(tools.NewReadFileTool())
+		registry.Register(tools.NewReadFileTool())
+		registry.Register(tools.NewWriteFileTool())
+		registry.Register(tools.NewRunShellTool())
+		registry.Register(tools.NewGitDiffTool())
+
+		// The permission gate is constructed unconditionally: it's inert
+		// unless a registered tool actually requires confirmation.
+		// write_file/run_shell do; read_file/git_diff don't.
+		var repoRoot string
+		if toolCwd, cwdErr := os.Getwd(); cwdErr == nil {
+			repoRoot = utils.FindGitBoundary(toolCwd)
 		}
+		approvalStore, approvalStoreErr := tools.NewApprovalStore(fm.ConfigPath, repoRoot)
+		if approvalStoreErr != nil {
+			log.Fatalf("unable to initialize tool approval store: %v", approvalStoreErr)
+		}
+		permissionGate := NewInteractivePermissionGate(approvalStore, os.Stdin, os.Stdout)
 
 		sendFn := func(ctx context.Context, in *bedrockruntime.ConverseStreamInput) (<-chan types.ConverseStreamOutput, error) {
 			out, streamErr := converseStreamWithFallbacks(ctx, svc, in)
@@ -371,11 +379,11 @@ To resume an existing conversation, use: chat-cli --chat-id <id>`,
 				return nil
 			}
 
-			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
+			out, err := runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, permissionGate, onText, onReasoning)
 			if err != nil && hasSystemCachePoint(converseStreamInput.System) {
 				log.Printf("prompt caching not supported for this request, retrying without it: %v", err)
 				converseStreamInput.System = stripSystemCachePoints(converseStreamInput.System)
-				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, onText, onReasoning)
+				out, err = runChatTurnWithTools(context.Background(), sendFn, converseStreamInput, registry, permissionGate, onText, onReasoning)
 			}
 
 			if err != nil {

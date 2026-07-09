@@ -530,3 +530,184 @@
 **Context**: CONSTRUCTION PHASE, agents-md-convention unit - Build and Test complete, awaiting final approval
 
 ---
+## Initiative 2 Epilogue: PR Merged, Follow-up Fix Noticed
+**Timestamp**: 2026-07-08T16:35:00Z
+**User Input**: "I've merged the PR and tested the code."
+**AI Response**: Noted PR #102 merged (commit 955130f) with an extra fix commit (768c9f1) the user pushed after testing - fixed a real bug in resolveContextFilenames (couldn't distinguish unset vs. explicitly-empty context-files config, breaking the documented disable mechanism) plus display-path/symlink improvements. Acknowledged the good catch.
+**Context**: Initiative 2 (#88) fully complete and merged
+
+---
+
+## Initiative 3 Kickoff: Built-in Agent Tools (#86)
+**Timestamp**: 2026-07-08T16:38:00Z
+**User Input**: "Let's work on 86 built in tools next"
+**AI Response**: Reset branch claude/ai-dlc-documentation-rl4e5s to latest origin/main (955130f) per merged-branch protocol - remote branch had been auto-deleted after PR #102 merged, recreated via plain push after pruning stale remote-tracking refs (verified old branch head was a confirmed ancestor of main before reset, so no work was lost). Workspace Detection: brownfield, reusing existing context, no Reverse Engineering re-run (same rationale as Initiative 2). Flagged this initiative's higher risk profile (run_shell = arbitrary command execution, write_file = destructive filesystem action) as likely warranting fuller Inception treatment than Initiatives 1-2. Requirements Analysis clarifying questions issued next.
+**Context**: INCEPTION PHASE, Initiative 3 - Workspace Detection complete, entering Requirements Analysis
+
+---
+## Requirements Analysis Round 2 + Completion (Initiative 3)
+**Timestamp**: 2026-07-08T16:50:00Z
+**User Input**: Round 1 freeform summary ("tools should just work, no flags... all commands/tools should require a confirm with option to be sticky for the session... scopes should use a pattern like curl/*/*..."), then round-2 answers: "1. Destructive only 2. Coarse 3. User should be able to select - this session, always, once 4. No we don't need this.. the models that don't support tools should automatically turn off tools and let the user know"
+**AI Response**: Recognized the round-1 answer expanded scope beyond issue #86's literal text (revises Initiative 1's --tools opt-in design) and asked 4 targeted follow-ups rather than guessing given the security stakes. Wrote builtin-tools-requirements.md: FR1 automatic tool-use enablement with retry-without-tools-on-rejection (mirroring #83's cache retry pattern) and a user-visible notice; FR2-4 the three new tools (write_file, run_shell, git_diff); FR5-6 a destructive-only confirmation gate with three-tier (once/session/always) coarse pattern-based sticky approval (base-command for run_shell, directory for write_file); FR7 per-repository persisted storage for "always" approvals. Recommending User Stories EXECUTE (not skip) given real UX design value, departing from Initiative 2's skip.
+**Context**: INCEPTION PHASE, Initiative 3 - Requirements Analysis complete, awaiting approval
+
+---
+## User Stories Plan - Approval Prompt (Initiative 3)
+**Timestamp**: 2026-07-08T16:55:00Z
+**AI Prompt**: "Approve the User Stories approach (assessment + plan) and proceed to generation?"
+**Context**: Assessment recommends EXECUTE (departing from Initiative 2's skip) given the confirmation/approval system's multiple distinct interaction scenarios. Plan reuses the existing single persona (extended) and Initiative 1's feature-based/Given-When-Then story format, methodology decisions stated as assumptions rather than a second Q&A round.
+
+---
+## User Stories Plan - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:00:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**Context**: Story generation plan approved; Part 2 (Generation) begins
+
+---
+
+## User Stories Complete (Initiative 3)
+**Timestamp**: 2026-07-08T17:05:00Z
+**AI Response**: Extended personas.md (same single persona, additive goals/pain-points for this initiative) and stories.md (3 new epics, 8 stories, full FR1-FR7 traceability) covering automatic tool-use enablement with graceful degradation, the 3 new tools, and the confirmation/sticky-approval system including both unhappy paths (denial, auto-disable-on-rejection) as their own stories per the assessment's stated reasoning.
+**Context**: INCEPTION PHASE, Initiative 3 - User Stories complete, awaiting approval before Workflow Planning
+
+---
+## User Stories - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:07:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: User stories approved for #86; Workflow Planning begins
+
+---
+
+## Workflow Planning Complete (Initiative 3)
+**Timestamp**: 2026-07-08T17:12:00Z
+**AI Response**: Created execution plan for built-in agent tools. Risk assessed Medium-High given arbitrary shell execution and destructive file writes - the highest risk profile of any initiative so far. Recommends executing Application Design (the permission engine is genuinely new architecture, unlike Initiatives 1-2's pure-function additions) and Units Generation (multiple packages, new persisted state, complex pattern-matching logic - natural seams between automatic-enablement wiring, the permission engine, and the 3 new tools). Per-unit Functional Design + NFR to execute for every unit given Security is now a first-class concern. This is the most complete Inception/Construction treatment of any initiative to date (6 of 7 possible stages), proportional to the risk.
+**Context**: Workflow plan created with 6 stages to execute (Application Design, Units Generation, per-unit Functional Design+NFR, Code Generation, Build and Test) out of 7 possible
+
+---
+## Workflow Planning - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:14:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: Execution plan approved for #86; Application Design begins
+
+---
+
+## Application Design Complete (Initiative 3)
+**Timestamp**: 2026-07-08T17:25:00Z
+**AI Response**: Designed directly (verified against current tools/tool.go, tools/registry.go source) rather than another Q&A round, given how much was already resolved across two Requirements Analysis rounds. Key decisions: extend the Tool interface with RequiresConfirmation/ConfirmationSummary rather than a separate registry-side lookup table; new PermissionGate interface + ApprovalStore (tools package, pure logic) + InteractivePermissionGate (cmd package, owns terminal I/O) mirroring the existing tools/cmd split from Unit 2; Registry.Dispatch signature extended to accept a PermissionGate. Found and resolved a real import-cycle risk: ApprovalStore needs #88's git-boundary-detection logic, but tools cannot import cmd - resolved by extracting utils.FindGitBoundary and refactoring cmd/projectcontext.go to use it, the one change to already-shipped Initiative 2 code in this initiative.
+**Context**: INCEPTION PHASE, Initiative 3 - Application Design complete, awaiting approval before Units Generation
+
+---
+## Application Design - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:27:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: Application design approved for #86; Units Generation begins
+
+---
+
+## Units Generation Complete (Initiative 3)
+**Timestamp**: 2026-07-08T17:35:00Z
+**AI Response**: Decomposed into 3 units directly from the approved Application Design (no additional Q&A round needed - the component design already made the seams clear): Unit 6 (Confirmation and Sticky Approval Engine - foundational, extended Tool interface + PermissionGate + ApprovalStore + InteractivePermissionGate + utils.FindGitBoundary extraction), Unit 7 (New Built-in Tools - write_file/run_shell/git_diff, with a HARD compile-time dependency on Unit 6 unlike every other soft dependency in this session's work so far), Unit 8 (Automatic Tool-Use Enablement - --tools removal, retry-without-tools wrapper). Build order 6->7->8. All 8 stories mapped, 0 orphaned.
+**Context**: INCEPTION PHASE COMPLETE for Initiative 3, awaiting approval to enter CONSTRUCTION PHASE
+
+---
+## Units Generation - Approval (Initiative 3)
+**Timestamp**: 2026-07-08T17:37:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: Units approved for #86; CONSTRUCTION phase begins, Unit 6 first per build order
+
+---
+
+## Unit 6 Functional Design Complete
+**Timestamp**: 2026-07-08T17:48:00Z
+**AI Response**: Designed the confirmation gate directly (verified against real tools/registry.go, utils/utils.go, config/config.go source). Deliberately did not reuse utils.StringPrompt (bubbletea free-text widget, wrong shape for a discrete once/session/always/deny choice, harder to test) - designed a minimal injectable-reader/writer prompt instead. Made ConfirmationSummary parse failure fail-closed as a denial before the gate is ever consulted. Designed the persisted approval store (YAML, <ConfigPath>/tool-approvals.yaml, 0600, keyed by absolute repo root) and pattern-key derivation rules (base command for run_shell, repo-relative directory for write_file). 15 business rules documented, including the not-in-a-repo edge case (BR10: "always" not offered outside a git repo).
+**Context**: CONSTRUCTION PHASE, Unit 6 - Functional Design complete, awaiting approval before NFR Requirements + Design
+
+---
+## Unit 6 NFR Requirements + Design Complete
+**Timestamp**: 2026-07-08T17:55:00Z
+**AI Response**: Combined NFR presentation (Security dominant, Reliability + Usability secondary, Scalability/Performance/Availability N/A per established project-wide rationale). Key security design: Registry.Dispatch as the single choke point (structurally enforced by the interface, not just convention), fail-closed on every ambiguous state (unparseable summary, unrecognized prompt input, corrupted store all resolve to deny/re-prompt, never allow), per-repository scoping treated as a real security boundary with a dedicated Build and Test scenario planned to verify it, 0600 file permissions on the persisted store.
+**Context**: CONSTRUCTION PHASE, Unit 6 - NFR complete, awaiting approval before Code Generation
+
+---
+## Unit 6 NFR - Approval
+**Timestamp**: 2026-07-08T17:58:00Z
+**User Response**: "Approve"
+**Status**: Approved
+**Context**: NFR approved for Unit 6; Code Generation Part 1 (Planning) begins
+
+---
+
+## Unit 6 Code Generation Plan Created
+**Timestamp**: 2026-07-08T18:05:00Z
+**AI Response**: Created a 14-step TDD-ordered plan. Key finding during planning (not assumed, verified against real cmd/toolloop.go source): Registry.Dispatch has exactly one call site (runChatTurnWithTools in cmd/toolloop.go), which has 4 of its own call sites (2 in chat.go, 2 in toolturn_test.go) - changing Dispatch's signature requires threading a gate through all of them to keep the tree compiling, since --tools/registry wiring isn't removed until Unit 8. Decided to construct a real InteractivePermissionGate now (Step 13) rather than a stub, so every intermediate commit stays fully correct, not just compiling - it's inert in practice until Unit 7 adds destructive tools.
+**Context**: CONSTRUCTION PHASE, Unit 6 - Code Generation Part 1 (Planning) complete, awaiting approval
+
+---
+## Unit 6 Code Generation Plan - Approval
+**Timestamp**: 2026-07-08T18:07:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**Context**: Plan approved for Unit 6; Code Generation Part 2 (Generation) begins
+
+---
+
+## Unit 6 Code Generation Complete
+**Timestamp**: 2026-07-08T18:35:00Z
+**AI Response**: Executed all 14 steps TDD-ordered (red confirmed via go vet before each implementation). Go's whole-package compilation forced Steps 11-13 together (writing the InteractivePermissionGate test couldn't compile in isolation once Dispatch's signature changed in Step 10) - completed them together while preserving red/green discipline per-function. Caught and fixed one real deviation from the functional design during implementation: the persisted approval-store format initially used the internal NUL-joined key instead of the documented human-readable "toolName:patternKey" format - fixed before any test was written against the wrong format. Full verification: make test/lint/coverage all pass with no regressions, 7/7 integration tests pass. Confirmed no user-visible behavior change yet, by design - the gate is fully wired end-to-end but inert since read_file (the only registered tool) is non-destructive.
+**Context**: CONSTRUCTION PHASE, Unit 6 - Code Generation complete, awaiting approval before Unit 7 begins
+
+---
+## Unit 6 - Approval
+**Timestamp**: 2026-07-08T18:37:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**Context**: Unit 6 (Confirmation and Sticky Approval Engine) approved and complete; Unit 7 (New Built-in Tools) begins next per build order
+
+---
+## Unit 7 Functional Design + NFR Complete
+**Timestamp**: 2026-07-08T18:45:00Z
+**AI Response**: Combined presentation (lower novelty than Unit 6 - applies its established gate pattern to 3 mechanical tools rather than introducing new architecture). Found and resolved a real gap during design: utils.ValidateLocalPath requires the target file to already exist, which is wrong for write_file's create-new-file requirement (FR2.2). Resolved additively - a new ValidateLocalPathForWrite (confinement-only) shares a private confineToWorkingDir helper with the unchanged existing ValidateLocalPath, zero regression risk to Units 2/4. Designed run_shell's exit-code handling deliberately: non-zero exit is normal tool output (visible to the model), not a Go error, distinct from timeout/start-failure which are real errors. git_diff passes its optional arg as a single exec.Command argument (not shell-concatenated) for both security and reliability.
+**Context**: CONSTRUCTION PHASE, Unit 7 - Functional Design + NFR complete, awaiting approval before Code Generation
+
+---
+## Unit 7 - Functional Design + NFR Approval, Code Generation Plan Created
+**Timestamp**: 2026-07-08T18:50:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**AI Response**: Created a 10-step TDD-ordered plan. Key testability decision: RunShellTool's timeout is an unexported struct field (default 30s) rather than a hardcoded constant, so tests can inject a short timeout instead of waiting 30 real seconds.
+**Context**: CONSTRUCTION PHASE, Unit 7 - Code Generation Part 1 (Planning) complete, awaiting approval to begin generation
+
+---
+## Unit 7 Code Generation Complete
+**Timestamp**: 2026-07-08T19:10:00Z
+**AI Response**: Executed all 10 steps TDD-ordered. Found and fixed a real reliability bug not caught by functional design: RunShellTool's timeout used exec.CommandContext, which only kills the direct child (sh) - a grandchild process (sleep, spawned via sh -c) kept running and holding the output pipe open, so Execute didn't actually return until the full command duration elapsed regardless of the configured timeout. Caught via a "test passes but takes 5s instead of ~50ms" signal. Fixed with process-group kill (Setpgid + syscall.Kill(-pid, SIGKILL)), racing the blocking CombinedOutput() call against ctx.Done(). Verified the fix drops the affected test from 5.02s to 0.066s, and strengthened the test to assert prompt return time going forward, not just eventual correctness. Manually verified the full wiring end-to-end using real components (no AWS needed) since a live model can't be driven to request tool calls in this environment: approve-once/deny/session-approval-reuse/gate-never-consulted-for-read-only-tools all confirmed working through the actual Registry.Dispatch + InteractivePermissionGate + ApprovalStore code path chat.go uses.
+**Context**: CONSTRUCTION PHASE, Unit 7 - Code Generation complete, awaiting approval before Unit 8
+
+---
+## Unit 7 - Approval, Unit 8 Functional Design + NFR Complete
+**Timestamp**: 2026-07-08T19:15:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**AI Response**: Designed Unit 8 directly, verified against the actual cmd/inferenceconfig.go source. Found that converseStreamWithFallbacks already implements exactly this shape of cascading-retry logic twice (cache points, deprecated sampling params) - added tool-use rejection as a third stage in the same function, reusing its existing conventions. Found that FR1.2's "disabled for the rest of the session" requirement falls out for free from the existing mutable converseStreamInput struct reused across turns - no new state needed. Flagged isToolUseUnsupportedError's string-matching heuristic as unverified against real Bedrock error text, same category of risk as Unit 5's reasoning_config shape from Initiative 1.
+**Context**: CONSTRUCTION PHASE, Unit 8 (final unit) - Functional Design + NFR complete, awaiting approval before Code Generation
+
+---
+## Unit 8 Code Generation Complete - ALL 3 UNITS OF INITIATIVE 3 CODE-COMPLETE
+**Timestamp**: 2026-07-08T19:30:00Z
+**AI Response**: Executed all 5 steps TDD-ordered. isToolUseUnsupportedError unit-tested directly (mirroring the existing isDeprecatedSamplingParamsError precedent); the new retry branch inside converseStreamWithFallbacks itself was not separately unit-tested, matching the established precedent that this function's other two fallback stages (cache points, sampling params) also have no direct tests since they call the real unmockable bedrockruntime.Client. Removed --tools entirely (verified via chat-cli --help). Manually verified via a real-components scratch driver that the registry always contains all 4 tools with no flag needed. Full verification green, no regressions. This completes Unit 6 -> Unit 7 -> Unit 8, all 3 units of Initiative 3 (#86) code-complete.
+**Context**: CONSTRUCTION PHASE - all 3 units complete, awaiting approval before initiative-wide Build and Test
+
+---
+## Unit 8 - Approval; Initiative 3 Build and Test Complete
+**Timestamp**: 2026-07-08T19:40:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**AI Response**: Ran a fresh full verification pass across all 3 units together (make test/lint/coverage all green, no regressions across the whole initiative). Executed 4 cross-unit composition scenarios: combining Initiative 1's --system/--thinking with always-on tools; combining Initiative 2's --no-context-file with Initiative 3's always-on tools; the confirmation gate's full end-to-end behavior via real components (once/deny/session-reuse/read-only-tools-never-touch-the-gate); confirmed --tools is fully gone. Consolidated the real-credential verification list with this initiative's new unverified assumption (isToolUseUnsupportedError's heuristic, same risk category as Unit 5's reasoning_config from Initiative 1).
+**Context**: Build and Test stage, CONSTRUCTION phase - final stage of Initiative 3
+
+---

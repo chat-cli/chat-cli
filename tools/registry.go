@@ -61,10 +61,26 @@ func (r *Registry) ToolConfiguration() *types.ToolConfiguration {
 // returns a ToolResultBlock (success or error) - it never panics and never
 // returns a Go error, so callers can send the result straight back to the
 // model without special-casing failure.
-func (r *Registry) Dispatch(ctx context.Context, call ToolCall) types.ToolResultBlock {
+//
+// If the tool requires confirmation, gate.Check is consulted before Execute
+// is called (BR3-BR6, BR11). gate may be nil only when no registered tool
+// requires confirmation - Dispatch never dereferences a nil gate for a
+// non-destructive tool.
+func (r *Registry) Dispatch(ctx context.Context, call ToolCall, gate PermissionGate) types.ToolResultBlock {
 	tool, ok := r.tools[call.Name]
 	if !ok {
 		return errorResult(call.ToolUseID, fmt.Sprintf("unknown tool: %s", call.Name))
+	}
+
+	if tool.RequiresConfirmation() {
+		summary, patternKey, err := tool.ConfirmationSummary(call.Input)
+		if err != nil {
+			return errorResult(call.ToolUseID, fmt.Sprintf("invalid tool input: %s", err.Error()))
+		}
+
+		if gate.Check(tool.Name(), patternKey, summary) == DecisionDeny {
+			return errorResult(call.ToolUseID, "user declined this action")
+		}
 	}
 
 	output, err := tool.Execute(ctx, call.Input)

@@ -62,3 +62,11 @@ func (t *ReadFileTool) Execute(_ context.Context, input json.RawMessage) (string
 
 	return string(data), nil
 }
+
+func (t *ReadFileTool) RequiresConfirmation() bool {
+	return false
+}
+
+func (t *ReadFileTool) ConfirmationSummary(_ json.RawMessage) (string, string, error) {
+	return "", "", nil
+}

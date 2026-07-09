@@ -25,3 +25,31 @@ This document consolidates `components.md`, `component-methods.md`, `services.md
 - No component introduces a circular dependency (see `component-dependency.md`'s matrix — all new components depend only on existing `utils`/stdlib, never the reverse).
 - No component duplicates the path-safety logic already in `utils.ReadImage` — it's extracted and shared instead (directly addresses the pattern flagged as a risk in `code-quality-assessment.md`'s "Duplicated model-validation logic" finding, applied here proactively to file-path validation).
 - No new component touches `db`/`db/sqlite`/`factory` — confirms the "no data model changes" call in `execution-plan.md`.
+
+---
+
+# Initiative 3 Application Design (Consolidated, #86)
+
+**Scope**: Extends the tool-use subsystem from Initiative 1 (`tools.Tool`/`Registry`) with 3 new tools and a genuinely new permission-engine subsystem (`PermissionGate`, `ApprovalStore`, `InteractivePermissionGate`), plus wiring changes to `cmd/chat.go` (automatic enablement, `--tools` removal, retry-without-tools). Unlike Initiative 2, this warranted full Application Design treatment given the real new architecture involved — see `builtin-tools-execution-plan.md` for the risk-based rationale.
+
+This section summarizes; see `components.md`, `component-methods.md`, `services.md`, `component-dependency.md` (each has an "Initiative 3" section appended) for full detail.
+
+## New Components (summary)
+1. **Extended `tools.Tool` interface** — adds `RequiresConfirmation()`/`ConfirmationSummary()`.
+2. **`tools.WriteFileTool`, `tools.RunShellTool`, `tools.GitDiffTool`** — the 3 new built-in tools.
+3. **`tools.PermissionGate`** (interface) + **`tools.ApprovalStore`** — the abstract permission-decision contract and its session/persisted-tier bookkeeping.
+4. **`cmd.InteractivePermissionGate`** — the concrete terminal-prompting implementation.
+5. **`utils.FindGitBoundary`** (extracted) — shared repo-root detection, reused by both `tools.ApprovalStore` (new) and `cmd/projectcontext.go` (#88, refactored from a private copy).
+
+## Extended (Not Redesigned) Components
+- `tools.Registry.Dispatch` — signature gains a `PermissionGate` parameter, consulted before any destructive tool's `Execute`.
+- `cmd/chat.go` — `--tools` flag removed; registry/gate construction and the retry-without-tools fallback added to the existing orchestration.
+
+## What's Explicitly Deferred
+- Exact confirmation-prompt UI text, the persisted-store's file format/location, and `run_shell`'s exact timeout/output-cap values → per-unit **Functional Design** in Construction.
+- Whether the interactive prompt itself is unit-testable via an injected reader, or needs a documented manual-verification gap → decided in the Permission Engine unit's Functional Design.
+
+## Consistency Check
+- `tools` still does not import `cmd` — the one component that would have needed it (`ApprovalStore`'s repo-boundary detection) is resolved via extracting the logic to `utils` instead, preserving the existing one-directional dependency shape (`cmd` → `tools`, never the reverse).
+- The extraction of `utils.FindGitBoundary` is the only change to already-shipped Initiative 2 code in this whole initiative — flagged explicitly, not incidental.
+- No new component touches `db`/`db/sqlite`/`factory`/`repository`/`config` — this initiative is fully contained within `tools`/`cmd`/one `utils` extraction.

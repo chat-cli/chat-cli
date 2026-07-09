@@ -55,3 +55,44 @@ promptCmd.Run:
   -> send request (cache-point wrapped) -> print response
   (no tool-use orchestration in prompt)
 ```
+
+---
+
+# Initiative 3 Service Changes (#86)
+
+## Service: `chatCmd.Run` (`cmd/chat.go`, extended again)
+
+- **Orchestration changes**:
+  - `--tools` flag removed; the registry is always built (now with 4 tools: `read_file`, `write_file`, `run_shell`, `git_diff`) and `ToolConfiguration()` is always attached (FR1.1, FR1.4).
+  - An `InteractivePermissionGate` (backed by an `ApprovalStore` scoped to the current repo root via `utils.FindGitBoundary`) is constructed once per session and passed into every `Registry.Dispatch` call (FR5-FR7).
+  - The Converse/ConverseStream call is wrapped with a new retry-without-`ToolConfiguration`-on-rejection policy, structurally identical to `cmd/promptcache.go`'s existing cache-point retry wrapper (FR1.2) — on success after retry, prints the FR1.3 notice.
+- **Orchestration pattern unchanged**: still the same sequential, single-threaded tty-loop; the permission check happens synchronously inside `Dispatch`, blocking the loop exactly the way a tool's `Execute` already blocks it today — no new concurrency.
+
+## Orchestration Diagram (Initiative 3 addition)
+
+```mermaid
+flowchart TD
+    ChatRun["chatCmd.Run"] --> BuildRegistry2["Build tools.Registry<br/>(4 tools, always)"]
+    ChatRun --> BuildGate["Build InteractivePermissionGate<br/>+ ApprovalStore (repo-scoped)"]
+    ChatRun --> SendReq3["Send request<br/>(tools attached, cache-point wrapped)"]
+    SendReq3 -->|"rejected: tool-use unsupported"| RetryNoTools["Retry once without<br/>ToolConfiguration"]
+    RetryNoTools --> NoticeTools["Print: tools disabled this session"]
+    SendReq3 -->|"ToolUseBlock in response"| Dispatch2["Registry.Dispatch(call, gate)"]
+    Dispatch2 -->|"tool.RequiresConfirmation()"| GateCheck["gate.Check(...)"]
+    GateCheck -->|"deny"| DeclineResult["Declined ToolResultBlock"]
+    GateCheck -->|"allow (once/session/always)"| Execute3["tool.Execute(...)"]
+    Dispatch2 -->|"not destructive"| Execute3
+    Execute3 --> AppendResult2["Append ToolResultBlock, continue stream"]
+```
+
+### Text Alternative
+```
+chatCmd.Run (Initiative 3):
+  build tools.Registry (4 tools, always) -> build InteractivePermissionGate (repo-scoped ApprovalStore)
+  -> send request (tools attached)
+     -> if rejected for unsupported tool use: retry once without ToolConfiguration, notify user
+     -> if ToolUseBlock in response: Dispatch(call, gate)
+        -> if tool.RequiresConfirmation(): gate.Check(...) -> deny: declined result | allow: Execute
+        -> if not destructive: Execute directly
+        -> append ToolResultBlock, continue stream
+```

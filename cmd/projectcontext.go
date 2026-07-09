@@ -7,15 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/chat-cli/chat-cli/utils"
 )
 
 // maxContextFileSize is the size (in bytes) at which project-context file
 // content is truncated before being used as the system prompt (BR9).
 const maxContextFileSize = 32 * 1024
-
-// maxWalkUpLevels bounds the upward .git-boundary search (NFR design note)
-// as a defensive cap against a pathologically deep cwd with no repo above it.
-const maxWalkUpLevels = 64
 
 // defaultContextFilenames is the default precedence list (BR5) used when the
 // context-files config key is unset.
@@ -61,7 +59,7 @@ func findProjectContextFile(cwd string, candidates []string) (path string, match
 		return path, matched, true
 	}
 
-	boundary := findGitBoundary(cwd)
+	boundary := utils.FindGitBoundary(cwd)
 	if boundary == "" || boundary == cwd {
 		return "", "", false
 	}
@@ -109,26 +107,6 @@ func formatProjectContextDisplayPath(cwd, sourcePath string) string {
 		return rel
 	}
 	return filepath.Base(sourcePath)
-}
-
-// findGitBoundary walks upward from dir looking for the first ancestor
-// (inclusive) containing a .git entry, capped at maxWalkUpLevels. Returns ""
-// if none is found.
-func findGitBoundary(dir string) string {
-	current := dir
-	for i := 0; i < maxWalkUpLevels; i++ {
-		if _, err := os.Stat(filepath.Join(current, ".git")); err == nil {
-			return current
-		}
-
-		parent := filepath.Dir(current)
-		if parent == current {
-			// reached filesystem root
-			return ""
-		}
-		current = parent
-	}
-	return ""
 }
 
 // loadProjectContext implements BR7-BR10: reads path, trims surrounding

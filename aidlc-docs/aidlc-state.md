@@ -220,4 +220,101 @@ No PR opened (not requested by user). Recommended before merge: run the
   - Build success, all unit/integration tests pass, no coverage regression, manual smoke test against the compiled binary confirmed discovery/--system-suppression/--no-context-file-suppression all work end-to-end. No new real-credential-verification surface (feature never touches Bedrock directly - reuses Initiative 1's existing system-prompt/cache-point pipeline as-is).
 
 ## Unit "agents-md-convention" Status: COMPLETE AND APPROVED (commit c1bb745)
-## INITIATIVE 2 STATUS: COMPLETE (pending final Build and Test approval)
+## INITIATIVE 2 STATUS: COMPLETE - PR #102 merged (commit 955130f on main), #88 closed
+
+### Initiative 2 Epilogue
+User tested the merged code and pushed one follow-up fix commit (768c9f1, with Cursor)
+before/at merge time: fixed a real bug where `resolveContextFilenames` couldn't
+distinguish "context-files config key unset" from "explicitly set to empty string" -
+both looked like the same empty input, so the documented disable-via-empty-config
+mechanism (FR5.2/BR12) silently didn't work. Fixed via a new `FileManager.IsConfigSet`
+plus a `configSet bool` parameter. Also improved notice/warning messages to show
+cwd-relative paths instead of full absolute paths, and hardened symlink handling.
+Branch `claude/ai-dlc-documentation-rl4e5s` reset to latest `origin/main` (955130f)
+to start Initiative 3 fresh; remote branch had been auto-deleted after merge, recreated
+via a plain push after `git remote prune origin` (confirmed safe: old branch head was
+a verified ancestor of the merge commit before reset).
+
+---
+
+# INITIATIVE 3: Built-in Agent Tools (#86)
+
+## Project Information
+- **Start Date**: 2026-07-08 (same day, continued session)
+- **Trigger**: User picked #86 next from the Group 2 (agentic direction) backlog after Initiative 2 (#88) merged.
+- **Scope per issue #86**: "Once tool use is supported [done, #82], add a small first-party toolset — read file [already done, #82], write file, run a shell command, git diff — so chat-cli chat can act as a lightweight, Bedrock-native coding assistant directly in the terminal... Needs careful scoping around confirmation prompts before destructive actions (file writes, shell exec)."
+- **Risk profile note**: Higher than Initiatives 1-2 - `run_shell` is arbitrary command execution, `write_file` is a destructive filesystem action. This will need real Security NFR treatment, not a skip, and likely a fuller Inception treatment (User Stories, possibly Application Design) given the confirmation-flow UX design surface.
+
+## Stage Progress
+- [x] Workspace Detection - Brownfield confirmed, reusing existing `aidlc-docs/aidlc-state.md` context (no re-run of Reverse Engineering - same rationale as Initiative 2, narrow addition to an already-understood `tools/` subsystem from Initiative 1 Unit 2)
+- [x] Requirements Analysis - Completed 2026-07-08, awaiting user approval
+  - Two rounds of clarifying questions (initial 7 + a follow-up round of 4 after the user's freeform answer revealed a bigger scope than originally asked - automatic tool-use enablement replacing the `--tools` opt-in flag from Initiative 1, plus a new pattern-based sticky-approval permission engine)
+  - Artifacts: aidlc-docs/inception/requirements/builtin-tools-{questions,clarification-questions,requirements}.md
+  - FR1-FR7 + NFR1-NFR5 documented. Notably revises Initiative 1's NFR1 (backward compatibility) by design - tool use becomes always-on with automatic graceful degradation, per explicit user direction
+  - **Recommending User Stories EXECUTE (not skip)** this time - real UX/acceptance-criteria value given the new confirmation-gate/approval-tier interaction flows, unlike Initiative 2's simple flag/config plumbing
+- [x] User Stories - Completed 2026-07-08, awaiting user approval
+  - Assessment: aidlc-docs/inception/plans/builtin-tools-user-stories-assessment.md (EXECUTE)
+  - Plan: aidlc-docs/inception/plans/builtin-tools-story-generation-plan.md
+  - Artifacts: extended aidlc-docs/inception/user-stories/{personas.md,stories.md} in place (same persona, 3 new epics: 6 Automatic Enablement, 7 New Tools, 8 Confirmation/Sticky Approval; 8 stories total, full FR1-FR7 traceability)
+- [x] Workflow Planning - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/inception/plans/builtin-tools-execution-plan.md
+  - Risk: Medium-High (arbitrary shell exec, destructive writes). Application Design EXECUTE (new permission-engine architecture), Units Generation EXECUTE (multiple packages, new persisted state, complex pattern-matching - unlike Initiative 2's single natural unit). Per-unit Functional Design + NFR EXECUTE (Security now first-class). Infrastructure Design SKIP (unchanged global decision). Code Generation + Build and Test ALWAYS EXECUTE.
+- [x] Application Design - Completed 2026-07-08, awaiting user approval
+  - Artifacts: Initiative 3 sections appended to aidlc-docs/inception/application-design/{components,component-methods,services,component-dependency,application-design}.md
+  - Key design: extended `Tool` interface (RequiresConfirmation/ConfirmationSummary), 3 new tools, new `PermissionGate`/`ApprovalStore` (tools package) + `InteractivePermissionGate` (cmd package), `utils.FindGitBoundary` extracted from #88's private `findGitBoundary` to avoid a tools->cmd import cycle (the one change to already-shipped Initiative 2 code in this initiative, flagged explicitly)
+- [x] Units Generation - Completed 2026-07-08, awaiting user approval - INCEPTION PHASE (Initiative 3) COMPLETE pending this approval
+  - Artifacts: Initiative 3 sections appended to unit-of-work.md, unit-of-work-dependency.md, unit-of-work-story-map.md
+  - 3 units: Unit 6 (Confirmation and Sticky Approval Engine, foundational), Unit 7 (New Built-in Tools, HARD dependency on Unit 6 - literally won't compile without it), Unit 8 (Automatic Tool-Use Enablement, soft dependency on 6+7). Build order: 6 -> 7 -> 8. All 8 stories assigned, 0 orphaned.
+
+## INCEPTION PHASE (Initiative 3) COMPLETE - entering CONSTRUCTION
+
+### Construction Phase - Unit 6 (Confirmation and Sticky Approval Engine, #86)
+- [x] Functional Design - Completed 2026-07-08, awaiting user approval
+  - Artifacts: aidlc-docs/construction/unit-6-confirmation-engine/functional-design/{business-logic-model,business-rules,domain-entities}.md
+  - Key decisions: NOT reusing utils.StringPrompt (wrong shape - bubbletea widget for free text vs. a discrete choice); ConfirmationSummary parse failure = denial-equivalent (never reaches gate); pattern keys are base-command (run_shell) / repo-relative directory (write_file); persisted store at <ConfigPath>/tool-approvals.yaml, 0600 perms, keyed by absolute repo root; InteractivePermissionGate takes injectable io.Reader/io.Writer for testability; "always" not offered outside a git repo (BR10)
+- [x] NFR Requirements + Design - Completed 2026-07-08, awaiting user approval (combined presentation, same pattern as Initiative 1 Units 2/4)
+  - Artifacts: aidlc-docs/construction/unit-6-confirmation-engine/nfr-requirements/nfr-requirements-and-design.md
+  - Security (dominant): Dispatch is the single choke point, fail-closed on every ambiguous state, per-repo scoping is a security boundary not just UX, 0600 file perms. Reliability: corrupted store degrades to empty (re-prompt), never fatal. Usability: informative prompts, stated truncation policy for large write_file content.
+- [x] Infrastructure Design - SKIP (no infrastructure in this project)
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-6-confirmation-engine-code-generation-plan.md (all 14 steps complete)
+  - Summary: aidlc-docs/construction/unit-6-confirmation-engine/code/summary.md
+  - cmd 31.8%->33.3%, tools 90.0%->84.1%, utils 51.8%->53.7%, total 67.8%->69.7%, no regressions. 7/7 integration tests pass. No user-visible behavior change yet (by design) - gate fully wired but inert until Unit 7.
+  - One caught-and-fixed deviation during implementation: persisted-entry format initially used the wrong (internal NUL-joined) key before being corrected to the documented human-readable "toolName:patternKey" format.
+
+## Unit 6 Status: COMPLETE AND APPROVED (commit 2e04ef0)
+
+### Construction Phase - Unit 7 (New Built-in Tools, #86)
+- [x] Functional Design + NFR - Completed 2026-07-08, awaiting user approval (combined presentation - lower novelty than Unit 6, applies its established pattern to 3 mechanical tools rather than introducing new architecture)
+  - Artifacts: aidlc-docs/construction/unit-7-new-tools/functional-design/{business-logic-model,business-rules,domain-entities}.md, aidlc-docs/construction/unit-7-new-tools/nfr-requirements/nfr-requirements-and-design.md
+  - Key finding: utils.ValidateLocalPath requires the target file to already exist (existence check baked in) - wrong for write_file's create-new-file case. Resolved additively: new utils.ValidateLocalPathForWrite (confinement-only) sharing a private confineToWorkingDir helper with the unchanged, existing ValidateLocalPath - zero regression risk to Units 2/4's already-shipped call sites.
+  - run_shell: 30s timeout, 32KB truncated combined output, non-zero exit code reported in output text (not a Go error) so the model sees command failures as normal operation, not tool bugs.
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-7-new-tools-code-generation-plan.md (all 10 steps complete)
+  - Summary: aidlc-docs/construction/unit-7-new-tools/code/summary.md
+  - Real bug found+fixed during implementation: RunShellTool's timeout didn't bound wall-clock time for commands with grandchild processes (sh -c "sleep 5" - killing only sh left sleep running, holding the output pipe open). Fixed via process-group kill (Setpgid + syscall.Kill(-pid)). Caught by a "passing but suspiciously slow" test (5s instead of ~50ms).
+  - Manual verification via real components (Registry+tools+InteractivePermissionGate+ApprovalStore, scripted stdin, no AWS needed): approve-once creates file, deny blocks it cleanly, session approval correctly skips re-prompting for a matching run_shell call, git_diff never touches the gate.
+  - cmd 33.3%->33.1% (negligible), tools 84.1%->81.9%, utils 53.7%->55.0%, total 69.7%->71.2%, no regressions. 7/7 integration tests pass.
+
+## Unit 7 Status: COMPLETE AND APPROVED (commit cd080a4)
+
+### Construction Phase - Unit 8 (Automatic Tool-Use Enablement, #86) - FINAL UNIT
+- [x] Functional Design + NFR - Completed 2026-07-08, awaiting user approval (combined presentation, lowest novelty of the 3 units - extends the already-tested cascading-retry pattern in cmd/inferenceconfig.go rather than introducing anything new)
+  - Artifacts: aidlc-docs/construction/unit-8-automatic-enablement/functional-design/business-logic-model.md, aidlc-docs/construction/unit-8-automatic-enablement/nfr-requirements/nfr-requirements-and-design.md
+  - Key finding: "disabled for the rest of the session" (FR1.2) falls out for free from the existing mutable converseStreamInput struct - no new session-state tracking needed. The FR1.3 user notice reuses the existing log.Printf convention already used by the cache/sampling-params fallbacks.
+  - **CAVEAT (same category as Unit 5's reasoning_config)**: isToolUseUnsupportedError's exact string-matching heuristic is UNVERIFIED against real Bedrock error text - added to the real-credential verification list.
+- [x] Code Generation - Completed 2026-07-08, awaiting user review/approval
+  - Plan: aidlc-docs/construction/plans/unit-8-automatic-enablement-code-generation-plan.md (all 5 steps complete)
+  - Summary: aidlc-docs/construction/unit-8-automatic-enablement/code/summary.md
+  - --tools flag fully removed (verified via chat-cli --help). Registry always contains all 4 tools unconditionally, verified via a real-components scratch driver.
+  - cmd 33.1%->33.5%, total 71.2%->70.9% (negligible dip, new fallback branch untested per established unmockable-client precedent), no other regressions. 7/7 integration tests pass.
+
+## Unit 8 Status: COMPLETE AND APPROVED (commit 9ba9005)
+
+- [x] Build and Test - Completed 2026-07-08, awaiting final approval
+  - Artifacts: aidlc-docs/construction/build-and-test/builtin-tools-summary.md
+  - Fresh full test suite: all green, no regressions (total 67.8%->70.9% across the initiative)
+  - 4 cross-unit composition scenarios executed: --system+--thinking+always-on-tools combined, #88's --no-context-file+#86's always-on-tools combined, confirmation gate full end-to-end via real components (once/deny/session-reuse/gate-never-consulted-for-read-only), --tools fully removed (verified via --help)
+  - Consolidated real-credential verification list: isToolUseUnsupportedError heuristic (same risk category as Unit 5's reasoning_config), an actual tool-call round-trip for the 3 new tools, real-terminal confirmation-prompt UX inspection
+
+## Unit 8 / INITIATIVE 3 BUILD AND TEST: COMPLETE AND APPROVED (pending final sign-off)

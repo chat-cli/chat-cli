@@ -140,3 +140,55 @@ func TestIsDeprecatedSamplingParamsError(t *testing.T) {
 		})
 	}
 }
+
+func TestIsToolUseUnsupportedError(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "nil error",
+			err:  nil,
+			want: false,
+		},
+		{
+			name: "unrelated error",
+			err:  errors.New("model not found"),
+			want: false,
+		},
+		{
+			name: "tool use not supported",
+			err:  errors.New("The model returned the following errors: tool use is not supported for this model."),
+			want: true,
+		},
+		{
+			name: "tool use does not support",
+			err:  errors.New("This model does not support tool use."),
+			want: true,
+		},
+		{
+			name: "unsupported tool",
+			err:  errors.New("unsupported tool configuration for this model."),
+			want: true,
+		},
+		{
+			name: "mentions tool but no matching qualifier",
+			err:  errors.New("invalid tool input schema"),
+			want: false,
+		},
+		{
+			name: "matching qualifier but no mention of tool",
+			err:  errors.New("prompt caching is not supported for this model."),
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isToolUseUnsupportedError(tt.err); got != tt.want {
+				t.Fatalf("isToolUseUnsupportedError() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -66,6 +66,10 @@ func (f *fakeTurnTool) InputSchema() document.Interface {
 func (f *fakeTurnTool) Execute(_ context.Context, _ json.RawMessage) (string, error) {
 	return "ok", nil
 }
+func (f *fakeTurnTool) RequiresConfirmation() bool { return false }
+func (f *fakeTurnTool) ConfirmationSummary(_ json.RawMessage) (string, string, error) {
+	return "", "", nil
+}
 
 func TestRunChatTurnWithTools_NoToolUse(t *testing.T) {
 	callCount := 0
@@ -80,7 +84,7 @@ func TestRunChatTurnWithTools_NoToolUse(t *testing.T) {
 
 	onReasoning := func(_ context.Context, _ string) error { return nil }
 
-	result, err := runChatTurnWithTools(context.Background(), send, input, registry, onText, onReasoning)
+	result, err := runChatTurnWithTools(context.Background(), send, input, registry, nil, onText, onReasoning)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -106,7 +110,7 @@ func TestRunChatTurnWithTools_RoundTripCap(t *testing.T) {
 
 	onReasoning := func(_ context.Context, _ string) error { return nil }
 
-	_, err := runChatTurnWithTools(context.Background(), send, input, registry, onText, onReasoning)
+	_, err := runChatTurnWithTools(context.Background(), send, input, registry, nil, onText, onReasoning)
 	if err == nil {
 		t.Fatal("expected an error when the round-trip cap is exceeded, got none")
 	}

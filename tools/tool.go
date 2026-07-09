@@ -22,4 +22,16 @@ type Tool interface {
 	// Execute runs the tool with the model-supplied input and returns a
 	// human/model-readable result, or an error if execution failed.
 	Execute(ctx context.Context, input json.RawMessage) (string, error)
+
+	// RequiresConfirmation reports whether calls to this tool must pass
+	// through a PermissionGate before Execute is called. Read-only tools
+	// return false and never have ConfirmationSummary called.
+	RequiresConfirmation() bool
+
+	// ConfirmationSummary returns human-readable text describing what a
+	// specific call will do (shown at the confirmation prompt), and a
+	// coarse pattern key used for sticky-approval matching. Only called
+	// when RequiresConfirmation returns true; an error here is treated as
+	// a denial - the call never reaches the gate or Execute.
+	ConfirmationSummary(input json.RawMessage) (summary string, patternKey string, err error)
 }

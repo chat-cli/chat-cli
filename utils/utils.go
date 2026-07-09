@@ -67,11 +67,12 @@ func ProcessStreamingOutput(output *bedrockruntime.ConverseStreamOutput, handler
 	return msg, nil
 }
 
-// ValidateLocalPath confines filename resolution to the current working
-// directory, returning the validated absolute path or an error if filename
-// escapes it or doesn't exist. Used by the read_file tool so the model
-// cannot read arbitrary paths on the host.
-func ValidateLocalPath(filename string) (string, error) {
+// confineToWorkingDir resolves filename against the current working
+// directory and returns the resulting absolute path, or an error if
+// filename would escape it. Shared by ValidateLocalPath (which additionally
+// requires the file to exist) and ValidateLocalPathForWrite (which doesn't,
+// since a write may create a new file).
+func confineToWorkingDir(filename string) (string, error) {
 	baseDir, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("unable to get working directory: %w", err)
@@ -87,12 +88,33 @@ func ValidateLocalPath(filename string) (string, error) {
 		return "", fmt.Errorf("access denied: %s is outside of the allowed directory", filename)
 	}
 
+	return fullPath, nil
+}
+
+// ValidateLocalPath confines filename resolution to the current working
+// directory, returning the validated absolute path or an error if filename
+// escapes it or doesn't exist. Used by the read_file tool so the model
+// cannot read arbitrary paths on the host.
+func ValidateLocalPath(filename string) (string, error) {
+	fullPath, err := confineToWorkingDir(filename)
+	if err != nil {
+		return "", err
+	}
+
 	// Check if the file exists
 	if _, statErr := os.Stat(fullPath); os.IsNotExist(statErr) {
 		return "", fmt.Errorf("file does not exist: %s", filename)
 	}
 
 	return fullPath, nil
+}
+
+// ValidateLocalPathForWrite confines filename resolution to the current
+// working directory like ValidateLocalPath, but does not require the file
+// to already exist - used by the write_file tool, which may create a new
+// file or overwrite an existing one.
+func ValidateLocalPathForWrite(filename string) (string, error) {
+	return confineToWorkingDir(filename)
 }
 
 // resolveUserPath resolves a user-supplied path for --document and --image.
@@ -265,4 +287,30 @@ func LoadDocument() (string, error) {
 	}
 
 	return document, nil
+}
+
+// maxGitBoundaryWalkLevels bounds FindGitBoundary's upward search as a
+// defensive cap against a pathologically deep dir with no repo above it.
+const maxGitBoundaryWalkLevels = 64
+
+// FindGitBoundary walks upward from dir looking for the first ancestor
+// (inclusive) containing a .git entry, capped at maxGitBoundaryWalkLevels.
+// Returns "" if none is found. Shared by the project-context discovery
+// feature and the tool-use permission engine's per-repository approval
+// scoping - both need identical repo-root-detection behavior.
+func FindGitBoundary(dir string) string {
+	current := dir
+	for i := 0; i < maxGitBoundaryWalkLevels; i++ {
+		if _, err := os.Stat(filepath.Join(current, ".git")); err == nil {
+			return current
+		}
+
+		parent := filepath.Dir(current)
+		if parent == current {
+			// reached filesystem root
+			return ""
+		}
+		current = parent
+	}
+	return ""
 }
