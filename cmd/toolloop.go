@@ -135,10 +135,7 @@ func accumulateStream(events <-chan types.ConverseStreamOutput, onText, onReason
 				Value: &types.ReasoningContentBlockMemberReasoningText{Value: reasoningTextBlock},
 			})
 		case blockKindToolUse:
-			call, err := finalizeToolCall(acc.toolName, acc.toolUseID, acc.toolInput.String())
-			if err != nil {
-				return types.Message{}, nil, "", err
-			}
+			call := finalizeToolCall(acc.toolName, acc.toolUseID, acc.toolInput.String())
 			toolCalls = append(toolCalls, call)
 
 			content = append(content, &types.ContentBlockMemberToolUse{
@@ -203,7 +200,12 @@ func runChatTurnWithTools(
 
 		var resultContent []types.ContentBlock
 		for _, call := range toolCalls {
-			result := registry.Dispatch(ctx, call, gate)
+			var result types.ToolResultBlock
+			if call.InputParseErr != nil {
+				result = toolParseErrorResult(call.ToolUseID, call.InputParseErr)
+			} else {
+				result = registry.Dispatch(ctx, call, gate)
+			}
 			resultContent = append(resultContent, &types.ContentBlockMemberToolResult{Value: result})
 		}
 		input.Messages = append(input.Messages, types.Message{
@@ -214,22 +216,40 @@ func runChatTurnWithTools(
 }
 
 // finalizeToolCall parses a tool call's accumulated raw JSON input fragments
-// into a tools.ToolCall, validating the JSON is well-formed (Rule 4 in
-// functional-design/business-rules.md) before it's ever dispatched.
-func finalizeToolCall(name, toolUseID, rawInput string) (tools.ToolCall, error) {
+// into a tools.ToolCall. Malformed or truncated JSON (common when max-tokens
+// cuts off a large write_file payload mid-stream) sets InputParseErr so the
+// caller can return an error result to the model instead of aborting chat.
+func finalizeToolCall(name, toolUseID, rawInput string) tools.ToolCall {
+	call := tools.ToolCall{
+		Name:      name,
+		ToolUseID: toolUseID,
+	}
+
 	if rawInput == "" {
 		rawInput = "{}"
 	}
 
 	if !json.Valid([]byte(rawInput)) {
-		return tools.ToolCall{}, fmt.Errorf("invalid tool input for %s: not valid JSON", name)
+		call.Input = json.RawMessage("{}")
+		call.InputParseErr = fmt.Errorf(
+			"invalid tool input for %s: not valid JSON (response may have been truncated by max-tokens; retry with smaller content)",
+			name,
+		)
+		return call
 	}
 
-	return tools.ToolCall{
-		Name:      name,
-		ToolUseID: toolUseID,
-		Input:     json.RawMessage(rawInput),
-	}, nil
+	call.Input = json.RawMessage(rawInput)
+	return call
+}
+
+func toolParseErrorResult(toolUseID string, err error) types.ToolResultBlock {
+	return types.ToolResultBlock{
+		ToolUseId: aws.String(toolUseID),
+		Status:    types.ToolResultStatusError,
+		Content: []types.ToolResultContentBlock{
+			&types.ToolResultContentBlockMemberText{Value: err.Error()},
+		},
+	}
 }
 
 // toolInputDocument converts validated tool-call JSON into the document

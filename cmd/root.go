@@ -56,5 +56,5 @@ func init() {
 	rootCmd.PersistentFlags().String("thinking-effort", defaultThinkingEffort, "reasoning effort for adaptive models: low, medium, or high (requires --thinking)")
 	rootCmd.PersistentFlags().Float32("temperature", 1.0, "optional temperature (0-1); omitted from the request unless set")
 	rootCmd.PersistentFlags().Float32("topP", 0.999, "optional top-P (0-1); omitted from the request unless set")
-	rootCmd.PersistentFlags().Int32("max-tokens", 500, "max tokens")
+	rootCmd.PersistentFlags().Int32("max-tokens", 4096, "max tokens")
 }

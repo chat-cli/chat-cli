@@ -112,7 +112,7 @@ Use `--thinking` on a model that supports extended thinking / reasoning mode to 
 chat-cli prompt "What's 17 * 24?" --thinking
 ```
 
-Reasoning is printed dimmed and prefixed with `[thinking]`, separate from the final answer. Extended thinking needs a token budget, controlled by `--thinking-budget` (default `1024`) — this budget must fit within `--max-tokens` (default `500`), so you'll likely need to raise `--max-tokens` when using `--thinking`. `--thinking` has no effect unless explicitly set (behavior is unchanged by default).
+Reasoning is printed dimmed and prefixed with `[thinking]`, separate from the final answer. Extended thinking needs a token budget, controlled by `--thinking-budget` (default `1024`) — this budget must fit within `--max-tokens` (default `4096`). `--thinking` has no effect unless explicitly set (behavior is unchanged by default).
 
 > **Note**: the exact request format for enabling extended thinking varies by model provider and isn't part of Bedrock's typed API — if `--thinking` doesn't work for a given model, that's the most likely reason.
 
