@@ -689,3 +689,11 @@
 **Context**: CONSTRUCTION PHASE, Unit 7 - Code Generation complete, awaiting approval before Unit 8
 
 ---
+## Unit 7 - Approval, Unit 8 Functional Design + NFR Complete
+**Timestamp**: 2026-07-08T19:15:00Z
+**User Response**: "Approved"
+**Status**: Approved
+**AI Response**: Designed Unit 8 directly, verified against the actual cmd/inferenceconfig.go source. Found that converseStreamWithFallbacks already implements exactly this shape of cascading-retry logic twice (cache points, deprecated sampling params) - added tool-use rejection as a third stage in the same function, reusing its existing conventions. Found that FR1.2's "disabled for the rest of the session" requirement falls out for free from the existing mutable converseStreamInput struct reused across turns - no new state needed. Flagged isToolUseUnsupportedError's string-matching heuristic as unverified against real Bedrock error text, same category of risk as Unit 5's reasoning_config shape from Initiative 1.
+**Context**: CONSTRUCTION PHASE, Unit 8 (final unit) - Functional Design + NFR complete, awaiting approval before Code Generation
+
+---

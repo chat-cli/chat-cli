@@ -296,6 +296,12 @@ a verified ancestor of the merge commit before reset).
   - Manual verification via real components (Registry+tools+InteractivePermissionGate+ApprovalStore, scripted stdin, no AWS needed): approve-once creates file, deny blocks it cleanly, session approval correctly skips re-prompting for a matching run_shell call, git_diff never touches the gate.
   - cmd 33.3%->33.1% (negligible), tools 84.1%->81.9%, utils 53.7%->55.0%, total 69.7%->71.2%, no regressions. 7/7 integration tests pass.
 
-## Unit 7 Status: COMPLETE, AWAITING APPROVAL
+## Unit 7 Status: COMPLETE AND APPROVED (commit cd080a4)
 
+### Construction Phase - Unit 8 (Automatic Tool-Use Enablement, #86) - FINAL UNIT
+- [x] Functional Design + NFR - Completed 2026-07-08, awaiting user approval (combined presentation, lowest novelty of the 3 units - extends the already-tested cascading-retry pattern in cmd/inferenceconfig.go rather than introducing anything new)
+  - Artifacts: aidlc-docs/construction/unit-8-automatic-enablement/functional-design/business-logic-model.md, aidlc-docs/construction/unit-8-automatic-enablement/nfr-requirements/nfr-requirements-and-design.md
+  - Key finding: "disabled for the rest of the session" (FR1.2) falls out for free from the existing mutable converseStreamInput struct - no new session-state tracking needed. The FR1.3 user notice reuses the existing log.Printf convention already used by the cache/sampling-params fallbacks.
+  - **CAVEAT (same category as Unit 5's reasoning_config)**: isToolUseUnsupportedError's exact string-matching heuristic is UNVERIFIED against real Bedrock error text - added to the real-credential verification list.
+- [ ] Code Generation - Pending
 - [ ] Build and Test - Pending all 3 units
