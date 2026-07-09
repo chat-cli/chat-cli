@@ -15,6 +15,11 @@ type ToolCall struct {
 	Name      string
 	ToolUseID string
 	Input     json.RawMessage
+	// InputParseErr is set when the model's streamed tool-input JSON was
+	// malformed or truncated (e.g. max-tokens cut off mid-stream). Dispatch
+	// must not call Execute in that case; return this error to the model
+	// instead so it can retry.
+	InputParseErr error
 }
 
 // Registry holds the set of tools available to a chat session and mediates

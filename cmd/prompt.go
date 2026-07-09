@@ -303,5 +303,5 @@ func init() {
 
 	promptCmd.PersistentFlags().Float32("temperature", 1.0, "optional temperature (0-1); omitted from the request unless set")
 	promptCmd.PersistentFlags().Float32("topP", 0.999, "optional top-P (0-1); omitted from the request unless set")
-	promptCmd.PersistentFlags().Int32("max-tokens", 500, "max tokens")
+	promptCmd.PersistentFlags().Int32("max-tokens", 4096, "max tokens")
 }
